@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA League Manager Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg-deep:#060b14;--bg-card:#0d1b2e;--bg-card2:#112240;--border:#1e3a5f;
+  --accent:#00d4ff;--accent2:#7c3aed;--gold:#fbbf24;--silver:#94a3b8;
+  --bronze:#f97316;--green:#22c55e;--red:#ef4444;--text:#e2e8f0;
+  --text-muted:#64748b;--glow:0 0 20px rgba(0,212,255,.25);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg-deep);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(0,212,255,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%,rgba(124,58,237,.08) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 60% at 50% 50%,rgba(34,197,94,.04) 0%,transparent 70%);
+  pointer-events:none;}
+.container{position:relative;z-index:1;max-width:1500px;margin:auto;padding:16px 24px;}
+
+/* SYNC STATUS BAR */
+.sync-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 16px;border-radius:10px;margin-bottom:14px;
+  font-size:.8rem;font-weight:600;
+  background:var(--bg-card);border:1px solid var(--border);
+  transition:all .3s;
+}
+.sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s;}
+.sync-bar.connected .sync-dot{background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s ease-in-out infinite;}
+.sync-bar.syncing  .sync-dot{background:var(--gold);box-shadow:0 0 6px var(--gold);animation:blink .5s ease-in-out infinite;}
+.sync-bar.offline  .sync-dot{background:var(--red);box-shadow:0 0 6px var(--red);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.sync-bar.connected{border-color:rgba(34,197,94,.3);}
+.sync-bar.syncing  {border-color:rgba(251,191,36,.3);}
+.sync-bar.offline  {border-color:rgba(239,68,68,.3);}
+.sync-text{color:var(--text-muted);}
+.sync-bar.connected .sync-text{color:var(--green);}
+.sync-bar.syncing   .sync-text{color:var(--gold);}
+.sync-bar.offline   .sync-text{color:var(--red);}
+.sync-time{margin-left:auto;color:var(--text-muted);font-size:.72rem;font-weight:400;}
+
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:14px 24px;
+  background:linear-gradient(135deg,#0d1b2e 0%,#112240 50%,#0d1b2e 100%);
+  border-radius:18px;border:1px solid var(--border);
+  box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden;}
+.header::before{content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%2300d4ff' fill-opacity='0.025'%3E%3Cpolygon points='30 0 60 15 60 45 30 60 0 45 0 15'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.header-logo{width:48px;height:48px;background:linear-gradient(135deg,#00d4ff,#7c3aed);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  box-shadow:0 0 20px rgba(0,212,255,.4);flex-shrink:0;position:relative;}
+.header-logo::after{content:'';position:absolute;inset:-3px;border-radius:50%;
+  border:2px solid rgba(0,212,255,.3);animation:spin 8s linear infinite;border-top-color:var(--accent);}
+@keyframes spin{to{transform:rotate(360deg);}}
+.header-title h1{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;
+  background:linear-gradient(90deg,#00d4ff,#7c3aed,#00d4ff);background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shimmer 3s linear infinite;letter-spacing:1px;}
+@keyframes shimmer{to{background-position:200%;}}
+.header-title p{color:var(--text-muted);font-size:.75rem;margin-top:1px;letter-spacing:2px;text-transform:uppercase;}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;
+  font-family:'Inter',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:7px;letter-spacing:.3px;}
+.btn-primary{background:linear-gradient(135deg,#00d4ff,#0284c7);color:#000;box-shadow:0 4px 15px rgba(0,212,255,.3);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,212,255,.45);}
+.btn-purple{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;box-shadow:0 4px 15px rgba(124,58,237,.3);}
+.btn-purple:hover{transform:translateY(-2px);}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:white;box-shadow:0 4px 15px rgba(34,197,94,.3);}
+.btn-green:hover{transform:translateY(-2px);}
+.btn-teal{background:linear-gradient(135deg,#14b8a6,#0d9488);color:white;box-shadow:0 4px 15px rgba(20,184,166,.3);}
+.btn-teal:hover{transform:translateY(-2px);}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:white;box-shadow:0 4px 15px rgba(239,68,68,.25);}
+.btn-danger:hover{transform:translateY(-2px);}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--silver);border:1px solid var(--border);}
+.btn-ghost:hover{background:rgba(255,255,255,.1);color:white;}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:8px;}
+.btn-icon{width:28px;height:28px;padding:0;border-radius:7px;background:rgba(0,212,255,.12);
+  color:var(--accent);border:1px solid rgba(0,212,255,.2);font-size:13px;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.btn-icon:hover{background:rgba(0,212,255,.25);transform:scale(1.1);}
+
+/* CARDS */
+.card{background:var(--bg-card);border-radius:18px;padding:20px;margin-bottom:20px;
+  border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.4);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);}
+.card-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;
+  font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:var(--accent);letter-spacing:.5px;}
+.card-title .icon{width:32px;height:32px;border-radius:9px;background:rgba(0,212,255,.12);
+  border:1px solid rgba(0,212,255,.25);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:1100px){.grid-2{grid-template-columns:1fr;}}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+  padding:14px 12px;text-align:center;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.stat-card .stat-val{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;color:var(--accent);}
+.stat-card .stat-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-top:1px;}
+.stat-card .stat-icon{font-size:1.2rem;margin-bottom:3px;}
+
+/* FIXTURES */
+.fixtures-wrap{max-height:620px;overflow-y:auto;padding-right:4px;}
+.fixtures-wrap::-webkit-scrollbar{width:3px;}
+.fixtures-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.matchday-block{margin-bottom:14px;}
+.matchday-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;padding:0 4px;}
+.cal-tile{flex-shrink:0;width:52px;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg-card2);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.cal-tile.today{border-color:var(--accent);box-shadow:0 0 12px rgba(0,212,255,.3);}
+.cal-tile.past{opacity:.6;}
+.cal-month{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;text-align:center;padding:3px 4px 2px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;}
+.cal-tile.past .cal-month{background:linear-gradient(135deg,#334155,#1e3a5f);color:var(--silver);}
+.cal-day{font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;text-align:center;padding:2px 4px;color:var(--text);line-height:1.1;}
+.cal-tile.today .cal-day{color:var(--accent);}
+.cal-dow{font-size:.62rem;text-align:center;color:var(--text-muted);padding-bottom:4px;font-weight:500;}
+.matchday-meta{flex:1;}
+.matchday-label{font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;color:var(--text);letter-spacing:.3px;}
+.matchday-label .md-today-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;background:rgba(0,212,255,.15);color:var(--accent);font-size:.7rem;border:1px solid rgba(0,212,255,.3);vertical-align:middle;}
+.matchday-label .md-past-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;background:rgba(100,116,139,.12);color:var(--text-muted);font-size:.7rem;border:1px solid rgba(100,116,139,.2);vertical-align:middle;}
+.matchday-count{font-size:.75rem;color:var(--text-muted);margin-top:2px;}
+.matchday-drop-zone{min-height:8px;border-radius:8px;border:2px dashed transparent;transition:all .2s;margin:3px 0;}
+.matchday-drop-zone.drag-over-zone{border-color:var(--accent);background:rgba(0,212,255,.05);min-height:44px;}
+.fixture-row{display:grid;grid-template-columns:26px 1fr 44px 1fr 60px 28px;align-items:center;gap:6px;
+  padding:9px 10px;border-radius:10px;margin-bottom:4px;background:var(--bg-card2);
+  border:1px solid transparent;cursor:grab;transition:all .2s;user-select:none;}
+.fixture-row:active{cursor:grabbing;}
+.fixture-row.dragging{opacity:.3;border-color:var(--accent);}
+.fixture-row.drag-over-row{border-color:var(--accent);background:rgba(0,212,255,.07);}
+.fixture-row:hover{border-color:rgba(0,212,255,.18);}
+.fixture-row.completed{border-left:3px solid var(--green);}
+.fixture-num{width:24px;height:24px;border-radius:6px;background:rgba(0,212,255,.1);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;}
+.fixture-team{font-size:.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;}
+.fixture-team.home{justify-content:flex-end;flex-direction:row-reverse;}
+.fixture-vs{text-align:center;font-weight:700;font-size:.7rem;color:var(--text-muted);}
+.fixture-score{text-align:center;font-weight:700;font-size:.88rem;color:var(--accent);font-family:'Rajdhani',sans-serif;}
+.result-pending{color:#fbbf24;font-size:.7rem;}
+.empty-day{padding:10px 12px;border-radius:8px;text-align:center;border:2px dashed rgba(30,58,95,.6);color:var(--text-muted);font-size:.78rem;margin-bottom:4px;}
+.empty-day.drag-over-zone{border-color:var(--accent);background:rgba(0,212,255,.05);color:var(--accent);}
+
+/* PODIUM */
+.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:20px;padding:0 8px;}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:160px;}
+.podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative;flex-shrink:0;}
+.podium-item.p1 .podium-avatar{width:72px;height:72px;font-size:32px;box-shadow:0 0 0 3px #fbbf24,0 0 30px rgba(251,191,36,.5);animation:pulse-gold 2s ease-in-out infinite;}
+@keyframes pulse-gold{0%,100%{box-shadow:0 0 0 3px #fbbf24,0 0 30px rgba(251,191,36,.5);}50%{box-shadow:0 0 0 5px #fbbf24,0 0 50px rgba(251,191,36,.7);}}
+.podium-item.p2 .podium-avatar{width:56px;height:56px;font-size:24px;box-shadow:0 0 0 2px #94a3b8,0 0 16px rgba(148,163,184,.3);}
+.podium-item.p3 .podium-avatar{width:48px;height:48px;font-size:20px;box-shadow:0 0 0 2px #f97316,0 0 12px rgba(249,115,22,.3);}
+.podium-crown{font-size:1.4rem;animation:float 2s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+.podium-name{text-align:center;font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.podium-item.p1 .podium-name{font-size:1rem;color:var(--gold);}
+.podium-item.p2 .podium-name{color:var(--silver);}
+.podium-item.p3 .podium-name{color:var(--bronze);}
+.podium-pts{font-family:'Rajdhani',sans-serif;font-weight:700;}
+.podium-item.p1 .podium-pts{font-size:1.2rem;color:var(--gold);}
+.podium-item.p2 .podium-pts{font-size:1rem;color:var(--silver);}
+.podium-item.p3 .podium-pts{font-size:.9rem;color:var(--bronze);}
+.podium-stand{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.1rem;}
+.p1 .podium-stand{height:56px;background:linear-gradient(180deg,rgba(251,191,36,.25),rgba(251,191,36,.1));border:1px solid rgba(251,191,36,.35);border-bottom:none;color:var(--gold);}
+.p2 .podium-stand{height:40px;background:linear-gradient(180deg,rgba(148,163,184,.15),rgba(148,163,184,.05));border:1px solid rgba(148,163,184,.25);border-bottom:none;color:var(--silver);}
+.p3 .podium-stand{height:28px;background:linear-gradient(180deg,rgba(249,115,22,.15),rgba(249,115,22,.05));border:1px solid rgba(249,115,22,.25);border-bottom:none;color:var(--bronze);}
+
+/* STANDINGS */
+.standings-table{width:100%;border-collapse:collapse;}
+.standings-table th{padding:10px 12px;text-align:center;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;border-bottom:1px solid var(--border);}
+.standings-table td{padding:11px 12px;text-align:center;border-bottom:1px solid rgba(30,58,95,.5);font-size:.88rem;transition:background .2s;}
+.standings-table tr:hover td{background:rgba(0,212,255,.04);}
+.standings-table tr:last-child td{border-bottom:none;}
+.rank-badge{width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;}
+.rank-1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;}
+.rank-2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#000;}
+.rank-3{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;}
+.rank-other{background:rgba(255,255,255,.08);color:var(--silver);}
+.team-name-cell{text-align:left!important;display:flex;align-items:center;gap:8px;}
+.team-avatar{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.points-badge{display:inline-block;padding:3px 9px;border-radius:7px;background:rgba(0,212,255,.12);color:var(--accent);font-weight:700;}
+.gd-positive{color:var(--green);}
+.gd-negative{color:var(--red);}
+.yellow-card{color:#fbbf24;}
+.red-card{color:#ef4444;}
+.tr-rank1 td{background:rgba(251,191,36,.04);}
+.tr-rank1:hover td{background:rgba(251,191,36,.08)!important;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg-card);border:1px solid var(--border);border-radius:22px;padding:28px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6),var(--glow);animation:slideUp .25s ease;position:relative;}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:22px 22px 0 0;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--accent);}
+.modal-close{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--silver);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
+.modal-close:hover{background:rgba(239,68,68,.15);color:var(--red);border-color:var(--red);}
+
+/* FORMS */
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:.78rem;color:var(--text-muted);margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase;}
+.form-input{width:100%;padding:10px 13px;border-radius:9px;border:1px solid var(--border);background:var(--bg-deep);color:var(--text);font-size:.92rem;font-family:'Inter',sans-serif;transition:border-color .2s,box-shadow .2s;}
+.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.12);}
+.form-select{width:100%;padding:10px 13px;border-radius:9px;border:1px solid var(--border);background:var(--bg-deep);color:var(--text);font-size:.92rem;cursor:pointer;font-family:'Inter',sans-serif;}
+.form-select:focus{outline:none;border-color:var(--accent);}
+.score-cards-grid{display:grid;grid-template-columns:1fr 36px 1fr;gap:10px;align-items:start;}
+.score-col{display:flex;flex-direction:column;gap:7px;}
+.score-col-header{text-align:center;font-size:.82rem;font-weight:600;padding:5px 6px;border-radius:7px;background:rgba(255,255,255,.05);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.score-big{text-align:center;font-size:1.7rem;font-family:'Rajdhani',sans-serif;font-weight:700;}
+.card-input-wrap{display:flex;align-items:center;gap:5px;}
+.card-input-wrap .card-icon{font-size:.9rem;flex-shrink:0;width:18px;text-align:center;}
+.card-input-wrap .form-input{padding:6px 9px;font-size:.88rem;}
+.score-divider{display:flex;align-items:center;justify-content:center;padding-top:28px;font-size:1.3rem;font-weight:700;color:var(--text-muted);}
+
+/* EMOJI PICKER / TEAM */
+.team-inputs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.team-entry{background:var(--bg-deep);border:1px solid var(--border);border-radius:12px;padding:14px;transition:border-color .2s;position:relative;}
+.team-entry:hover{border-color:rgba(0,212,255,.25);}
+.team-entry-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.emoji-trigger{width:44px;height:44px;border-radius:10px;border:2px solid var(--border);background:var(--bg-card2);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;position:relative;}
+.emoji-trigger:hover{border-color:var(--accent);box-shadow:0 0 12px rgba(0,212,255,.2);}
+.emoji-trigger .change-hint{position:absolute;bottom:-6px;right:-6px;background:var(--accent);color:#000;border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;opacity:0;transition:opacity .2s;}
+.team-entry:hover .emoji-trigger .change-hint{opacity:1;}
+.team-entry-label{font-size:.74rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.emoji-picker{position:fixed;z-index:3000;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:14px;width:300px;box-shadow:0 20px 60px rgba(0,0,0,.7),var(--glow);animation:slideUp .18s ease;}
+.emoji-picker-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.emoji-picker-title{font-size:.8rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.emoji-picker-close{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.06);border:none;color:var(--silver);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.emoji-picker-close:hover{color:var(--red);}
+.emoji-cats{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px;}
+.emoji-cats::-webkit-scrollbar{height:2px;}
+.emoji-cats::-webkit-scrollbar-thumb{background:var(--border);}
+.emoji-cat-btn{padding:5px 10px;border-radius:7px;border:none;cursor:pointer;font-size:.75rem;font-weight:600;white-space:nowrap;background:rgba(255,255,255,.05);color:var(--text-muted);transition:all .15s;}
+.emoji-cat-btn:hover{background:rgba(0,212,255,.1);color:var(--accent);}
+.emoji-cat-btn.active{background:rgba(0,212,255,.15);color:var(--accent);border:1px solid rgba(0,212,255,.3);}
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-height:200px;overflow-y:auto;}
+.emoji-grid::-webkit-scrollbar{width:3px;}
+.emoji-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.emoji-btn{width:32px;height:32px;border-radius:7px;border:none;background:transparent;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.emoji-btn:hover{background:rgba(0,212,255,.15);transform:scale(1.2);}
+.emoji-btn.selected{background:rgba(0,212,255,.2);box-shadow:0 0 0 2px var(--accent);}
+.color-swatches{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.color-swatch{width:24px;height:24px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0;}
+.color-swatch:hover{transform:scale(1.15);}
+.color-swatch.selected{border-color:white;box-shadow:0 0 8px rgba(255,255,255,.4);}
+
+/* RESET */
+.reset-steps{display:flex;flex-direction:column;gap:12px;margin:18px 0;}
+.reset-step{padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg-deep);display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--text-muted);}
+.reset-step.active{border-color:#ef4444;background:rgba(239,68,68,.07);color:var(--text);}
+.reset-step-num{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;}
+.reset-step.active .reset-step-num{border-color:#ef4444;color:#ef4444;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;padding:12px 18px;border-radius:10px;font-size:.88rem;font-weight:600;transform:translateY(70px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:8px;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* LOADING OVERLAY */
+.loading-overlay{position:fixed;inset:0;z-index:9998;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s;}
+.loading-overlay.hidden{opacity:0;pointer-events:none;}
+.loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+.loading-text{color:var(--text-muted);font-size:.9rem;letter-spacing:1px;}
+
+@media(max-width:600px){
+  .header{flex-direction:column;gap:12px;text-align:center;}
+  .modal-box{padding:18px;margin:14px;}
+  .team-inputs-grid{grid-template-columns:1fr;}
+  .emoji-picker{width:260px;}
+  .fixture-row{grid-template-columns:22px 1fr 38px 1fr 24px;}
+  .fixture-score{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Đang kết nối Firebase...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- TEAM MODAL -->
+<div class="modal-overlay" id="teamModal">
+  <div class="modal-box" style="max-width:760px;">
+    <div class="modal-header">
+      <div class="modal-title">🛡️ Quản lý đội tham dự</div>
+      <button class="modal-close" onclick="closeModal('teamModal')">✕</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:18px;">Click vào icon để thay đổi emoji và màu sắc</p>
+    <div class="team-inputs-grid" id="teamInputsGrid"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('teamModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveTeamsModal()">💾 Lưu đội</button>
+    </div>
+  </div>
+</div>
+
+<!-- Emoji Picker -->
+<div class="emoji-picker" id="emojiPicker" style="display:none;">
+  <div class="emoji-picker-header">
+    <span class="emoji-picker-title">Chọn Icon</span>
+    <button class="emoji-picker-close" onclick="closeEmojiPicker()">✕</button>
+  </div>
+  <div class="emoji-cats" id="emojiCats"></div>
+  <div class="emoji-grid" id="emojiGrid"></div>
+  <div style="font-size:.72rem;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">Màu nền</div>
+  <div class="color-swatches" id="colorSwatches"></div>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title">⚽ Cập nhật kết quả</div>
+      <button class="modal-close" onclick="closeModal('resultModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Chọn trận đấu</label>
+      <select class="form-select" id="matchSelectModal" onchange="onMatchChange()"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ngày thi đấu</label>
+      <input class="form-input" type="date" id="matchDateModal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tỷ số &amp; Thẻ phạt</label>
+      <div class="score-cards-grid">
+        <div class="score-col">
+          <div class="score-col-header" id="scoreTeam1Label">Đội 1</div>
+          <input class="form-input score-big" type="number" min="0" id="score1Modal" placeholder="0">
+          <div class="card-input-wrap"><span class="card-icon">🟨</span><input class="form-input" type="number" min="0" id="yellow1Modal" placeholder="0"></div>
+          <div class="card-input-wrap"><span class="card-icon">🟥</span><input class="form-input" type="number" min="0" id="red1Modal" placeholder="0"></div>
+        </div>
+        <div class="score-divider"> - </div>
+        <div class="score-col">
+          <div class="score-col-header" id="scoreTeam2Label">Đội 2</div>
+          <input class="form-input score-big" type="number" min="0" id="score2Modal" placeholder="0">
+          <div class="card-input-wrap"><span class="card-icon">🟨</span><input class="form-input" type="number" min="0" id="yellow2Modal" placeholder="0"></div>
+          <div class="card-input-wrap"><span class="card-icon">🟥</span><input class="form-input" type="number" min="0" id="red2Modal" placeholder="0"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('resultModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveResultModal()">💾 Lưu kết quả</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title" style="color:#ef4444;">⚠️ Reset mùa giải</div>
+      <button class="modal-close" onclick="closeModal('resetModal');resetConfirmStep=0;">✕</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:.88rem;">Xác nhận <strong style="color:white">3 lần</strong> để xóa toàn bộ dữ liệu.</p>
+    <div class="reset-steps" id="resetSteps"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('resetModal');resetConfirmStep=0;renderResetSteps()">Hủy bỏ</button>
+      <button class="btn btn-danger" id="resetConfirmBtn" onclick="handleResetConfirm()">Xác nhận lần 1</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+  <!-- Sync bar -->
+  <div class="sync-bar offline" id="syncBar">
+    <div class="sync-dot"></div>
+    <span class="sync-text" id="syncText">Đang kết nối...</span>
+    <span class="sync-time" id="syncTime"></span>
+  </div>
+
+  <div class="header">
+    <div class="header-left">
+      <div class="header-logo">⚽</div>
+      <div class="header-title">
+        <h1>FIFA LEAGUE MANAGER</h1>
+        <p>⚡ Pro Edition · SEASON 2026 · Real-time Sync</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openModal('teamModal');renderTeamModalInputs()">🛡️ Quản lý đội</button>
+      <button class="btn btn-purple" onclick="openResultModal(-1)">⚽ Nhập kết quả</button>
+      <button class="btn btn-danger btn-sm" onclick="openResetModal()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon">🏟️</div><div class="stat-val" id="statTotalMatches">0</div><div class="stat-label">Trận đã đấu</div></div>
+    <div class="stat-card"><div class="stat-icon">⚽</div><div class="stat-val" id="statTotalGoals">0</div><div class="stat-label">Tổng bàn thắng</div></div>
+    <div class="stat-card"><div class="stat-icon">🟨</div><div class="stat-val" id="statTotalYellow">0</div><div class="stat-label">Thẻ vàng</div></div>
+    <div class="stat-card"><div class="stat-icon">🟥</div><div class="stat-val" id="statTotalRed">0</div><div class="stat-label">Thẻ đỏ</div></div>
+    <div class="stat-card"><div class="stat-icon">🕊️</div><div class="stat-val" id="statFairplay" style="font-size:.9rem;padding-top:6px;"> - </div><div class="stat-label">Fair Play</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
+        <button class="btn btn-teal btn-sm" onclick="autoSchedule()">⚡ Auto</button>
+      </div>
+      <div class="fixtures-wrap" id="fixturesList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon">🏆</div>Bảng xếp hạng</div>
+      <div id="podiumArea"></div>
+      <table class="standings-table" id="standingsTable"></table>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp }         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, onValue, set, get }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+/* ══════════════════════════════════════
+   🔧 PASTE YOUR FIREBASE CONFIG HERE
+══════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAs1mwGIlFKo7UMiF1jaVWJ92C0lPc2RWg",
+  authDomain: "fifa-league-2026.firebaseapp.com",
+  databaseURL: "https://fifa-league-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "fifa-league-2026",
+  storageBucket: "fifa-league-2026.firebasestorage.app",
+  messagingSenderId: "903480651697",
+  appId: "1:903480651697:web:88993e38b5e27c93ba5790",
+  measurementId: "G-TS140BLWWS"
+};
+/* ════════════════════════════════════ */
+
+const app = initializeApp(FIREBASE_CONFIG);
+const db  = getDatabase(app);
+const ROOT = 'league2026'; // change per season
+
+/* ═══════════════════════════════════════
+   EMOJI / CONSTANTS
+═══════════════════════════════════════ */
+const EMOJI_CATS = {
+  '⚽ Bóng đá':     ['⚽','🥅','🏆','🥇','🎯','🏅','🎖️','🥈'],
+  '🐾 Thú vật':    ['🦅','🐉','🦁','🐯','🦊','🐺','🦋','🦈','🐻','🦂','🦉','🦏'],
+  '⚡ Huyền thoại': ['⚡','🔥','🌊','🌙','💫','❄️','🌪️','☄️'],
+  '💎 Biểu tượng':  ['💎','👑','⚔️','🛡️','🗡️','🎭','🏹','🔱'],
+  '🚀 Sci-fi':      ['🚀','🛸','🤖','👾','💥','🌌','⭐','🔮'],
+  '😈 Mạnh mẽ':    ['😈','💀','🎃','👹','🤺','🥊','💪','🦾'],
+  '🌿 Tự nhiên':   ['🌿','🍀','🌸','🌻','🍁','🌴','🦚','🐬'],
+};
+const COLOR_PALETTE = [
+  '#00d4ff','#7c3aed','#22c55e','#f97316','#ef4444',
+  '#fbbf24','#ec4899','#06b6d4','#8b5cf6','#10b981',
+  '#f43f5e','#84cc16','#6366f1','#14b8a6','#fb923c',
+];
+const IDS            = ['A','B','C','D','E','F','G'];
+const DEFAULT_EMOJIS = ['🦅','🐉','🦁','⚡','🔥','🌊','🌙'];
+const DEFAULT_COLORS = ['#00d4ff','#7c3aed','#22c55e','#f97316','#ef4444','#fbbf24','#ec4899'];
+const BASE_SCHEDULE  = [
+  ['B','G'],['C','F'],['D','E'],['A','G'],['B','E'],['C','D'],['A','F'],
+  ['G','E'],['B','C'],['A','E'],['F','D'],['G','C'],['A','D'],['E','C'],
+  ['F','B'],['A','C'],['D','B'],['F','G'],['A','B'],['D','G'],['E','F']
+];
+const TOTAL = BASE_SCHEDULE.length;
+
+/* ─── date helpers ─── */
+function todayISO(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;}
+function isWeekend(iso){const[y,m,d]=iso.split('-').map(Number);return[0,6].includes(new Date(Date.UTC(y,m-1,d,12)).getUTCDay());}
+function isoOf(dt){return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;}
+function addWorkdays(startISO,n){
+  const[y,m,d]=startISO.split('-').map(Number);
+  let dt=new Date(Date.UTC(y,m-1,d,12));let added=0;
+  while(added<n){dt.setUTCDate(dt.getUTCDate()+1);if(![0,6].includes(dt.getUTCDay()))added++;}
+  return isoOf(dt);
+}
+function generateDefaultDates(count,startISO){
+  const dates=[];const[sy,sm,sd]=startISO.split('-').map(Number);
+  let cur=new Date(Date.UTC(sy,sm-1,sd,12));
+  while([0,6].includes(cur.getUTCDay()))cur.setUTCDate(cur.getUTCDate()+1);
+  let slot=0;
+  while(dates.length<count){
+    dates.push(isoOf(cur));slot++;
+    if(slot>=3){slot=0;cur.setUTCDate(cur.getUTCDate()+1);while([0,6].includes(cur.getUTCDay()))cur.setUTCDate(cur.getUTCDate()+1);}
+  }
+  return dates;
+}
+const DEFAULT_DATES = generateDefaultDates(TOTAL,'2026-05-18');
+
+/* ─── mutable state ─── */
+let teams         = {A:'Team Alpha',B:'Team Beta',C:'Team Cobra',D:'Team Delta',E:'Team Eagle',F:'Team Fenix',G:'Team Ghost'};
+let members       = {A:['P1','P2'],B:['P3','P4'],C:['P5','P6'],D:['P7','P8'],E:['P9','P10'],F:['P11','P12'],G:['P13','P14']};
+let teamEmojis    = Object.fromEntries(IDS.map((id,i)=>[id,DEFAULT_EMOJIS[i]]));
+let teamColors    = Object.fromEntries(IDS.map((id,i)=>[id,DEFAULT_COLORS[i]]));
+let results       = {};
+let matchDates    = Object.fromEntries(DEFAULT_DATES.map((d,i)=>[i,d]));
+let scheduleOrder = BASE_SCHEDULE.map((_,i)=>i);
+
+let fbReady = false; // true once initial load done
+
+/* ═══════════════════════════════════════
+   FIREBASE - read / write
+═══════════════════════════════════════ */
+function dbRef(path){ return ref(db, `${ROOT}/${path}`); }
+
+/* Write full state to Firebase */
+async function pushToFirebase(){
+  setSyncState('syncing');
+  try {
+    await set(dbRef('state'), { teams, members, teamEmojis, teamColors, results, matchDates, scheduleOrder });
+    setSyncState('connected');
+  } catch(e){
+    setSyncState('offline');
+    showToast('⚠️ Lỗi lưu dữ liệu: '+e.message,'warn');
+  }
+}
+
+/* Subscribe to real-time updates */
+function subscribeFirebase(){
+  onValue(dbRef('state'), snap => {
+    const data = snap.val();
+    if(data){
+      teams         = data.teams         || teams;
+      members       = data.members       || members;
+      teamEmojis    = data.teamEmojis    || teamEmojis;
+      teamColors    = data.teamColors    || teamColors;
+      results       = data.results       || {};
+      matchDates    = data.matchDates    || matchDates;
+      scheduleOrder = data.scheduleOrder || scheduleOrder;
+    } else {
+      // First run - push defaults
+      pushToFirebase();
+    }
+    if(!fbReady){
+      fbReady = true;
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+    setSyncState('connected');
+    render();
+  }, err => {
+    setSyncState('offline');
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    showToast('⚠️ Mất kết nối Firebase','warn');
+  });
+}
+
+/* ─── sync bar ─── */
+function setSyncState(state){
+  const bar  = document.getElementById('syncBar');
+  const text = document.getElementById('syncText');
+  const time = document.getElementById('syncTime');
+  bar.className = `sync-bar ${state}`;
+  if(state==='connected'){ text.textContent='Đã kết nối · Real-time sync'; time.textContent='Cập nhật: '+new Date().toLocaleTimeString('vi-VN'); }
+  else if(state==='syncing'){ text.textContent='Đang đồng bộ...'; time.textContent=''; }
+  else { text.textContent='Mất kết nối'; time.textContent=''; }
+}
+
+/* persist = push to Firebase (no more localStorage) */
+function persist(){ pushToFirebase(); render(); }
+
+/* ═══════════════════════════════════════
+   AUTO SCHEDULE
+═══════════════════════════════════════ */
+window.autoSchedule = function(){
+  const today=todayISO();
+  let baseDay=today;
+  if(isWeekend(baseDay)){
+    const[y,m,d]=baseDay.split('-').map(Number);
+    let dt=new Date(Date.UTC(y,m-1,d,12));
+    while([0,6].includes(dt.getUTCDay()))dt.setUTCDate(dt.getUTCDate()+1);
+    baseDay=isoOf(dt);
+  }
+  const completed=[],pending=[];
+  scheduleOrder.forEach(i=>{ (results[i]&&results[i].score1!==undefined?completed:pending).push(i); });
+  completed.sort((a,b)=>(matchDates[a]||'').localeCompare(matchDates[b]||''));
+  pending.forEach((origIdx,pos)=>{ matchDates[origIdx]=pos===0?baseDay:addWorkdays(baseDay,Math.floor(pos/3)); });
+  scheduleOrder=[...completed,...pending];
+  persist(); showToast('⚡ Đã tự động sắp xếp lại lịch!');
+};
+
+/* ═══════════════════════════════════════
+   RENDER
+═══════════════════════════════════════ */
+function render(){ renderFixtures(); renderStandings(); renderStats(); }
+
+function buildMatchdays(){
+  const map=new Map();
+  scheduleOrder.forEach(i=>{
+    const d=matchDates[i]||'9999-12-31';
+    if(!map.has(d))map.set(d,[]);
+    map.get(d).push(i);
+  });
+  return map;
+}
+
+/* ─── drag/drop ─── */
+let dragData=null;
+function onFixtureDragStart(e,origIdx){ dragData={origIdx}; e.dataTransfer.effectAllowed='move'; setTimeout(()=>document.querySelectorAll(`.fixture-row[data-orig="${origIdx}"]`).forEach(el=>el.classList.add('dragging')),0); }
+function onFixtureDragEnd(){ document.querySelectorAll('.fixture-row').forEach(el=>el.classList.remove('dragging','drag-over-row')); document.querySelectorAll('.matchday-drop-zone,.empty-day').forEach(el=>el.classList.remove('drag-over-zone')); dragData=null; }
+function onZoneDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; this.classList.add('drag-over-zone'); }
+function onZoneDragLeave(){ this.classList.remove('drag-over-zone'); }
+function onZoneDrop(e,targetDate){ e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-zone'); if(!dragData)return; const{origIdx}=dragData; matchDates[origIdx]=targetDate; scheduleOrder=scheduleOrder.filter(i=>i!==origIdx); let ins=scheduleOrder.length; for(let k=scheduleOrder.length-1;k>=0;k--){if(matchDates[scheduleOrder[k]]===targetDate){ins=k+1;break;}} scheduleOrder.splice(ins,0,origIdx); persist(); }
+function onRowDragOver(e){ e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
+function onRowDragLeave(){ this.classList.remove('drag-over-row'); }
+function onRowDrop(e,targetOrigIdx){ e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if(!dragData||dragData.origIdx===targetOrigIdx)return; const{origIdx:src}=dragData; matchDates[src]=matchDates[targetOrigIdx]; const si=scheduleOrder.indexOf(src); scheduleOrder.splice(si,1); const newDi=scheduleOrder.indexOf(targetOrigIdx); scheduleOrder.splice(newDi,0,src); persist(); }
+
+function renderFixtures(){
+  const wrap=document.getElementById('fixturesList');wrap.innerHTML='';
+  const today=todayISO();const matchdays=buildMatchdays();let gpos=0;
+  const MONTHS=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  const DOWS=['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+  matchdays.forEach((arr,date)=>{
+    const isPast=date<today,isToday=date===today;
+    const[dy,dm,dd]=date.split('-');
+    const dtObj=new Date(Date.UTC(+dy,+dm-1,+dd,12));
+    const dowFull=DOWS[dtObj.getUTCDay()];
+    const done=arr.filter(i=>results[i]&&results[i].score1!==undefined).length;
+    const block=document.createElement('div');block.className='matchday-block';
+    block.innerHTML=`<div class="matchday-header">
+      <div class="cal-tile ${isToday?'today':isPast?'past':''}">
+        <div class="cal-month">${MONTHS[+dm-1]}</div>
+        <div class="cal-day">${dd}</div>
+        <div class="cal-dow">${dowFull.replace('Thứ ','T')}</div>
+      </div>
+      <div class="matchday-meta">
+        <div class="matchday-label">${dowFull}${isToday?'<span class="md-today-badge">Hôm nay</span>':isPast?'<span class="md-past-badge">Đã qua</span>':''}</div>
+        <div class="matchday-count">${done}/${arr.length} trận đã đấu</div>
+      </div></div>`;
+    const addZone=(targetDate)=>{const z=document.createElement('div');z.className='matchday-drop-zone';z.addEventListener('dragover',onZoneDragOver);z.addEventListener('dragleave',onZoneDragLeave);z.addEventListener('drop',function(e){onZoneDrop.call(this,e,targetDate);});return z;};
+    block.appendChild(addZone(date));
+    if(arr.length===0){const emp=document.createElement('div');emp.className='empty-day';emp.textContent='Kéo trận vào đây';emp.addEventListener('dragover',onZoneDragOver);emp.addEventListener('dragleave',onZoneDragLeave);emp.addEventListener('drop',function(e){onZoneDrop.call(this,e,date);});block.appendChild(emp);}
+    arr.forEach(origIdx=>{
+      gpos++;const m=BASE_SCHEDULE[origIdx];const r=results[origIdx]||{};const hasResult=r.score1!==undefined&&r.score2!==undefined;
+      const row=document.createElement('div');row.className='fixture-row'+(hasResult?' completed':'');row.draggable=true;row.dataset.orig=origIdx;
+      row.innerHTML=`<div class="fixture-num">${gpos}</div>
+        <div class="fixture-team home"><span style="margin-left:3px">${teams[m[0]]}</span><span style="color:${teamColors[m[0]]}">${teamEmojis[m[0]]}</span></div>
+        <div class="fixture-vs">VS</div>
+        <div class="fixture-team away"><span style="color:${teamColors[m[1]]}">${teamEmojis[m[1]]}</span><span>${teams[m[1]]}</span></div>
+        <div class="fixture-score">${hasResult?`<span style="color:var(--green);font-weight:700">${r.score1}:${r.score2}</span>`:'<span class="result-pending">TBD</span>'}</div>
+        <button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>`;
+      row.addEventListener('dragstart',e=>onFixtureDragStart(e,origIdx));
+      row.addEventListener('dragend',onFixtureDragEnd);
+      row.addEventListener('dragover',onRowDragOver);
+      row.addEventListener('dragleave',onRowDragLeave);
+      row.addEventListener('drop',function(e){onRowDrop.call(this,e,origIdx);});
+      row.querySelector('.btn-icon').addEventListener('mousedown',e=>e.stopPropagation());
+      block.appendChild(row);block.appendChild(addZone(date));
+    });
+    wrap.appendChild(block);
+  });
+}
+
+function renderStats(){
+  let played=0,goals=0,yellow=0,red=0;
+  Object.values(results).forEach(r=>{if(!r||r.score1===undefined)return;played++;goals+=(r.score1||0)+(r.score2||0);yellow+=(r.y1||0)+(r.y2||0);red+=(r.r1||0)+(r.r2||0);});
+  document.getElementById('statTotalMatches').textContent=played;
+  document.getElementById('statTotalGoals').textContent=goals;
+  document.getElementById('statTotalYellow').textContent=yellow;
+  document.getElementById('statTotalRed').textContent=red;
+  const raw=calcStandingsRaw();const wg=Object.entries(raw).filter(([,v])=>v.played>0);
+  if(wg.length){const fp=[...wg].sort((a,b)=>(a[1].y+a[1].r*3)-(b[1].y+b[1].r*3));const[fpId]=fp[0];document.getElementById('statFairplay').innerHTML=`<span style="color:${teamColors[fpId]}">${teamEmojis[fpId]}</span>&nbsp;${teams[fpId]}`;}
+  else document.getElementById('statFairplay').textContent=' - ';
+}
+
+function calcStandingsRaw(){
+  const s={};IDS.forEach(id=>s[id]={p:0,w:0,d:0,l:0,gf:0,ga:0,y:0,r:0,played:0});
+  BASE_SCHEDULE.forEach((m,i)=>{const r=results[i];if(!r||r.score1===undefined)return;const[a,b]=m;s[a].played++;s[b].played++;s[a].gf+=r.score1;s[a].ga+=r.score2;s[b].gf+=r.score2;s[b].ga+=r.score1;s[a].y+=r.y1||0;s[a].r+=r.r1||0;s[b].y+=r.y2||0;s[b].r+=r.r2||0;if(r.score1>r.score2){s[a].p+=3;s[a].w++;s[b].l++;}else if(r.score2>r.score1){s[b].p+=3;s[b].w++;s[a].l++;}else{s[a].p++;s[b].p++;s[a].d++;s[b].d++;}});
+  return s;
+}
+function calcStandings(){ return Object.entries(calcStandingsRaw()).sort((x,y)=>y[1].p-x[1].p||((y[1].gf-y[1].ga)-(x[1].gf-x[1].ga))||y[1].gf-x[1].gf); }
+
+function renderStandings(){
+  const rows=calcStandings();const pa=document.getElementById('podiumArea');const top3=rows.slice(0,3);const anyPoints=top3.some(([,v])=>v.p>0);
+  if(anyPoints){
+    const ordered=[top3[1],top3[0],top3[2]].filter(Boolean);const pClasses=top3[1]?['p2','p1','p3']:['p1','p3'];const medals=['🥇','🥈','🥉'];
+    pa.innerHTML=`<div class="podium-wrap">${ordered.map((entry,idx)=>{if(!entry)return'';const[id,v]=entry;const pClass=pClasses[idx];const rankNum=pClass==='p1'?1:pClass==='p2'?2:3;const standH=pClass==='p1'?56:pClass==='p2'?40:28;return`<div class="podium-item ${pClass}">${pClass==='p1'?'<div class="podium-crown">👑</div>':''}<div class="podium-avatar ${pClass}" style="background:${teamColors[id]}22;color:${teamColors[id]}">${teamEmojis[id]}</div><div class="podium-name">${medals[rankNum-1]} ${teams[id]}</div><div class="podium-pts">${v.p} điểm</div><div class="podium-stand" style="height:${standH}px">${rankNum}</div></div>`;}).join('')}</div>`;
+  } else pa.innerHTML='';
+  const rc=['rank-1','rank-2','rank-3'];
+  let h=`<tr><th>Hạng</th><th style="text-align:left">Đội</th><th>Tr</th><th>T</th><th>H</th><th>B</th><th>Điểm</th><th>HS</th><th>⚽</th><th>🟨</th><th>🟥</th></tr>`;
+  rows.forEach(([id,v],i)=>{const gd=v.gf-v.ga;const gdC=gd>0?'gd-positive':gd<0?'gd-negative':'';const rowC=i===0?' class="tr-rank1"':'';const ns=i===0?'font-weight:700;color:var(--gold);':'font-weight:600;';
+    h+=`<tr${rowC}><td><span class="rank-badge ${i<3?rc[i]:'rank-other'}">${i+1}</span></td><td><div class="team-name-cell"><span class="team-avatar" style="background:${teamColors[id]}20;color:${teamColors[id]}">${teamEmojis[id]}</span><span style="${ns}">${teams[id]}</span>${i===0&&v.p>0?'<span style="margin-left:4px;font-size:.8rem">🔥</span>':''}</div></td><td style="color:var(--text-muted)">${v.played}</td><td style="color:var(--green)">${v.w}</td><td style="color:var(--silver)">${v.d}</td><td style="color:var(--red)">${v.l}</td><td><span class="points-badge">${v.p}</span></td><td class="${gdC}">${gd>0?'+'+gd:gd}</td><td>${v.gf}</td><td class="yellow-card">${v.y}</td><td class="red-card">${v.r}</td></tr>`;
+  });
+  document.getElementById('standingsTable').innerHTML=h;
+}
+
+/* ═══════════════════════════════════════
+   MODALS (exposed to window for onclick)
+═══════════════════════════════════════ */
+window.openModal  = id=>{ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; };
+window.closeModal = id=>{ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; };
+document.querySelectorAll('.modal-overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) window.closeModal(el.id); }); });
+
+/* TEAM MODAL */
+window.renderTeamModalInputs = ()=>{
+  document.getElementById('teamInputsGrid').innerHTML=IDS.map((id,i)=>`
+    <div class="team-entry" id="team-entry-${id}">
+      <div class="team-entry-header">
+        <div class="emoji-trigger" id="emoji-trigger-${id}" style="background:${teamColors[id]}33;border-color:${teamColors[id]}" onclick="openEmojiPicker('${id}',this)">
+          <span class="trigger-emoji">${teamEmojis[id]}</span><span class="change-hint">✎</span>
+        </div>
+        <div><div class="team-entry-label" style="color:${teamColors[id]}">Đội ${id}</div><div style="font-size:.72rem;color:var(--text-muted);margin-top:1px;">Click icon để đổi</div></div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px"><input class="form-input" id="tname_${id}" value="${teams[id]}" placeholder="Tên đội"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <input class="form-input" style="font-size:.8rem;padding:7px" id="tmem1_${id}" value="${(members[id]||['',''])[0]}" placeholder="TV 1">
+        <input class="form-input" style="font-size:.8rem;padding:7px" id="tmem2_${id}" value="${(members[id]||['',''])[1]}" placeholder="TV 2">
+      </div></div>`).join('');
+};
+window.saveTeamsModal = ()=>{
+  IDS.forEach(id=>{ teams[id]=document.getElementById(`tname_${id}`).value||teams[id]; members[id]=[document.getElementById(`tmem1_${id}`).value,document.getElementById(`tmem2_${id}`).value]; });
+  closeEmojiPicker(); persist(); window.closeModal('teamModal'); showToast('✅ Đã lưu thông tin đội!');
+};
+
+/* EMOJI PICKER */
+let currentEmojiCat=Object.keys(EMOJI_CATS)[0],pickerTarget=null,pickerEmoji='',pickerColor='';
+function buildEmojiPicker(){
+  document.getElementById('emojiCats').innerHTML=Object.keys(EMOJI_CATS).map(cat=>`<button class="emoji-cat-btn ${cat===currentEmojiCat?'active':''}" onclick="switchEmojiCat('${cat}')">${cat.split(' ')[0]}</button>`).join('');
+  renderEmojiGrid();
+  document.getElementById('colorSwatches').innerHTML=COLOR_PALETTE.map(c=>`<div class="color-swatch ${c===pickerColor?'selected':''}" style="background:${c}" onclick="selectPickerColor('${c}')"></div>`).join('');
+}
+function renderEmojiGrid(){ document.getElementById('emojiGrid').innerHTML=EMOJI_CATS[currentEmojiCat].map(e=>`<button class="emoji-btn ${e===pickerEmoji?'selected':''}" onclick="selectPickerEmoji('${e}')">${e}</button>`).join(''); }
+window.switchEmojiCat = cat=>{ currentEmojiCat=cat; document.querySelectorAll('.emoji-cat-btn').forEach(b=>b.classList.toggle('active',b.textContent.trim()===cat.split(' ')[0])); renderEmojiGrid(); };
+window.selectPickerEmoji = e=>{ pickerEmoji=e; document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.toggle('selected',b.textContent===e)); if(pickerTarget) document.getElementById(`emoji-trigger-${pickerTarget}`).querySelector('.trigger-emoji').textContent=e; };
+window.selectPickerColor = c=>{ pickerColor=c; document.querySelectorAll('.color-swatch').forEach(s=>s.classList.toggle('selected',s.style.background===c||s.style.backgroundColor===c)); if(pickerTarget){const t=document.getElementById(`emoji-trigger-${pickerTarget}`);t.style.background=c+'33';t.style.borderColor=c;} };
+window.openEmojiPicker = (teamId,triggerEl)=>{ pickerTarget=teamId;pickerEmoji=teamEmojis[teamId];pickerColor=teamColors[teamId];buildEmojiPicker();const picker=document.getElementById('emojiPicker');picker.style.display='block';const rect=triggerEl.getBoundingClientRect();const pw=300,ph=320;let left=rect.left,top=rect.bottom+8;if(left+pw>window.innerWidth-12)left=window.innerWidth-pw-12;if(top+ph>window.innerHeight-12)top=rect.top-ph-8;picker.style.left=left+'px';picker.style.top=top+'px'; };
+function closeEmojiPicker(){ if(pickerTarget){teamEmojis[pickerTarget]=pickerEmoji;teamColors[pickerTarget]=pickerColor;} document.getElementById('emojiPicker').style.display='none';pickerTarget=null; }
+window.closeEmojiPicker = closeEmojiPicker;
+document.addEventListener('click',e=>{ const picker=document.getElementById('emojiPicker'); if(picker.style.display==='none')return; if(picker.contains(e.target))return; if(e.target.closest('.emoji-trigger'))return; closeEmojiPicker(); });
+
+/* RESULT MODAL */
+window.openResultModal = preselect=>{ window.openModal('resultModal'); renderResultModal(preselect); };
+function renderResultModal(preselect){
+  document.getElementById('matchSelectModal').innerHTML=scheduleOrder.map((origIdx,pos)=>{
+    const m=BASE_SCHEDULE[origIdx];const r=results[origIdx];const done=(r&&r.score1!==undefined)?' ✓':'';
+    return `<option value="${origIdx}" ${origIdx==preselect?'selected':''}>Trận ${pos+1}: ${teams[m[0]]} vs ${teams[m[1]]}${done}</option>`;
+  }).join('');
+  onMatchChange();
+}
+window.onMatchChange = ()=>{
+  const origIdx=parseInt(document.getElementById('matchSelectModal').value);
+  const m=BASE_SCHEDULE[origIdx];
+  document.getElementById('scoreTeam1Label').textContent=`${teamEmojis[m[0]]} ${teams[m[0]]}`;
+  document.getElementById('scoreTeam2Label').textContent=`${teamEmojis[m[1]]} ${teams[m[1]]}`;
+  const r=results[origIdx]||{};
+  document.getElementById('matchDateModal').value=matchDates[origIdx]||todayISO();
+  document.getElementById('score1Modal').value=r.score1!==undefined?r.score1:'';
+  document.getElementById('score2Modal').value=r.score2!==undefined?r.score2:'';
+  document.getElementById('yellow1Modal').value=r.y1||'';document.getElementById('red1Modal').value=r.r1||'';
+  document.getElementById('yellow2Modal').value=r.y2||'';document.getElementById('red2Modal').value=r.r2||'';
+};
+window.saveResultModal = ()=>{
+  const origIdx=parseInt(document.getElementById('matchSelectModal').value);
+  const s1=document.getElementById('score1Modal').value,s2=document.getElementById('score2Modal').value;
+  if(s1===''||s2===''){showToast('⚠️ Vui lòng nhập tỷ số!','warn');return;}
+  const enteredDate=document.getElementById('matchDateModal').value;
+  if(enteredDate) matchDates[origIdx]=enteredDate;
+  results[origIdx]={date:enteredDate||matchDates[origIdx],score1:+s1,score2:+s2,y1:+document.getElementById('yellow1Modal').value||0,r1:+document.getElementById('red1Modal').value||0,y2:+document.getElementById('yellow2Modal').value||0,r2:+document.getElementById('red2Modal').value||0};
+  persist();window.closeModal('resultModal');showToast('✅ Kết quả đã được lưu!');
+};
+
+/* RESET */
+let resetConfirmStep=0;
+const RESET_MSGS=['Bước 1: Xác nhận xóa toàn bộ kết quả','Bước 2: Xác nhận xóa thông tin đội','Bước 3: Xác nhận lần cuối - không thể hoàn tác'];
+window.openResetModal = ()=>{ resetConfirmStep=0; renderResetSteps(); window.openModal('resetModal'); };
+function renderResetSteps(){
+  document.getElementById('resetSteps').innerHTML=RESET_MSGS.map((msg,i)=>`<div class="reset-step ${i<resetConfirmStep?'active':''}"><div class="reset-step-num">${i<resetConfirmStep?'✓':i+1}</div><span>${msg}</span></div>`).join('');
+  const btn=document.getElementById('resetConfirmBtn');if(btn) btn.textContent=`Xác nhận lần ${resetConfirmStep+1}`;
+}
+window.renderResetSteps = renderResetSteps;
+window.handleResetConfirm = ()=>{
+  resetConfirmStep++;
+  if(resetConfirmStep>=3){
+    window.closeModal('resetModal');resetConfirmStep=0;
+    // reset Firebase state
+    set(dbRef('state'),null).then(()=>{ location.reload(); });
+  } else { renderResetSteps();showToast(`⚠️ Còn ${3-resetConfirmStep} lần xác nhận nữa`,'warn'); }
+};
+
+/* TOAST */
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.style.borderColor=type==='warn'?'#fbbf24':'#22c55e';t.style.color=type==='warn'?'#fbbf24':'#22c55e';
+  t.style.background=type==='warn'?'linear-gradient(135deg,#451a03,#78350f)':'linear-gradient(135deg,#064e3b,#065f46)';
+  t.style.border=`1px solid ${type==='warn'?'#fbbf24':'#22c55e'}`;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+}
+window.showToast = showToast;
+
+/* ─── BOOT ─── */
+subscribeFirebase();
+</script>
+</body>
+</html>

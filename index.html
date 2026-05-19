@@ -21,14 +21,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   pointer-events:none;}
 .container{position:relative;z-index:1;max-width:1500px;margin:auto;padding:16px 24px;}
 
-/* SYNC STATUS BAR */
-.sync-bar{
-  display:flex;align-items:center;gap:8px;
-  padding:7px 16px;border-radius:10px;margin-bottom:14px;
-  font-size:.8rem;font-weight:600;
-  background:var(--bg-card);border:1px solid var(--border);
-  transition:all .3s;
-}
+.sync-bar{display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:10px;margin-bottom:14px;font-size:.8rem;font-weight:600;background:var(--bg-card);border:1px solid var(--border);transition:all .3s;}
 .sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s;}
 .sync-bar.connected .sync-dot{background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s ease-in-out infinite;}
 .sync-bar.syncing  .sync-dot{background:var(--gold);box-shadow:0 0 6px var(--gold);animation:blink .5s ease-in-out infinite;}
@@ -43,7 +36,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .sync-bar.offline   .sync-text{color:var(--red);}
 .sync-time{margin-left:auto;color:var(--text-muted);font-size:.72rem;font-weight:400;}
 
-/* HEADER */
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:14px 24px;
   background:linear-gradient(135deg,#0d1b2e 0%,#112240 50%,#0d1b2e 100%);
   border-radius:18px;border:1px solid var(--border);
@@ -65,7 +57,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .header-title p{color:var(--text-muted);font-size:.75rem;margin-top:1px;letter-spacing:2px;text-transform:uppercase;}
 .header-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 
-/* BUTTONS */
 .btn{padding:8px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;
   font-family:'Inter',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:7px;letter-spacing:.3px;}
 .btn-primary{background:linear-gradient(135deg,#00d4ff,#0284c7);color:#000;box-shadow:0 4px 15px rgba(0,212,255,.3);}
@@ -86,7 +77,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
 .btn-icon:hover{background:rgba(0,212,255,.25);transform:scale(1.1);}
 
-/* CARDS */
 .card{background:var(--bg-card);border-radius:18px;padding:20px;margin-bottom:20px;
   border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.4);position:relative;overflow:hidden;}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
@@ -99,19 +89,15 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 @media(max-width:1100px){.grid-2{grid-template-columns:1fr;}}
 
-/* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
 @media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr);}}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
-  padding:14px 12px;text-align:center;position:relative;overflow:hidden;}
-.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
 .stat-card .stat-val{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;color:var(--accent);}
 .stat-card .stat-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-top:1px;}
 .stat-card .stat-icon{font-size:1.2rem;margin-bottom:3px;}
 
-/* FIXTURES */
 .fixtures-wrap{max-height:620px;overflow-y:auto;padding-right:4px;}
 .fixtures-wrap::-webkit-scrollbar{width:3px;}
 .fixtures-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
@@ -149,7 +135,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .empty-day{padding:10px 12px;border-radius:8px;text-align:center;border:2px dashed rgba(30,58,95,.6);color:var(--text-muted);font-size:.78rem;margin-bottom:4px;}
 .empty-day.drag-over-zone{border-color:var(--accent);background:rgba(0,212,255,.05);color:var(--accent);}
 
-/* PODIUM */
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:20px;padding:0 8px;}
 .podium-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:160px;}
 .podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative;flex-shrink:0;}
@@ -172,7 +157,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .p2 .podium-stand{height:40px;background:linear-gradient(180deg,rgba(148,163,184,.15),rgba(148,163,184,.05));border:1px solid rgba(148,163,184,.25);border-bottom:none;color:var(--silver);}
 .p3 .podium-stand{height:28px;background:linear-gradient(180deg,rgba(249,115,22,.15),rgba(249,115,22,.05));border:1px solid rgba(249,115,22,.25);border-bottom:none;color:var(--bronze);}
 
-/* STANDINGS */
 .standings-table{width:100%;border-collapse:collapse;}
 .standings-table th{padding:10px 12px;text-align:center;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;border-bottom:1px solid var(--border);}
 .standings-table td{padding:11px 12px;text-align:center;border-bottom:1px solid rgba(30,58,95,.5);font-size:.88rem;transition:background .2s;}
@@ -193,7 +177,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .tr-rank1 td{background:rgba(251,191,36,.04);}
 .tr-rank1:hover td{background:rgba(251,191,36,.08)!important;}
 
-/* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal-box{background:var(--bg-card);border:1px solid var(--border);border-radius:22px;padding:28px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6),var(--glow);animation:slideUp .25s ease;position:relative;}
@@ -204,7 +187,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .modal-close{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--silver);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
 .modal-close:hover{background:rgba(239,68,68,.15);color:var(--red);border-color:var(--red);}
 
-/* FORMS */
 .form-group{margin-bottom:14px;}
 .form-label{display:block;font-size:.78rem;color:var(--text-muted);margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase;}
 .form-input{width:100%;padding:10px 13px;border-radius:9px;border:1px solid var(--border);background:var(--bg-deep);color:var(--text);font-size:.92rem;font-family:'Inter',sans-serif;transition:border-color .2s,box-shadow .2s;}
@@ -220,7 +202,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .card-input-wrap .form-input{padding:6px 9px;font-size:.88rem;}
 .score-divider{display:flex;align-items:center;justify-content:center;padding-top:28px;font-size:1.3rem;font-weight:700;color:var(--text-muted);}
 
-/* EMOJI PICKER / TEAM */
 .team-inputs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .team-entry{background:var(--bg-deep);border:1px solid var(--border);border-radius:12px;padding:14px;transition:border-color .2s;position:relative;}
 .team-entry:hover{border-color:rgba(0,212,255,.25);}
@@ -252,19 +233,15 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .color-swatch:hover{transform:scale(1.15);}
 .color-swatch.selected{border-color:white;box-shadow:0 0 8px rgba(255,255,255,.4);}
 
-/* RESET */
 .reset-steps{display:flex;flex-direction:column;gap:12px;margin:18px 0;}
 .reset-step{padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg-deep);display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--text-muted);}
 .reset-step.active{border-color:#ef4444;background:rgba(239,68,68,.07);color:var(--text);}
 .reset-step-num{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;}
 .reset-step.active .reset-step-num{border-color:#ef4444;color:#ef4444;}
 
-/* TOAST */
 .toast{position:fixed;bottom:22px;right:22px;z-index:9999;padding:12px 18px;border-radius:10px;font-size:.88rem;font-weight:600;transform:translateY(70px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:8px;pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
-
-/* LOADING OVERLAY */
-.loading-overlay{position:fixed;inset:0;z-index:9998;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s;}
+.loading-overlay{position:fixed;inset:0;z-index:9998;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s;}
 .loading-overlay.hidden{opacity:0;pointer-events:none;}
 .loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
 .loading-text{color:var(--text-muted);font-size:.9rem;letter-spacing:1px;}
@@ -281,12 +258,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">Đang kết nối Firebase...</div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <!-- TEAM MODAL -->
@@ -375,13 +350,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 
 <!-- MAIN -->
 <div class="container">
-  <!-- Sync bar -->
   <div class="sync-bar offline" id="syncBar">
     <div class="sync-dot"></div>
     <span class="sync-text" id="syncText">Đang kết nối...</span>
     <span class="sync-time" id="syncTime"></span>
   </div>
-
   <div class="header">
     <div class="header-left">
       <div class="header-logo">⚽</div>
@@ -396,7 +369,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
       <button class="btn btn-danger btn-sm" onclick="openResetModal()">🔄 Reset</button>
     </div>
   </div>
-
   <div class="stats-row">
     <div class="stat-card"><div class="stat-icon">🏟️</div><div class="stat-val" id="statTotalMatches">0</div><div class="stat-label">Trận đã đấu</div></div>
     <div class="stat-card"><div class="stat-icon">⚽</div><div class="stat-val" id="statTotalGoals">0</div><div class="stat-label">Tổng bàn thắng</div></div>
@@ -404,7 +376,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
     <div class="stat-card"><div class="stat-icon">🟥</div><div class="stat-val" id="statTotalRed">0</div><div class="stat-label">Thẻ đỏ</div></div>
     <div class="stat-card"><div class="stat-icon">🕊️</div><div class="stat-val" id="statFairplay" style="font-size:.9rem;padding-top:6px;"> - </div><div class="stat-label">Fair Play</div></div>
   </div>
-
   <div class="grid-2">
     <div class="card">
       <div class="section-header">
@@ -421,34 +392,32 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
-import { initializeApp }         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, onValue, set, get }
+import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, onValue, set }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
 /* ══════════════════════════════════════
    🔧 PASTE YOUR FIREBASE CONFIG HERE
 ══════════════════════════════════════ */
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAs1mwGIlFKo7UMiF1jaVWJ92C0lPc2RWg",
-  authDomain: "fifa-league-2026.firebaseapp.com",
-  databaseURL: "https://fifa-league-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "fifa-league-2026",
-  storageBucket: "fifa-league-2026.firebasestorage.app",
-  messagingSenderId: "903480651697",
-  appId: "1:903480651697:web:88993e38b5e27c93ba5790",
-  measurementId: "G-TS140BLWWS"
+  apiKey:            "PASTE_YOUR_apiKey_HERE",
+  authDomain:        "PASTE_YOUR_authDomain_HERE",
+  databaseURL:       "PASTE_YOUR_databaseURL_HERE",
+  projectId:         "PASTE_YOUR_projectId_HERE",
+  storageBucket:     "PASTE_YOUR_storageBucket_HERE",
+  messagingSenderId: "PASTE_YOUR_messagingSenderId_HERE",
+  appId:             "PASTE_YOUR_appId_HERE"
 };
 /* ════════════════════════════════════ */
 
-const app = initializeApp(FIREBASE_CONFIG);
-const db  = getDatabase(app);
-const ROOT = 'league2026'; // change per season
+const app  = initializeApp(FIREBASE_CONFIG);
+const db   = getDatabase(app);
+const ROOT = 'league2026';
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════════
    EMOJI / CONSTANTS
-═══════════════════════════════════════ */
+═══════════════════════════════ */
 const EMOJI_CATS = {
   '⚽ Bóng đá':     ['⚽','🥅','🏆','🥇','🎯','🏅','🎖️','🥈'],
   '🐾 Thú vật':    ['🦅','🐉','🦁','🐯','🦊','🐺','🦋','🦈','🐻','🦂','🦉','🦏'],
@@ -471,160 +440,251 @@ const BASE_SCHEDULE  = [
   ['G','E'],['B','C'],['A','E'],['F','D'],['G','C'],['A','D'],['E','C'],
   ['F','B'],['A','C'],['D','B'],['F','G'],['A','B'],['D','G'],['E','F']
 ];
-const TOTAL = BASE_SCHEDULE.length;
+const TOTAL = BASE_SCHEDULE.length; // 21
 
-/* ─── date helpers ─── */
-function todayISO(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;}
-function isWeekend(iso){const[y,m,d]=iso.split('-').map(Number);return[0,6].includes(new Date(Date.UTC(y,m-1,d,12)).getUTCDay());}
-function isoOf(dt){return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;}
-function addWorkdays(startISO,n){
-  const[y,m,d]=startISO.split('-').map(Number);
-  let dt=new Date(Date.UTC(y,m-1,d,12));let added=0;
-  while(added<n){dt.setUTCDate(dt.getUTCDate()+1);if(![0,6].includes(dt.getUTCDay()))added++;}
+/* ── SEASON START - cố định, không bao giờ dùng ngày hôm nay ── */
+const SEASON_START = '2026-05-18';
+
+/* ═══════════════════════════════
+   DATE HELPERS
+═══════════════════════════════ */
+function todayISO(){
+  const n=new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+function isoOf(dt){
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+}
+function isWeekend(iso){
+  const[y,m,d]=iso.split('-').map(Number);
+  return [0,6].includes(new Date(Date.UTC(y,m-1,d,12)).getUTCDay());
+}
+function nextWorkday(iso){
+  const[y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d,12));
+  dt.setUTCDate(dt.getUTCDate()+1);
+  while([0,6].includes(dt.getUTCDay())) dt.setUTCDate(dt.getUTCDate()+1);
   return isoOf(dt);
 }
-function generateDefaultDates(count,startISO){
-  const dates=[];const[sy,sm,sd]=startISO.split('-').map(Number);
+function addWorkdays(startISO, n){
+  if(n===0) return startISO;
+  const[y,m,d]=startISO.split('-').map(Number);
+  let dt=new Date(Date.UTC(y,m-1,d,12));
+  let added=0;
+  while(added<n){ dt.setUTCDate(dt.getUTCDate()+1); if(![0,6].includes(dt.getUTCDay())) added++; }
+  return isoOf(dt);
+}
+
+/*
+  ★ KEY FIX: buildSeasonDates() luôn bắt đầu từ SEASON_START cố định.
+  Không bao giờ phụ thuộc vào ngày hiện tại.
+  matchDates được tính 1 lần khi khởi tạo DB lần đầu, sau đó
+  mọi thay đổi đều được lưu vào Firebase và đọc lại từ Firebase.
+*/
+function buildSeasonDates(){
+  // Tìm ngày workday đầu tiên từ SEASON_START
+  const[sy,sm,sd]=SEASON_START.split('-').map(Number);
   let cur=new Date(Date.UTC(sy,sm-1,sd,12));
-  while([0,6].includes(cur.getUTCDay()))cur.setUTCDate(cur.getUTCDate()+1);
+  while([0,6].includes(cur.getUTCDay())) cur.setUTCDate(cur.getUTCDate()+1);
+
+  const dates={};
   let slot=0;
-  while(dates.length<count){
-    dates.push(isoOf(cur));slot++;
-    if(slot>=3){slot=0;cur.setUTCDate(cur.getUTCDate()+1);while([0,6].includes(cur.getUTCDay()))cur.setUTCDate(cur.getUTCDate()+1);}
+  for(let i=0;i<TOTAL;i++){
+    dates[String(i)] = isoOf(cur); // ★ key luôn là string
+    slot++;
+    if(slot>=3){
+      slot=0;
+      cur.setUTCDate(cur.getUTCDate()+1);
+      while([0,6].includes(cur.getUTCDay())) cur.setUTCDate(cur.getUTCDate()+1);
+    }
   }
   return dates;
 }
-const DEFAULT_DATES = generateDefaultDates(TOTAL,'2026-05-18');
 
-/* ─── mutable state ─── */
+/* ★ Normalize matchDates: đảm bảo mọi key đều là string */
+function normalizeMatchDates(raw){
+  if(!raw) return buildSeasonDates();
+  const out={};
+  for(let i=0;i<TOTAL;i++){
+    const key=String(i);
+    // Nhận cả string key lẫn number key từ Firebase
+    out[key] = raw[key] || raw[i] || buildSeasonDates()[key];
+  }
+  return out;
+}
+
+/* ★ Normalize scheduleOrder: đảm bảo mọi phần tử là number */
+function normalizeScheduleOrder(raw){
+  if(!Array.isArray(raw)) return BASE_SCHEDULE.map((_,i)=>i);
+  return raw.map(v=>Number(v));
+}
+
+/* ═══════════════════════════════
+   MUTABLE STATE
+═══════════════════════════════ */
 let teams         = {A:'Team Alpha',B:'Team Beta',C:'Team Cobra',D:'Team Delta',E:'Team Eagle',F:'Team Fenix',G:'Team Ghost'};
 let members       = {A:['P1','P2'],B:['P3','P4'],C:['P5','P6'],D:['P7','P8'],E:['P9','P10'],F:['P11','P12'],G:['P13','P14']};
 let teamEmojis    = Object.fromEntries(IDS.map((id,i)=>[id,DEFAULT_EMOJIS[i]]));
 let teamColors    = Object.fromEntries(IDS.map((id,i)=>[id,DEFAULT_COLORS[i]]));
 let results       = {};
-let matchDates    = Object.fromEntries(DEFAULT_DATES.map((d,i)=>[i,d]));
-let scheduleOrder = BASE_SCHEDULE.map((_,i)=>i);
+let matchDates    = buildSeasonDates();   // string-keyed
+let scheduleOrder = BASE_SCHEDULE.map((_,i)=>i); // number[]
 
-let fbReady = false; // true once initial load done
+let fbReady = false;
 
-/* ═══════════════════════════════════════
-   FIREBASE - read / write
-═══════════════════════════════════════ */
-function dbRef(path){ return ref(db, `${ROOT}/${path}`); }
+/* ═══════════════════════════════
+   FIREBASE
+═══════════════════════════════ */
+function dbRef(path){ return ref(db,`${ROOT}/${path}`); }
 
-/* Write full state to Firebase */
 async function pushToFirebase(){
   setSyncState('syncing');
-  try {
-    await set(dbRef('state'), { teams, members, teamEmojis, teamColors, results, matchDates, scheduleOrder });
+  try{
+    // ★ Luôn serialize matchDates với string key, scheduleOrder với number
+    await set(dbRef('state'),{
+      teams, members, teamEmojis, teamColors, results,
+      matchDates,          // already string-keyed
+      scheduleOrder,       // number[]
+    });
     setSyncState('connected');
-  } catch(e){
+  }catch(e){
     setSyncState('offline');
-    showToast('⚠️ Lỗi lưu dữ liệu: '+e.message,'warn');
+    showToast('⚠️ Lỗi lưu: '+e.message,'warn');
   }
 }
 
-/* Subscribe to real-time updates */
 function subscribeFirebase(){
-  onValue(dbRef('state'), snap => {
-    const data = snap.val();
+  onValue(dbRef('state'), snap=>{
+    const data=snap.val();
     if(data){
       teams         = data.teams         || teams;
       members       = data.members       || members;
       teamEmojis    = data.teamEmojis    || teamEmojis;
       teamColors    = data.teamColors    || teamColors;
       results       = data.results       || {};
-      matchDates    = data.matchDates    || matchDates;
-      scheduleOrder = data.scheduleOrder || scheduleOrder;
+      // ★ normalize cả hai sau khi đọc từ Firebase
+      matchDates    = normalizeMatchDates(data.matchDates);
+      scheduleOrder = normalizeScheduleOrder(data.scheduleOrder);
     } else {
-      // First run - push defaults
+      // Lần đầu - push default với SEASON_START cố định
+      matchDates    = buildSeasonDates();
+      scheduleOrder = BASE_SCHEDULE.map((_,i)=>i);
       pushToFirebase();
     }
     if(!fbReady){
-      fbReady = true;
+      fbReady=true;
       document.getElementById('loadingOverlay').classList.add('hidden');
     }
     setSyncState('connected');
     render();
-  }, err => {
-    setSyncState('offline');
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    showToast('⚠️ Mất kết nối Firebase','warn');
-  });
+  }, ()=>{ setSyncState('offline'); document.getElementById('loadingOverlay').classList.add('hidden'); });
 }
 
-/* ─── sync bar ─── */
 function setSyncState(state){
-  const bar  = document.getElementById('syncBar');
-  const text = document.getElementById('syncText');
-  const time = document.getElementById('syncTime');
-  bar.className = `sync-bar ${state}`;
+  const bar=document.getElementById('syncBar');
+  const text=document.getElementById('syncText');
+  const time=document.getElementById('syncTime');
+  bar.className=`sync-bar ${state}`;
   if(state==='connected'){ text.textContent='Đã kết nối · Real-time sync'; time.textContent='Cập nhật: '+new Date().toLocaleTimeString('vi-VN'); }
   else if(state==='syncing'){ text.textContent='Đang đồng bộ...'; time.textContent=''; }
   else { text.textContent='Mất kết nối'; time.textContent=''; }
 }
 
-/* persist = push to Firebase (no more localStorage) */
 function persist(){ pushToFirebase(); render(); }
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════════
    AUTO SCHEDULE
-═══════════════════════════════════════ */
+   ★ Pending matches → redistribute từ hôm nay
+   Không đụng vào SEASON_START
+═══════════════════════════════ */
 window.autoSchedule = function(){
-  const today=todayISO();
-  let baseDay=today;
+  let baseDay = todayISO();
   if(isWeekend(baseDay)){
     const[y,m,d]=baseDay.split('-').map(Number);
     let dt=new Date(Date.UTC(y,m-1,d,12));
-    while([0,6].includes(dt.getUTCDay()))dt.setUTCDate(dt.getUTCDate()+1);
+    while([0,6].includes(dt.getUTCDay())) dt.setUTCDate(dt.getUTCDate()+1);
     baseDay=isoOf(dt);
   }
-  const completed=[],pending=[];
-  scheduleOrder.forEach(i=>{ (results[i]&&results[i].score1!==undefined?completed:pending).push(i); });
-  completed.sort((a,b)=>(matchDates[a]||'').localeCompare(matchDates[b]||''));
-  pending.forEach((origIdx,pos)=>{ matchDates[origIdx]=pos===0?baseDay:addWorkdays(baseDay,Math.floor(pos/3)); });
+  const completed=[], pending=[];
+  scheduleOrder.forEach(i=>{
+    (results[String(i)]&&results[String(i)].score1!==undefined ? completed : pending).push(Number(i));
+  });
+  completed.sort((a,b)=>(matchDates[String(a)]||'').localeCompare(matchDates[String(b)]||''));
+  pending.forEach((origIdx,pos)=>{
+    matchDates[String(origIdx)] = pos===0 ? baseDay : addWorkdays(baseDay, Math.floor(pos/3));
+  });
   scheduleOrder=[...completed,...pending];
-  persist(); showToast('⚡ Đã tự động sắp xếp lại lịch!');
+  persist();
+  showToast('⚡ Đã tự động sắp xếp lại lịch!');
 };
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════════
    RENDER
-═══════════════════════════════════════ */
+═══════════════════════════════ */
 function render(){ renderFixtures(); renderStandings(); renderStats(); }
+
+/* ★ Luôn dùng String(i) khi lookup matchDates */
+function getDate(origIdx){ return matchDates[String(origIdx)] || '9999-12-31'; }
+function getResult(origIdx){ return results[String(origIdx)] || null; }
 
 function buildMatchdays(){
   const map=new Map();
   scheduleOrder.forEach(i=>{
-    const d=matchDates[i]||'9999-12-31';
-    if(!map.has(d))map.set(d,[]);
-    map.get(d).push(i);
+    const d=getDate(i);
+    if(!map.has(d)) map.set(d,[]);
+    map.get(d).push(Number(i));
   });
   return map;
 }
 
-/* ─── drag/drop ─── */
+/* ── drag/drop ── */
 let dragData=null;
-function onFixtureDragStart(e,origIdx){ dragData={origIdx}; e.dataTransfer.effectAllowed='move'; setTimeout(()=>document.querySelectorAll(`.fixture-row[data-orig="${origIdx}"]`).forEach(el=>el.classList.add('dragging')),0); }
+function onFixtureDragStart(e,origIdx){ dragData={origIdx:Number(origIdx)}; e.dataTransfer.effectAllowed='move'; setTimeout(()=>document.querySelectorAll(`.fixture-row[data-orig="${origIdx}"]`).forEach(el=>el.classList.add('dragging')),0); }
 function onFixtureDragEnd(){ document.querySelectorAll('.fixture-row').forEach(el=>el.classList.remove('dragging','drag-over-row')); document.querySelectorAll('.matchday-drop-zone,.empty-day').forEach(el=>el.classList.remove('drag-over-zone')); dragData=null; }
 function onZoneDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; this.classList.add('drag-over-zone'); }
 function onZoneDragLeave(){ this.classList.remove('drag-over-zone'); }
-function onZoneDrop(e,targetDate){ e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-zone'); if(!dragData)return; const{origIdx}=dragData; matchDates[origIdx]=targetDate; scheduleOrder=scheduleOrder.filter(i=>i!==origIdx); let ins=scheduleOrder.length; for(let k=scheduleOrder.length-1;k>=0;k--){if(matchDates[scheduleOrder[k]]===targetDate){ins=k+1;break;}} scheduleOrder.splice(ins,0,origIdx); persist(); }
+function onZoneDrop(e,targetDate){
+  e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-zone');
+  if(!dragData) return;
+  const src=dragData.origIdx;
+  matchDates[String(src)]=targetDate;
+  scheduleOrder=scheduleOrder.map(Number).filter(i=>i!==src);
+  let ins=scheduleOrder.length;
+  for(let k=scheduleOrder.length-1;k>=0;k--){ if(matchDates[String(scheduleOrder[k])]===targetDate){ins=k+1;break;} }
+  scheduleOrder.splice(ins,0,src);
+  persist();
+}
 function onRowDragOver(e){ e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
 function onRowDragLeave(){ this.classList.remove('drag-over-row'); }
-function onRowDrop(e,targetOrigIdx){ e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if(!dragData||dragData.origIdx===targetOrigIdx)return; const{origIdx:src}=dragData; matchDates[src]=matchDates[targetOrigIdx]; const si=scheduleOrder.indexOf(src); scheduleOrder.splice(si,1); const newDi=scheduleOrder.indexOf(targetOrigIdx); scheduleOrder.splice(newDi,0,src); persist(); }
+function onRowDrop(e,targetOrigIdx){
+  e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row');
+  if(!dragData||dragData.origIdx===Number(targetOrigIdx)) return;
+  const src=dragData.origIdx;
+  matchDates[String(src)]=matchDates[String(targetOrigIdx)];
+  scheduleOrder=scheduleOrder.map(Number);
+  const si=scheduleOrder.indexOf(src);
+  scheduleOrder.splice(si,1);
+  const di=scheduleOrder.indexOf(Number(targetOrigIdx));
+  scheduleOrder.splice(di,0,src);
+  persist();
+}
 
 function renderFixtures(){
-  const wrap=document.getElementById('fixturesList');wrap.innerHTML='';
-  const today=todayISO();const matchdays=buildMatchdays();let gpos=0;
+  const wrap=document.getElementById('fixturesList'); wrap.innerHTML='';
+  const today=todayISO();
+  const matchdays=buildMatchdays();
+  let gpos=0;
   const MONTHS=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
   const DOWS=['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+
   matchdays.forEach((arr,date)=>{
-    const isPast=date<today,isToday=date===today;
-    const[dy,dm,dd]=date.split('-');
-    const dtObj=new Date(Date.UTC(+dy,+dm-1,+dd,12));
+    const isPast=date<today, isToday=date===today;
+    const[,dm,dd]=date.split('-');
+    const dtObj=new Date(Date.UTC(...date.split('-').map(Number).map((v,i)=>i===1?v-1:v),12));
     const dowFull=DOWS[dtObj.getUTCDay()];
-    const done=arr.filter(i=>results[i]&&results[i].score1!==undefined).length;
-    const block=document.createElement('div');block.className='matchday-block';
+    const done=arr.filter(i=>{ const r=getResult(i); return r&&r.score1!==undefined; }).length;
+
+    const block=document.createElement('div'); block.className='matchday-block';
     block.innerHTML=`<div class="matchday-header">
       <div class="cal-tile ${isToday?'today':isPast?'past':''}">
         <div class="cal-month">${MONTHS[+dm-1]}</div>
@@ -635,13 +695,26 @@ function renderFixtures(){
         <div class="matchday-label">${dowFull}${isToday?'<span class="md-today-badge">Hôm nay</span>':isPast?'<span class="md-past-badge">Đã qua</span>':''}</div>
         <div class="matchday-count">${done}/${arr.length} trận đã đấu</div>
       </div></div>`;
-    const addZone=(targetDate)=>{const z=document.createElement('div');z.className='matchday-drop-zone';z.addEventListener('dragover',onZoneDragOver);z.addEventListener('dragleave',onZoneDragLeave);z.addEventListener('drop',function(e){onZoneDrop.call(this,e,targetDate);});return z;};
+
+    const addZone=tDate=>{ const z=document.createElement('div'); z.className='matchday-drop-zone'; z.addEventListener('dragover',onZoneDragOver); z.addEventListener('dragleave',onZoneDragLeave); z.addEventListener('drop',function(e){onZoneDrop.call(this,e,tDate);}); return z; };
     block.appendChild(addZone(date));
-    if(arr.length===0){const emp=document.createElement('div');emp.className='empty-day';emp.textContent='Kéo trận vào đây';emp.addEventListener('dragover',onZoneDragOver);emp.addEventListener('dragleave',onZoneDragLeave);emp.addEventListener('drop',function(e){onZoneDrop.call(this,e,date);});block.appendChild(emp);}
+
+    if(arr.length===0){
+      const emp=document.createElement('div'); emp.className='empty-day'; emp.textContent='Kéo trận vào đây';
+      emp.addEventListener('dragover',onZoneDragOver); emp.addEventListener('dragleave',onZoneDragLeave);
+      emp.addEventListener('drop',function(e){onZoneDrop.call(this,e,date);}); block.appendChild(emp);
+    }
+
     arr.forEach(origIdx=>{
-      gpos++;const m=BASE_SCHEDULE[origIdx];const r=results[origIdx]||{};const hasResult=r.score1!==undefined&&r.score2!==undefined;
-      const row=document.createElement('div');row.className='fixture-row'+(hasResult?' completed':'');row.draggable=true;row.dataset.orig=origIdx;
-      row.innerHTML=`<div class="fixture-num">${gpos}</div>
+      gpos++;
+      const m=BASE_SCHEDULE[origIdx];
+      const r=getResult(origIdx)||{};
+      const hasResult=r.score1!==undefined&&r.score2!==undefined;
+      const row=document.createElement('div');
+      row.className='fixture-row'+(hasResult?' completed':'');
+      row.draggable=true; row.dataset.orig=origIdx;
+      row.innerHTML=`
+        <div class="fixture-num">${gpos}</div>
         <div class="fixture-team home"><span style="margin-left:3px">${teams[m[0]]}</span><span style="color:${teamColors[m[0]]}">${teamEmojis[m[0]]}</span></div>
         <div class="fixture-vs">VS</div>
         <div class="fixture-team away"><span style="color:${teamColors[m[1]]}">${teamEmojis[m[1]]}</span><span>${teams[m[1]]}</span></div>
@@ -653,7 +726,7 @@ function renderFixtures(){
       row.addEventListener('dragleave',onRowDragLeave);
       row.addEventListener('drop',function(e){onRowDrop.call(this,e,origIdx);});
       row.querySelector('.btn-icon').addEventListener('mousedown',e=>e.stopPropagation());
-      block.appendChild(row);block.appendChild(addZone(date));
+      block.appendChild(row); block.appendChild(addZone(date));
     });
     wrap.appendChild(block);
   });
@@ -661,19 +734,19 @@ function renderFixtures(){
 
 function renderStats(){
   let played=0,goals=0,yellow=0,red=0;
-  Object.values(results).forEach(r=>{if(!r||r.score1===undefined)return;played++;goals+=(r.score1||0)+(r.score2||0);yellow+=(r.y1||0)+(r.y2||0);red+=(r.r1||0)+(r.r2||0);});
+  for(let i=0;i<TOTAL;i++){ const r=getResult(i); if(!r||r.score1===undefined)continue; played++;goals+=(r.score1||0)+(r.score2||0);yellow+=(r.y1||0)+(r.y2||0);red+=(r.r1||0)+(r.r2||0); }
   document.getElementById('statTotalMatches').textContent=played;
   document.getElementById('statTotalGoals').textContent=goals;
   document.getElementById('statTotalYellow').textContent=yellow;
   document.getElementById('statTotalRed').textContent=red;
-  const raw=calcStandingsRaw();const wg=Object.entries(raw).filter(([,v])=>v.played>0);
-  if(wg.length){const fp=[...wg].sort((a,b)=>(a[1].y+a[1].r*3)-(b[1].y+b[1].r*3));const[fpId]=fp[0];document.getElementById('statFairplay').innerHTML=`<span style="color:${teamColors[fpId]}">${teamEmojis[fpId]}</span>&nbsp;${teams[fpId]}`;}
+  const raw=calcStandingsRaw(); const wg=Object.entries(raw).filter(([,v])=>v.played>0);
+  if(wg.length){ const fp=[...wg].sort((a,b)=>(a[1].y+a[1].r*3)-(b[1].y+b[1].r*3)); const[fpId]=fp[0]; document.getElementById('statFairplay').innerHTML=`<span style="color:${teamColors[fpId]}">${teamEmojis[fpId]}</span>&nbsp;${teams[fpId]}`; }
   else document.getElementById('statFairplay').textContent=' - ';
 }
 
 function calcStandingsRaw(){
   const s={};IDS.forEach(id=>s[id]={p:0,w:0,d:0,l:0,gf:0,ga:0,y:0,r:0,played:0});
-  BASE_SCHEDULE.forEach((m,i)=>{const r=results[i];if(!r||r.score1===undefined)return;const[a,b]=m;s[a].played++;s[b].played++;s[a].gf+=r.score1;s[a].ga+=r.score2;s[b].gf+=r.score2;s[b].ga+=r.score1;s[a].y+=r.y1||0;s[a].r+=r.r1||0;s[b].y+=r.y2||0;s[b].r+=r.r2||0;if(r.score1>r.score2){s[a].p+=3;s[a].w++;s[b].l++;}else if(r.score2>r.score1){s[b].p+=3;s[b].w++;s[a].l++;}else{s[a].p++;s[b].p++;s[a].d++;s[b].d++;}});
+  for(let i=0;i<TOTAL;i++){ const r=getResult(i); if(!r||r.score1===undefined)continue; const[a,b]=BASE_SCHEDULE[i]; s[a].played++;s[b].played++;s[a].gf+=r.score1;s[a].ga+=r.score2;s[b].gf+=r.score2;s[b].ga+=r.score1;s[a].y+=r.y1||0;s[a].r+=r.r1||0;s[b].y+=r.y2||0;s[b].r+=r.r2||0;if(r.score1>r.score2){s[a].p+=3;s[a].w++;s[b].l++;}else if(r.score2>r.score1){s[b].p+=3;s[b].w++;s[a].l++;}else{s[a].p++;s[b].p++;s[a].d++;s[b].d++;} }
   return s;
 }
 function calcStandings(){ return Object.entries(calcStandingsRaw()).sort((x,y)=>y[1].p-x[1].p||((y[1].gf-y[1].ga)-(x[1].gf-x[1].ga))||y[1].gf-x[1].gf); }
@@ -681,27 +754,27 @@ function calcStandings(){ return Object.entries(calcStandingsRaw()).sort((x,y)=>
 function renderStandings(){
   const rows=calcStandings();const pa=document.getElementById('podiumArea');const top3=rows.slice(0,3);const anyPoints=top3.some(([,v])=>v.p>0);
   if(anyPoints){
-    const ordered=[top3[1],top3[0],top3[2]].filter(Boolean);const pClasses=top3[1]?['p2','p1','p3']:['p1','p3'];const medals=['🥇','🥈','🥉'];
-    pa.innerHTML=`<div class="podium-wrap">${ordered.map((entry,idx)=>{if(!entry)return'';const[id,v]=entry;const pClass=pClasses[idx];const rankNum=pClass==='p1'?1:pClass==='p2'?2:3;const standH=pClass==='p1'?56:pClass==='p2'?40:28;return`<div class="podium-item ${pClass}">${pClass==='p1'?'<div class="podium-crown">👑</div>':''}<div class="podium-avatar ${pClass}" style="background:${teamColors[id]}22;color:${teamColors[id]}">${teamEmojis[id]}</div><div class="podium-name">${medals[rankNum-1]} ${teams[id]}</div><div class="podium-pts">${v.p} điểm</div><div class="podium-stand" style="height:${standH}px">${rankNum}</div></div>`;}).join('')}</div>`;
+    const ordered=[top3[1],top3[0],top3[2]].filter(Boolean);const pClasses=['p2','p1','p3'];const medals=['🥇','🥈','🥉'];
+    pa.innerHTML=`<div class="podium-wrap">${ordered.map((entry,idx)=>{ if(!entry)return''; const[id,v]=entry;const pClass=pClasses[idx];const rankNum=pClass==='p1'?1:pClass==='p2'?2:3;const standH=pClass==='p1'?56:pClass==='p2'?40:28; return`<div class="podium-item ${pClass}">${pClass==='p1'?'<div class="podium-crown">👑</div>':''}<div class="podium-avatar ${pClass}" style="background:${teamColors[id]}22;color:${teamColors[id]}">${teamEmojis[id]}</div><div class="podium-name">${medals[rankNum-1]} ${teams[id]}</div><div class="podium-pts">${v.p} điểm</div><div class="podium-stand" style="height:${standH}px">${rankNum}</div></div>`; }).join('')}</div>`;
   } else pa.innerHTML='';
   const rc=['rank-1','rank-2','rank-3'];
   let h=`<tr><th>Hạng</th><th style="text-align:left">Đội</th><th>Tr</th><th>T</th><th>H</th><th>B</th><th>Điểm</th><th>HS</th><th>⚽</th><th>🟨</th><th>🟥</th></tr>`;
-  rows.forEach(([id,v],i)=>{const gd=v.gf-v.ga;const gdC=gd>0?'gd-positive':gd<0?'gd-negative':'';const rowC=i===0?' class="tr-rank1"':'';const ns=i===0?'font-weight:700;color:var(--gold);':'font-weight:600;';
+  rows.forEach(([id,v],i)=>{ const gd=v.gf-v.ga;const gdC=gd>0?'gd-positive':gd<0?'gd-negative':'';const rowC=i===0?' class="tr-rank1"':'';const ns=i===0?'font-weight:700;color:var(--gold);':'font-weight:600;';
     h+=`<tr${rowC}><td><span class="rank-badge ${i<3?rc[i]:'rank-other'}">${i+1}</span></td><td><div class="team-name-cell"><span class="team-avatar" style="background:${teamColors[id]}20;color:${teamColors[id]}">${teamEmojis[id]}</span><span style="${ns}">${teams[id]}</span>${i===0&&v.p>0?'<span style="margin-left:4px;font-size:.8rem">🔥</span>':''}</div></td><td style="color:var(--text-muted)">${v.played}</td><td style="color:var(--green)">${v.w}</td><td style="color:var(--silver)">${v.d}</td><td style="color:var(--red)">${v.l}</td><td><span class="points-badge">${v.p}</span></td><td class="${gdC}">${gd>0?'+'+gd:gd}</td><td>${v.gf}</td><td class="yellow-card">${v.y}</td><td class="red-card">${v.r}</td></tr>`;
   });
   document.getElementById('standingsTable').innerHTML=h;
 }
 
-/* ═══════════════════════════════════════
-   MODALS (exposed to window for onclick)
-═══════════════════════════════════════ */
+/* ═══════════════════════════════
+   MODALS
+═══════════════════════════════ */
 window.openModal  = id=>{ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; };
 window.closeModal = id=>{ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; };
-document.querySelectorAll('.modal-overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) window.closeModal(el.id); }); });
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) window.closeModal(el.id); }));
 
-/* TEAM MODAL */
+/* TEAM */
 window.renderTeamModalInputs = ()=>{
-  document.getElementById('teamInputsGrid').innerHTML=IDS.map((id,i)=>`
+  document.getElementById('teamInputsGrid').innerHTML=IDS.map(id=>`
     <div class="team-entry" id="team-entry-${id}">
       <div class="team-entry-header">
         <div class="emoji-trigger" id="emoji-trigger-${id}" style="background:${teamColors[id]}33;border-color:${teamColors[id]}" onclick="openEmojiPicker('${id}',this)">
@@ -733,69 +806,76 @@ window.selectPickerEmoji = e=>{ pickerEmoji=e; document.querySelectorAll('.emoji
 window.selectPickerColor = c=>{ pickerColor=c; document.querySelectorAll('.color-swatch').forEach(s=>s.classList.toggle('selected',s.style.background===c||s.style.backgroundColor===c)); if(pickerTarget){const t=document.getElementById(`emoji-trigger-${pickerTarget}`);t.style.background=c+'33';t.style.borderColor=c;} };
 window.openEmojiPicker = (teamId,triggerEl)=>{ pickerTarget=teamId;pickerEmoji=teamEmojis[teamId];pickerColor=teamColors[teamId];buildEmojiPicker();const picker=document.getElementById('emojiPicker');picker.style.display='block';const rect=triggerEl.getBoundingClientRect();const pw=300,ph=320;let left=rect.left,top=rect.bottom+8;if(left+pw>window.innerWidth-12)left=window.innerWidth-pw-12;if(top+ph>window.innerHeight-12)top=rect.top-ph-8;picker.style.left=left+'px';picker.style.top=top+'px'; };
 function closeEmojiPicker(){ if(pickerTarget){teamEmojis[pickerTarget]=pickerEmoji;teamColors[pickerTarget]=pickerColor;} document.getElementById('emojiPicker').style.display='none';pickerTarget=null; }
-window.closeEmojiPicker = closeEmojiPicker;
-document.addEventListener('click',e=>{ const picker=document.getElementById('emojiPicker'); if(picker.style.display==='none')return; if(picker.contains(e.target))return; if(e.target.closest('.emoji-trigger'))return; closeEmojiPicker(); });
+window.closeEmojiPicker=closeEmojiPicker;
+document.addEventListener('click',e=>{ const p=document.getElementById('emojiPicker'); if(p.style.display==='none')return; if(p.contains(e.target))return; if(e.target.closest('.emoji-trigger'))return; closeEmojiPicker(); });
 
 /* RESULT MODAL */
 window.openResultModal = preselect=>{ window.openModal('resultModal'); renderResultModal(preselect); };
 function renderResultModal(preselect){
   document.getElementById('matchSelectModal').innerHTML=scheduleOrder.map((origIdx,pos)=>{
-    const m=BASE_SCHEDULE[origIdx];const r=results[origIdx];const done=(r&&r.score1!==undefined)?' ✓':'';
-    return `<option value="${origIdx}" ${origIdx==preselect?'selected':''}>Trận ${pos+1}: ${teams[m[0]]} vs ${teams[m[1]]}${done}</option>`;
+    const m=BASE_SCHEDULE[origIdx]; const r=getResult(origIdx); const done=(r&&r.score1!==undefined)?' ✓':'';
+    return `<option value="${origIdx}" ${Number(origIdx)===Number(preselect)?'selected':''}>Trận ${pos+1}: ${teams[m[0]]} vs ${teams[m[1]]}${done}</option>`;
   }).join('');
-  onMatchChange();
+  window.onMatchChange();
 }
 window.onMatchChange = ()=>{
   const origIdx=parseInt(document.getElementById('matchSelectModal').value);
   const m=BASE_SCHEDULE[origIdx];
   document.getElementById('scoreTeam1Label').textContent=`${teamEmojis[m[0]]} ${teams[m[0]]}`;
   document.getElementById('scoreTeam2Label').textContent=`${teamEmojis[m[1]]} ${teams[m[1]]}`;
-  const r=results[origIdx]||{};
-  document.getElementById('matchDateModal').value=matchDates[origIdx]||todayISO();
+  const r=getResult(origIdx)||{};
+  // ★ Luôn đọc từ matchDates với string key
+  document.getElementById('matchDateModal').value=matchDates[String(origIdx)]||'';
   document.getElementById('score1Modal').value=r.score1!==undefined?r.score1:'';
   document.getElementById('score2Modal').value=r.score2!==undefined?r.score2:'';
-  document.getElementById('yellow1Modal').value=r.y1||'';document.getElementById('red1Modal').value=r.r1||'';
-  document.getElementById('yellow2Modal').value=r.y2||'';document.getElementById('red2Modal').value=r.r2||'';
+  document.getElementById('yellow1Modal').value=r.y1||''; document.getElementById('red1Modal').value=r.r1||'';
+  document.getElementById('yellow2Modal').value=r.y2||''; document.getElementById('red2Modal').value=r.r2||'';
 };
 window.saveResultModal = ()=>{
   const origIdx=parseInt(document.getElementById('matchSelectModal').value);
-  const s1=document.getElementById('score1Modal').value,s2=document.getElementById('score2Modal').value;
+  const s1=document.getElementById('score1Modal').value, s2=document.getElementById('score2Modal').value;
   if(s1===''||s2===''){showToast('⚠️ Vui lòng nhập tỷ số!','warn');return;}
   const enteredDate=document.getElementById('matchDateModal').value;
-  if(enteredDate) matchDates[origIdx]=enteredDate;
-  results[origIdx]={date:enteredDate||matchDates[origIdx],score1:+s1,score2:+s2,y1:+document.getElementById('yellow1Modal').value||0,r1:+document.getElementById('red1Modal').value||0,y2:+document.getElementById('yellow2Modal').value||0,r2:+document.getElementById('red2Modal').value||0};
-  persist();window.closeModal('resultModal');showToast('✅ Kết quả đã được lưu!');
+  // ★ Chỉ cập nhật matchDates nếu user thực sự nhập ngày
+  if(enteredDate) matchDates[String(origIdx)]=enteredDate;
+  results[String(origIdx)]={
+    score1:+s1,score2:+s2,
+    y1:+document.getElementById('yellow1Modal').value||0,
+    r1:+document.getElementById('red1Modal').value||0,
+    y2:+document.getElementById('yellow2Modal').value||0,
+    r2:+document.getElementById('red2Modal').value||0
+  };
+  persist(); window.closeModal('resultModal'); showToast('✅ Kết quả đã được lưu!');
 };
 
 /* RESET */
 let resetConfirmStep=0;
 const RESET_MSGS=['Bước 1: Xác nhận xóa toàn bộ kết quả','Bước 2: Xác nhận xóa thông tin đội','Bước 3: Xác nhận lần cuối - không thể hoàn tác'];
-window.openResetModal = ()=>{ resetConfirmStep=0; renderResetSteps(); window.openModal('resetModal'); };
+window.openResetModal=()=>{ resetConfirmStep=0; renderResetSteps(); window.openModal('resetModal'); };
 function renderResetSteps(){
   document.getElementById('resetSteps').innerHTML=RESET_MSGS.map((msg,i)=>`<div class="reset-step ${i<resetConfirmStep?'active':''}"><div class="reset-step-num">${i<resetConfirmStep?'✓':i+1}</div><span>${msg}</span></div>`).join('');
-  const btn=document.getElementById('resetConfirmBtn');if(btn) btn.textContent=`Xác nhận lần ${resetConfirmStep+1}`;
+  const btn=document.getElementById('resetConfirmBtn'); if(btn) btn.textContent=`Xác nhận lần ${resetConfirmStep+1}`;
 }
-window.renderResetSteps = renderResetSteps;
-window.handleResetConfirm = ()=>{
+window.renderResetSteps=renderResetSteps;
+window.handleResetConfirm=()=>{
   resetConfirmStep++;
   if(resetConfirmStep>=3){
-    window.closeModal('resetModal');resetConfirmStep=0;
-    // reset Firebase state
-    set(dbRef('state'),null).then(()=>{ location.reload(); });
-  } else { renderResetSteps();showToast(`⚠️ Còn ${3-resetConfirmStep} lần xác nhận nữa`,'warn'); }
+    window.closeModal('resetModal'); resetConfirmStep=0;
+    set(dbRef('state'),null).then(()=>location.reload());
+  } else { renderResetSteps(); showToast(`⚠️ Còn ${3-resetConfirmStep} lần xác nhận nữa`,'warn'); }
 };
 
 /* TOAST */
 function showToast(msg,type='success'){
-  const t=document.getElementById('toast');t.textContent=msg;
-  t.style.borderColor=type==='warn'?'#fbbf24':'#22c55e';t.style.color=type==='warn'?'#fbbf24':'#22c55e';
+  const t=document.getElementById('toast');
+  t.textContent=msg;
   t.style.background=type==='warn'?'linear-gradient(135deg,#451a03,#78350f)':'linear-gradient(135deg,#064e3b,#065f46)';
   t.style.border=`1px solid ${type==='warn'?'#fbbf24':'#22c55e'}`;
-  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+  t.style.color=type==='warn'?'#fbbf24':'#22c55e';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
 }
-window.showToast = showToast;
+window.showToast=showToast;
 
-/* ─── BOOT ─── */
 subscribeFirebase();
 </script>
 </body>

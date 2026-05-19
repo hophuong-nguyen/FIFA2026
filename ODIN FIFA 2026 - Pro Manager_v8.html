@@ -269,6 +269,57 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
 .loading-text{color:var(--text-muted);font-size:.9rem;letter-spacing:1px;}
 
+/* DATEPICKER */
+.dp-wrap{position:relative;display:inline-block;width:100%;}
+.dp-input{width:100%;padding:10px 13px;border-radius:9px;border:1px solid var(--border);
+  background:var(--bg-deep);color:var(--text);font-size:.92rem;font-family:'Inter',sans-serif;
+  cursor:pointer;transition:border-color .2s,box-shadow .2s;caret-color:transparent;}
+.dp-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.12);}
+.dp-popup{position:fixed;z-index:4000;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:16px;padding:16px;width:288px;box-shadow:0 20px 60px rgba(0,0,0,.7),var(--glow);
+  animation:slideUp .18s ease;user-select:none;}
+.dp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.dp-nav{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.dp-nav:hover{background:rgba(0,212,255,.15);border-color:var(--accent);color:var(--accent);}
+.dp-month-label{font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:var(--accent);
+  cursor:pointer;padding:4px 8px;border-radius:7px;transition:background .15s;}
+.dp-month-label:hover{background:rgba(0,212,255,.1);}
+.dp-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
+.dp-dow{text-align:center;font-size:.68rem;color:var(--text-muted);font-weight:600;
+  text-transform:uppercase;padding:3px 0;}
+.dp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.dp-day{width:36px;height:36px;border-radius:8px;border:none;background:transparent;
+  color:var(--text);cursor:pointer;font-size:.85rem;font-family:'Inter',sans-serif;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;margin:auto;}
+.dp-day:hover:not(.dp-day-empty):not(.dp-day-weekend){background:rgba(0,212,255,.12);color:var(--accent);}
+.dp-day-empty{cursor:default;}
+.dp-day-weekend{color:var(--text-muted);opacity:.45;cursor:not-allowed;}
+.dp-day-today{border:1px solid rgba(0,212,255,.4);color:var(--accent);}
+.dp-day-selected{background:linear-gradient(135deg,var(--accent),#0284c7)!important;color:#000!important;font-weight:700;}
+.dp-day-past{opacity:.5;}
+.dp-month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 0;}
+.dp-month-btn{padding:8px 4px;border-radius:8px;border:none;background:rgba(255,255,255,.05);
+  color:var(--text);cursor:pointer;font-size:.82rem;font-family:'Inter',sans-serif;transition:all .15s;text-align:center;}
+.dp-month-btn:hover{background:rgba(0,212,255,.12);color:var(--accent);}
+.dp-month-btn.dp-month-selected{background:rgba(0,212,255,.2);color:var(--accent);border:1px solid rgba(0,212,255,.3);}
+.dp-clear{width:100%;margin-top:10px;padding:6px;border-radius:8px;border:1px solid var(--border);
+  background:transparent;color:var(--text-muted);cursor:pointer;font-size:.8rem;transition:all .15s;}
+.dp-clear:hover{border-color:var(--red);color:var(--red);}
+
+/* AUTH */
+.auth-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;
+  font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);
+  background:rgba(255,255,255,.04);color:var(--text-muted);transition:all .2s;}
+.auth-badge:hover{border-color:var(--accent);color:var(--accent);}
+.auth-badge.logged-in{border-color:rgba(34,197,94,.3);color:var(--green);background:rgba(34,197,94,.06);}
+.auth-badge .auth-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);flex-shrink:0;}
+.auth-badge.logged-in .auth-dot{background:var(--green);box-shadow:0 0 5px var(--green);}
+.admin-lock{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;color:var(--text-muted);
+  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;
+  padding:2px 7px;margin-left:6px;vertical-align:middle;}
+
 @media(max-width:600px){
   .header{flex-direction:column;gap:12px;text-align:center;}
   .modal-box{padding:18px;margin:14px;}
@@ -330,7 +381,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
     </div>
     <div class="form-group">
       <label class="form-label">Ngày thi đấu</label>
-      <input class="form-input" type="date" id="matchDateModal">
+      <div id="resultDateGroup"></div>
     </div>
     <div class="form-group">
       <label class="form-label">Tỷ số &amp; Thẻ phạt</label>
@@ -351,6 +402,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+      <button class="btn btn-ghost" style="color:var(--red);border-color:rgba(239,68,68,.3);" onclick="resetResultModal()">🔄 Reset TBD</button>
       <button class="btn btn-ghost" onclick="closeModal('resultModal')">Hủy</button>
       <button class="btn btn-primary" onclick="saveResultModal()">💾 Lưu kết quả</button>
     </div>
@@ -373,6 +425,33 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   </div>
 </div>
 
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box" style="max-width:360px;">
+    <div class="modal-header">
+      <div class="modal-title">🔐 Đăng nhập Admin</div>
+      <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:18px;">
+      Chỉ Admin mới có thể nhập kết quả và xếp lịch Auto.
+    </p>
+    <div class="form-group">
+      <label class="form-label">Tên đăng nhập</label>
+      <input class="form-input" id="loginUsername" placeholder="admin" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mật khẩu</label>
+      <input class="form-input" type="password" id="loginPassword" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="loginError" style="color:var(--red);font-size:.82rem;min-height:18px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('loginModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="doLogin()">🔐 Đăng nhập</button>
+    </div>
+  </div>
+</div>
+
 <!-- MAIN -->
 <div class="container">
   <!-- Sync bar -->
@@ -391,8 +470,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
       </div>
     </div>
     <div class="header-actions">
+      <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
+        <div class="auth-dot"></div>
+        <span id="authLabel">Đăng nhập</span>
+      </div>
       <button class="btn btn-primary" onclick="openModal('teamModal');renderTeamModalInputs()">🛡️ Quản lý đội</button>
-      <button class="btn btn-purple" onclick="openResultModal(-1)">⚽ Nhập kết quả</button>
+      <button class="btn btn-purple" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
+        ⚽ Nhập kết quả <span class="admin-lock" id="lockResult">🔒</span>
+      </button>
       <button class="btn btn-danger btn-sm" onclick="openResetModal()">🔄 Reset</button>
     </div>
   </div>
@@ -409,7 +494,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
     <div class="card">
       <div class="section-header">
         <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
-        <button class="btn btn-teal btn-sm" onclick="autoSchedule()">⚡ Auto</button>
+        <button class="btn btn-teal btn-sm" id="btnAuto" onclick="requireAdmin(()=>openAutoModal())">
+          ⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span>
+        </button>
       </div>
       <div class="fixtures-wrap" id="fixturesList"></div>
     </div>
@@ -423,32 +510,75 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 
 <!-- Firebase SDK -->
 <script type="module">
-import { initializeApp }         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, onValue, set, get }
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, onValue, set }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-/* ══════════════════════════════════════
-   🔧 PASTE YOUR FIREBASE CONFIG HERE
-══════════════════════════════════════ */
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAs1mwGIlFKo7UMiF1jaVWJ92C0lPc2RWg",
-  authDomain: "fifa-league-2026.firebaseapp.com",
-  databaseURL: "https://fifa-league-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "fifa-league-2026",
-  storageBucket: "fifa-league-2026.firebasestorage.app",
+  apiKey:            "AIzaSyAs1mwGIlFKo7UMiF1jaVWJ92C0lPc2RWg",
+  authDomain:        "fifa-league-2026.firebaseapp.com",
+  databaseURL:       "https://fifa-league-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "fifa-league-2026",
+  storageBucket:     "fifa-league-2026.firebasestorage.app",
   messagingSenderId: "903480651697",
-  appId: "1:903480651697:web:88993e38b5e27c93ba5790",
-  measurementId: "G-TS140BLWWS"
+  appId:             "1:903480651697:web:88993e38b5e27c93ba5790",
+  measurementId:     "G-TS140BLWWS"
 };
-/* ════════════════════════════════════ */
 
-const app = initializeApp(FIREBASE_CONFIG);
-const db  = getDatabase(app);
-const ROOT = 'league2026'; // change per season
+const app  = initializeApp(FIREBASE_CONFIG);
+const db   = getDatabase(app);
+const ROOT = 'league2026';
 
-/* ═══════════════════════════════════════
-   EMOJI / CONSTANTS
-═══════════════════════════════════════ */
+/* ═══════════════════════
+   AUTH
+═══════════════════════ */
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'admin@123';
+let isAdmin = false;
+
+function updateAuthUI(){
+  const badge = document.getElementById('authBadge');
+  const label = document.getElementById('authLabel');
+  const lockR = document.getElementById('lockResult');
+  const lockA = document.getElementById('lockAuto');
+  if(isAdmin){
+    badge.classList.add('logged-in');
+    label.textContent = '👤 Admin';
+    if(lockR) lockR.style.display='none';
+    if(lockA) lockA.style.display='none';
+  } else {
+    badge.classList.remove('logged-in');
+    label.textContent = 'Đăng nhập';
+    if(lockR) lockR.style.display='';
+    if(lockA) lockA.style.display='';
+  }
+}
+window.handleAuthClick = ()=>{
+  if(isAdmin){ isAdmin=false; updateAuthUI(); showToast('👋 Đã đăng xuất'); }
+  else openModal('loginModal');
+};
+window.doLogin = ()=>{
+  const u=document.getElementById('loginUsername').value.trim();
+  const p=document.getElementById('loginPassword').value;
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    isAdmin=true; updateAuthUI();
+    closeModal('loginModal');
+    document.getElementById('loginUsername').value='';
+    document.getElementById('loginPassword').value='';
+    document.getElementById('loginError').textContent='';
+    showToast('✅ Đăng nhập thành công!');
+  } else {
+    document.getElementById('loginError').textContent='❌ Sai tên đăng nhập hoặc mật khẩu.';
+  }
+};
+window.requireAdmin = (fn)=>{
+  if(isAdmin) fn();
+  else { openModal('loginModal'); showToast('🔒 Cần đăng nhập Admin','warn'); }
+};
+
+/* ═══════════════════════
+   CONSTANTS
+═══════════════════════ */
 const EMOJI_CATS = {
   '⚽ Bóng đá':     ['⚽','🥅','🏆','🥇','🎯','🏅','🎖️','🥈'],
   '🐾 Thú vật':    ['🦅','🐉','🦁','🐯','🦊','🐺','🦋','🦈','🐻','🦂','🦉','🦏'],
@@ -471,177 +601,545 @@ const BASE_SCHEDULE  = [
   ['G','E'],['B','C'],['A','E'],['F','D'],['G','C'],['A','D'],['E','C'],
   ['F','B'],['A','C'],['D','B'],['F','G'],['A','B'],['D','G'],['E','F']
 ];
-const TOTAL = BASE_SCHEDULE.length;
+const TOTAL        = BASE_SCHEDULE.length;
+const SEASON_START = '2026-05-18';
+const MONTHS_VI    = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOWS_VI      = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const DOWS_SHORT   = ['CN','T2','T3','T4','T5','T6','T7'];
 
-/* ─── date helpers ─── */
-function todayISO(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;}
-function isWeekend(iso){const[y,m,d]=iso.split('-').map(Number);return[0,6].includes(new Date(Date.UTC(y,m-1,d,12)).getUTCDay());}
-function isoOf(dt){return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;}
-function addWorkdays(startISO,n){
-  const[y,m,d]=startISO.split('-').map(Number);
-  let dt=new Date(Date.UTC(y,m-1,d,12));let added=0;
-  while(added<n){dt.setUTCDate(dt.getUTCDate()+1);if(![0,6].includes(dt.getUTCDay()))added++;}
+/* ═══════════════════════
+   DATE HELPERS
+═══════════════════════ */
+function todayISO(){
+  const n=new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+function isoOf(dt){
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+}
+function isWeekend(iso){
+  const[y,m,d]=iso.split('-').map(Number);
+  return [0,6].includes(new Date(Date.UTC(y,m-1,d,12)).getUTCDay());
+}
+function nextWorkday(iso){
+  const[y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d,12));
+  dt.setUTCDate(dt.getUTCDate()+1);
+  while([0,6].includes(dt.getUTCDay())) dt.setUTCDate(dt.getUTCDate()+1);
   return isoOf(dt);
 }
-function generateDefaultDates(count,startISO){
-  const dates=[];const[sy,sm,sd]=startISO.split('-').map(Number);
+function addWorkdays(startISO,n){
+  if(n===0) return startISO;
+  const[y,m,d]=startISO.split('-').map(Number);
+  let dt=new Date(Date.UTC(y,m-1,d,12));
+  let added=0;
+  while(added<n){ dt.setUTCDate(dt.getUTCDate()+1); if(![0,6].includes(dt.getUTCDay())) added++; }
+  return isoOf(dt);
+}
+function nearestWorkday(iso){
+  if(!isWeekend(iso)) return iso;
+  return nextWorkday(iso);
+}
+function formatDateShort(iso){
+  if(!iso||iso==='9999-12-31') return ' - ';
+  const[y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d,12));
+  return `${DOWS_SHORT[dt.getUTCDay()]} ${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}`;
+}
+/* Format DD/MMM/YYYY e.g. 19/May/2026 */
+function formatDMY(iso){
+  if(!iso||iso==='9999-12-31') return '';
+  const[y,m,d]=iso.split('-').map(Number);
+  return `${String(d).padStart(2,'0')}/${MONTHS_SHORT[m-1]}/${y}`;
+}
+function parseDMY(str){
+  if(!str) return '';
+  const p=str.match(/^(\d{1,2})\/([A-Za-z]+)\/(\d{4})$/);
+  if(!p) return '';
+  const mi=MONTHS_SHORT.findIndex(x=>x.toLowerCase()===p[2].toLowerCase());
+  if(mi<0) return '';
+  return `${p[3]}-${String(mi+1).padStart(2,'0')}-${String(p[1]).padStart(2,'0')}`;
+}
+
+function buildSeasonDates(){
+  const[sy,sm,sd]=SEASON_START.split('-').map(Number);
   let cur=new Date(Date.UTC(sy,sm-1,sd,12));
-  while([0,6].includes(cur.getUTCDay()))cur.setUTCDate(cur.getUTCDate()+1);
+  while([0,6].includes(cur.getUTCDay())) cur.setUTCDate(cur.getUTCDate()+1);
+  const dates={};
   let slot=0;
-  while(dates.length<count){
-    dates.push(isoOf(cur));slot++;
-    if(slot>=3){slot=0;cur.setUTCDate(cur.getUTCDate()+1);while([0,6].includes(cur.getUTCDay()))cur.setUTCDate(cur.getUTCDate()+1);}
+  for(let i=0;i<TOTAL;i++){
+    dates[String(i)]=isoOf(cur);
+    slot++;
+    if(slot>=3){
+      slot=0;
+      cur.setUTCDate(cur.getUTCDate()+1);
+      while([0,6].includes(cur.getUTCDay())) cur.setUTCDate(cur.getUTCDate()+1);
+    }
   }
   return dates;
 }
-const DEFAULT_DATES = generateDefaultDates(TOTAL,'2026-05-18');
+function normalizeMatchDates(raw){
+  if(!raw) return buildSeasonDates();
+  const def=buildSeasonDates(); const out={};
+  for(let i=0;i<TOTAL;i++){
+    const k=String(i); out[k]=raw[k]||raw[i]||def[k];
+  }
+  return out;
+}
+function normalizeScheduleOrder(raw){
+  if(!Array.isArray(raw)) return BASE_SCHEDULE.map((_,i)=>i);
+  return raw.map(v=>Number(v));
+}
 
-/* ─── mutable state ─── */
+/* ═══════════════════════
+   CUSTOM DATEPICKER
+═══════════════════════ */
+let dpTarget=null; // { inputEl, isoValue, onChange }
+let dpViewYear=0, dpViewMonth=0, dpPickingMonth=false;
+
+function dpOpen(inputEl, currentISO, onChange, opts={}){
+  dpClose();
+  dpTarget={ inputEl, onChange, opts };
+  const iso = currentISO && currentISO.length===10 ? currentISO : todayISO();
+  const[y,m]=iso.split('-').map(Number);
+  dpViewYear=y; dpViewMonth=m-1;
+  dpPickingMonth=false;
+
+  const popup = document.createElement('div');
+  popup.className='dp-popup'; popup.id='dpPopup';
+  document.body.appendChild(popup);
+  dpRender(iso);
+
+  // Position
+  const rect=inputEl.getBoundingClientRect();
+  let top=rect.bottom+6, left=rect.left;
+  if(left+288>window.innerWidth-8) left=window.innerWidth-296;
+  if(top+340>window.innerHeight-8) top=rect.top-346;
+  popup.style.top=top+'px'; popup.style.left=left+'px';
+
+  requestAnimationFrame(()=>{
+    document.addEventListener('click', dpOutsideClick, true);
+  });
+}
+function dpClose(){
+  const p=document.getElementById('dpPopup');
+  if(p) p.remove();
+  document.removeEventListener('click', dpOutsideClick, true);
+  dpTarget=null;
+}
+function dpOutsideClick(e){
+  const p=document.getElementById('dpPopup');
+  if(!p) return;
+  if(p.contains(e.target)) return;
+  if(dpTarget && dpTarget.inputEl.contains(e.target)) return;
+  dpClose();
+}
+
+function dpRender(selectedISO){
+  const popup=document.getElementById('dpPopup');
+  if(!popup) return;
+  if(dpPickingMonth){
+    popup.innerHTML=`
+      <div class="dp-header">
+        <button class="dp-nav" onclick="dpChangeYear(-1)">‹</button>
+        <span class="dp-month-label" onclick="dpPickingMonth=false;dpRender('${selectedISO||''}')">
+          ${dpViewYear}
+        </span>
+        <button class="dp-nav" onclick="dpChangeYear(1)">›</button>
+      </div>
+      <div class="dp-month-grid">
+        ${MONTHS_SHORT.map((mn,mi)=>
+          `<button class="dp-month-btn ${mi===dpViewMonth?'dp-month-selected':''}"
+            onclick="dpPickingMonth=false;dpViewMonth=${mi};dpRender('${selectedISO||''}')">
+            ${mn}</button>`).join('')}
+      </div>`;
+    return;
+  }
+
+  const today=todayISO();
+  const[sy,sm,sd]=selectedISO&&selectedISO.length===10 ? selectedISO.split('-').map(Number) : [0,0,0];
+
+  const firstDay=new Date(Date.UTC(dpViewYear,dpViewMonth,1,12)).getUTCDay();
+  const daysInMonth=new Date(Date.UTC(dpViewYear,dpViewMonth+1,0,12)).getUTCDate();
+
+  let dayCells='';
+  for(let b=0;b<firstDay;b++) dayCells+=`<div class="dp-day dp-day-empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const iso=`${dpViewYear}-${String(dpViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dt=new Date(Date.UTC(dpViewYear,dpViewMonth,d,12));
+    const dow=dt.getUTCDay();
+    const isWe=dow===0||dow===6;
+    const isSel=iso===selectedISO;
+    const isTod=iso===today;
+    const isPast=iso<today;
+    let cls='dp-day';
+    if(isWe) cls+=' dp-day-weekend';
+    if(isSel) cls+=' dp-day-selected';
+    if(isTod&&!isSel) cls+=' dp-day-today';
+    if(isPast&&!isSel) cls+=' dp-day-past';
+    dayCells+=`<button class="${cls}" ${isWe?'disabled':''} onclick="dpSelect('${iso}')">${d}</button>`;
+  }
+
+  popup.innerHTML=`
+    <div class="dp-header">
+      <button class="dp-nav" onclick="dpChangeMonth(-1)">‹</button>
+      <span class="dp-month-label" onclick="dpPickingMonth=true;dpRender('${selectedISO||''}')">
+        ${MONTHS_SHORT[dpViewMonth]} ${dpViewYear}
+      </span>
+      <button class="dp-nav" onclick="dpChangeMonth(1)">›</button>
+    </div>
+    <div class="dp-dow-row">
+      ${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="dp-dow">${d}</div>`).join('')}
+    </div>
+    <div class="dp-days">${dayCells}</div>
+    <button class="dp-clear" onclick="dpSelect('')">✕ Xóa ngày</button>`;
+}
+
+window.dpChangeMonth = n=>{
+  dpViewMonth+=n;
+  if(dpViewMonth<0){dpViewMonth=11;dpViewYear--;}
+  if(dpViewMonth>11){dpViewMonth=0;dpViewYear++;}
+  const p=document.getElementById('dpPopup');
+  if(p) dpRender(dpTarget?._currentISO||'');
+};
+window.dpChangeYear = n=>{ dpViewYear+=n; dpRender(dpTarget?._currentISO||''); };
+
+window.dpSelect = iso=>{
+  if(!dpTarget) return;
+  dpTarget._currentISO=iso;
+  dpTarget.inputEl.value = iso ? formatDMY(iso) : '';
+  dpRender(iso);
+  if(dpTarget.onChange) dpTarget.onChange(iso);
+  if(iso) setTimeout(dpClose, 160);
+};
+
+/* Helper: tạo input datepicker */
+function makeDpInput(id, currentISO, onChange, placeholder='DD/MMM/YYYY'){
+  const wrap=document.createElement('div');
+  wrap.className='dp-wrap';
+  const inp=document.createElement('input');
+  inp.className='dp-input form-input';
+  inp.id=id; inp.readOnly=true; inp.placeholder=placeholder;
+  inp.value=currentISO?formatDMY(currentISO):'';
+  inp.addEventListener('click',()=>{
+    if(dpTarget && dpTarget.inputEl===inp){ dpClose(); return; }
+    dpOpen(inp, currentISO, (iso)=>{ currentISO=iso; onChange(iso); }, {});
+    if(dpTarget) dpTarget._currentISO=currentISO;
+  });
+  wrap.appendChild(inp);
+  return wrap;
+}
+
+/* ═══════════════════════
+   STATE
+═══════════════════════ */
 let teams         = {A:'Team Alpha',B:'Team Beta',C:'Team Cobra',D:'Team Delta',E:'Team Eagle',F:'Team Fenix',G:'Team Ghost'};
 let members       = {A:['P1','P2'],B:['P3','P4'],C:['P5','P6'],D:['P7','P8'],E:['P9','P10'],F:['P11','P12'],G:['P13','P14']};
 let teamEmojis    = Object.fromEntries(IDS.map((id,i)=>[id,DEFAULT_EMOJIS[i]]));
 let teamColors    = Object.fromEntries(IDS.map((id,i)=>[id,DEFAULT_COLORS[i]]));
 let results       = {};
-let matchDates    = Object.fromEntries(DEFAULT_DATES.map((d,i)=>[i,d]));
+let matchDates    = buildSeasonDates();
 let scheduleOrder = BASE_SCHEDULE.map((_,i)=>i);
+let fbReady       = false;
 
-let fbReady = false; // true once initial load done
-
-/* ═══════════════════════════════════════
-   FIREBASE - read / write
-═══════════════════════════════════════ */
-function dbRef(path){ return ref(db, `${ROOT}/${path}`); }
-
-/* Write full state to Firebase */
+/* ═══════════════════════
+   FIREBASE
+═══════════════════════ */
+function dbRef(path){ return ref(db,`${ROOT}/${path}`); }
 async function pushToFirebase(){
   setSyncState('syncing');
-  try {
-    await set(dbRef('state'), { teams, members, teamEmojis, teamColors, results, matchDates, scheduleOrder });
+  try{
+    await set(dbRef('state'),{teams,members,teamEmojis,teamColors,results,matchDates,scheduleOrder});
     setSyncState('connected');
-  } catch(e){
-    setSyncState('offline');
-    showToast('⚠️ Lỗi lưu dữ liệu: '+e.message,'warn');
-  }
+  }catch(e){ setSyncState('offline'); showToast('⚠️ Lỗi lưu: '+e.message,'warn'); }
 }
-
-/* Subscribe to real-time updates */
 function subscribeFirebase(){
-  onValue(dbRef('state'), snap => {
-    const data = snap.val();
+  onValue(dbRef('state'), snap=>{
+    const data=snap.val();
     if(data){
       teams         = data.teams         || teams;
       members       = data.members       || members;
       teamEmojis    = data.teamEmojis    || teamEmojis;
       teamColors    = data.teamColors    || teamColors;
       results       = data.results       || {};
-      matchDates    = data.matchDates    || matchDates;
-      scheduleOrder = data.scheduleOrder || scheduleOrder;
+      matchDates    = normalizeMatchDates(data.matchDates);
+      scheduleOrder = normalizeScheduleOrder(data.scheduleOrder);
     } else {
-      // First run - push defaults
+      matchDates    = buildSeasonDates();
+      scheduleOrder = BASE_SCHEDULE.map((_,i)=>i);
       pushToFirebase();
     }
     if(!fbReady){
-      fbReady = true;
+      fbReady=true;
       document.getElementById('loadingOverlay').classList.add('hidden');
     }
     setSyncState('connected');
     render();
-  }, err => {
+  }, err=>{
+    document.getElementById('loadingText').textContent='❌ '+err.message;
+    document.querySelector('.loading-spinner').style.borderTopColor='#ef4444';
     setSyncState('offline');
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    showToast('⚠️ Mất kết nối Firebase','warn');
+    setTimeout(()=>document.getElementById('loadingOverlay').classList.add('hidden'),3000);
   });
 }
-
-/* ─── sync bar ─── */
 function setSyncState(state){
-  const bar  = document.getElementById('syncBar');
-  const text = document.getElementById('syncText');
-  const time = document.getElementById('syncTime');
-  bar.className = `sync-bar ${state}`;
+  const bar=document.getElementById('syncBar');
+  const text=document.getElementById('syncText');
+  const time=document.getElementById('syncTime');
+  bar.className=`sync-bar ${state}`;
   if(state==='connected'){ text.textContent='Đã kết nối · Real-time sync'; time.textContent='Cập nhật: '+new Date().toLocaleTimeString('vi-VN'); }
   else if(state==='syncing'){ text.textContent='Đang đồng bộ...'; time.textContent=''; }
   else { text.textContent='Mất kết nối'; time.textContent=''; }
 }
-
-/* persist = push to Firebase (no more localStorage) */
 function persist(){ pushToFirebase(); render(); }
 
-/* ═══════════════════════════════════════
-   AUTO SCHEDULE
-═══════════════════════════════════════ */
-window.autoSchedule = function(){
-  const today=todayISO();
-  let baseDay=today;
-  if(isWeekend(baseDay)){
-    const[y,m,d]=baseDay.split('-').map(Number);
-    let dt=new Date(Date.UTC(y,m-1,d,12));
-    while([0,6].includes(dt.getUTCDay()))dt.setUTCDate(dt.getUTCDate()+1);
-    baseDay=isoOf(dt);
-  }
-  const completed=[],pending=[];
-  scheduleOrder.forEach(i=>{ (results[i]&&results[i].score1!==undefined?completed:pending).push(i); });
-  completed.sort((a,b)=>(matchDates[a]||'').localeCompare(matchDates[b]||''));
-  pending.forEach((origIdx,pos)=>{ matchDates[origIdx]=pos===0?baseDay:addWorkdays(baseDay,Math.floor(pos/3)); });
-  scheduleOrder=[...completed,...pending];
-  persist(); showToast('⚡ Đã tự động sắp xếp lại lịch!');
+/* ═══════════════════════
+   HELPERS
+═══════════════════════ */
+function getDate(i)   { return matchDates[String(i)] || '9999-12-31'; }
+function getResult(i) { return results[String(i)] || null; }
+function isPending(i) { const r=getResult(i); return !r||r.score1===undefined; }
+function getLastScheduledDate(){
+  let last='';
+  scheduleOrder.forEach(i=>{ const d=getDate(i); if(d&&d<'9999'&&d>last) last=d; });
+  return last;
+}
+
+/* ═══════════════════════
+   AUTO SCHEDULE MODAL
+═══════════════════════ */
+window.openAutoModal = function(){
+  const suggested=nearestWorkday(todayISO());
+  // Build date input via datepicker
+  const dateGroup=document.getElementById('autoDateGroup');
+  dateGroup.innerHTML='';
+  let autoISO=suggested;
+  const dpWrap=makeDpInput('autoStartDate', suggested, iso=>{
+    autoISO=iso||suggested;
+    refreshAutoPreview(autoISO);
+  });
+  dateGroup.appendChild(dpWrap);
+  refreshAutoPreview(suggested);
+  openModal('autoModal');
+  // store ref
+  window._autoGetISO=()=>autoISO;
 };
 
-/* ═══════════════════════════════════════
+function refreshAutoPreview(rawISO){
+  const hint    = document.getElementById('autoDateHint');
+  const preview = document.getElementById('autoPreview');
+  if(!rawISO){ hint.textContent=''; preview.innerHTML='<span style="color:var(--text-muted)">Chọn ngày để xem trước...</span>'; return; }
+  let startISO=rawISO;
+  if(isWeekend(startISO)){ hint.textContent='⚠️ Cuối tuần - sẽ chuyển sang ngày làm việc tiếp theo.'; startISO=nearestWorkday(startISO); }
+  else hint.textContent='';
+  const pendingList  = scheduleOrder.filter(i=>isPending(i));
+  const completedCnt = scheduleOrder.length-pendingList.length;
+  const pendingCnt   = pendingList.length;
+  const daysNeeded   = Math.ceil(pendingCnt/3);
+  const endISO       = daysNeeded<=1?startISO:addWorkdays(startISO,daysNeeded-1);
+  let rows='';
+  let cur=startISO;
+  const show=Math.min(daysNeeded,5);
+  for(let d=0;d<show;d++){
+    const from=d*3+1, to=Math.min(d*3+3,pendingCnt);
+    rows+=`<div class="auto-preview-row">
+      <span style="color:var(--text)">${formatDateShort(cur)}</span>
+      <span style="color:var(--accent);font-size:.8rem">${from===to?`Trận ${from}`:`Trận ${from}–${to}`} &nbsp;(${to-from+1} trận)</span>
+    </div>`;
+    if(d<daysNeeded-1) cur=addWorkdays(cur,1);
+  }
+  if(daysNeeded>5) rows+=`<div style="color:var(--text-muted);font-size:.78rem;padding-top:5px;">... và ${daysNeeded-5} ngày nữa đến ${formatDateShort(endISO)}</div>`;
+  if(pendingCnt===0) rows='<div style="color:var(--green);font-size:.85rem;">✅ Tất cả trận đã có kết quả.</div>';
+  preview.innerHTML=`
+    <div style="display:flex;gap:20px;margin-bottom:10px;flex-wrap:wrap;">
+      <div><div style="color:var(--text-muted);font-size:.72rem;text-transform:uppercase;">Đã đấu</div>
+           <strong style="color:var(--green)">${completedCnt}</strong> <span style="color:var(--text-muted);font-size:.78rem;">trận (giữ nguyên)</span></div>
+      <div><div style="color:var(--text-muted);font-size:.72rem;text-transform:uppercase;">Cần xếp</div>
+           <strong style="color:var(--accent)">${pendingCnt}</strong> <span style="color:var(--text-muted);font-size:.78rem;">trận</span></div>
+      <div><div style="color:var(--text-muted);font-size:.72rem;text-transform:uppercase;">Kết thúc dự kiến</div>
+           <strong style="color:var(--text)">${pendingCnt>0?formatDateShort(endISO):' - '}</strong></div>
+    </div>${rows}`;
+}
+
+window.confirmAutoSchedule = function(){
+  let startISO=window._autoGetISO?window._autoGetISO():'';
+  if(!startISO){ showToast('⚠️ Vui lòng chọn ngày bắt đầu!','warn'); return; }
+  startISO=nearestWorkday(startISO);
+  const completed=[], pending=[];
+  scheduleOrder.forEach(i=>{ (isPending(i)?pending:completed).push(Number(i)); });
+  completed.sort((a,b)=>getDate(a).localeCompare(getDate(b)));
+  pending.forEach((origIdx,pos)=>{
+    matchDates[String(origIdx)]=pos===0?startISO:addWorkdays(startISO,Math.floor(pos/3));
+  });
+  scheduleOrder=[...completed,...pending];
+  closeModal('autoModal');
+  persist();
+  showToast(`⚡ Đã xếp ${pending.length} trận từ ${formatDateShort(startISO)}!`);
+};
+
+/* ═══════════════════════
+   AUTO MODAL HTML - inject date group dynamically
+   Thay nội dung form-group ngày trong autoModal bằng:
+═══════════════════════ */
+// Patch autoModal date group to use dynamic datepicker
+(function patchAutoModal(){
+  const fg=document.querySelector('#autoModal .form-group');
+  if(!fg) return;
+  const lbl=document.createElement('label');
+  lbl.className='form-label'; lbl.textContent='Ngày bắt đầu xếp lịch';
+  const dg=document.createElement('div'); dg.id='autoDateGroup';
+  const hint=document.createElement('div');
+  hint.id='autoDateHint'; hint.style.cssText='font-size:.75rem;color:#fbbf24;margin-top:5px;min-height:18px;';
+  fg.innerHTML=''; fg.appendChild(lbl); fg.appendChild(dg); fg.appendChild(hint);
+})();
+
+/* ═══════════════════════
    RENDER
-═══════════════════════════════════════ */
+═══════════════════════ */
 function render(){ renderFixtures(); renderStandings(); renderStats(); }
+
+/* ── Workday range between two ISO dates inclusive ── */
+function workdaysInRange(fromISO, toISO){
+  const[fy,fm,fd]=fromISO.split('-').map(Number);
+  const[ty,tm,td]=toISO.split('-').map(Number);
+  let cur=new Date(Date.UTC(fy,fm-1,fd,12));
+  const end=new Date(Date.UTC(ty,tm-1,td,12));
+  const days=[];
+  while(cur<=end){
+    const dow=cur.getUTCDay();
+    if(dow!==0&&dow!==6) days.push(isoOf(cur));
+    cur.setUTCDate(cur.getUTCDate()+1);
+  }
+  return days;
+}
 
 function buildMatchdays(){
   const map=new Map();
   scheduleOrder.forEach(i=>{
-    const d=matchDates[i]||'9999-12-31';
-    if(!map.has(d))map.set(d,[]);
-    map.get(d).push(i);
+    const d=getDate(i);
+    if(!map.has(d)) map.set(d,[]);
+    map.get(d).push(Number(i));
   });
   return map;
 }
 
-/* ─── drag/drop ─── */
+/* ── Fill workday gaps so empty weekdays are visible ── */
+function buildFullDayMap(){
+  const matchdays=buildMatchdays();
+  const keys=[...matchdays.keys()].filter(d=>d<'9999').sort();
+  if(!keys.length) return matchdays;
+  const first=keys[0], last=keys[keys.length-1];
+  const allWorkdays=workdaysInRange(first, last);
+  allWorkdays.forEach(d=>{
+    if(!matchdays.has(d)) matchdays.set(d,[]);
+  });
+  // Sort map by date
+  const sorted=new Map([...matchdays.entries()].sort((a,b)=>a[0].localeCompare(b[0])));
+  return sorted;
+}
+
+/* ── drag / drop ── */
 let dragData=null;
-function onFixtureDragStart(e,origIdx){ dragData={origIdx}; e.dataTransfer.effectAllowed='move'; setTimeout(()=>document.querySelectorAll(`.fixture-row[data-orig="${origIdx}"]`).forEach(el=>el.classList.add('dragging')),0); }
-function onFixtureDragEnd(){ document.querySelectorAll('.fixture-row').forEach(el=>el.classList.remove('dragging','drag-over-row')); document.querySelectorAll('.matchday-drop-zone,.empty-day').forEach(el=>el.classList.remove('drag-over-zone')); dragData=null; }
+function onFixtureDragStart(e,origIdx){
+  dragData={origIdx:Number(origIdx)};
+  e.dataTransfer.effectAllowed='move';
+  setTimeout(()=>document.querySelectorAll(`.fixture-row[data-orig="${origIdx}"]`).forEach(el=>el.classList.add('dragging')),0);
+}
+function onFixtureDragEnd(){
+  document.querySelectorAll('.fixture-row').forEach(el=>el.classList.remove('dragging','drag-over-row'));
+  document.querySelectorAll('.matchday-drop-zone,.empty-day').forEach(el=>el.classList.remove('drag-over-zone'));
+  dragData=null;
+}
 function onZoneDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; this.classList.add('drag-over-zone'); }
 function onZoneDragLeave(){ this.classList.remove('drag-over-zone'); }
-function onZoneDrop(e,targetDate){ e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-zone'); if(!dragData)return; const{origIdx}=dragData; matchDates[origIdx]=targetDate; scheduleOrder=scheduleOrder.filter(i=>i!==origIdx); let ins=scheduleOrder.length; for(let k=scheduleOrder.length-1;k>=0;k--){if(matchDates[scheduleOrder[k]]===targetDate){ins=k+1;break;}} scheduleOrder.splice(ins,0,origIdx); persist(); }
+function onZoneDrop(e,targetDate){
+  e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-zone');
+  if(!dragData) return;
+  const src=dragData.origIdx;
+  matchDates[String(src)]=targetDate;
+  scheduleOrder=scheduleOrder.map(Number).filter(i=>i!==src);
+  let ins=scheduleOrder.length;
+  for(let k=scheduleOrder.length-1;k>=0;k--){
+    if(matchDates[String(scheduleOrder[k])]===targetDate){ ins=k+1; break; }
+  }
+  scheduleOrder.splice(ins,0,src);
+  persist();
+}
 function onRowDragOver(e){ e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
 function onRowDragLeave(){ this.classList.remove('drag-over-row'); }
-function onRowDrop(e,targetOrigIdx){ e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if(!dragData||dragData.origIdx===targetOrigIdx)return; const{origIdx:src}=dragData; matchDates[src]=matchDates[targetOrigIdx]; const si=scheduleOrder.indexOf(src); scheduleOrder.splice(si,1); const newDi=scheduleOrder.indexOf(targetOrigIdx); scheduleOrder.splice(newDi,0,src); persist(); }
+function onRowDrop(e,targetOrigIdx){
+  e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row');
+  if(!dragData||dragData.origIdx===Number(targetOrigIdx)) return;
+  const src=dragData.origIdx;
+  matchDates[String(src)]=matchDates[String(targetOrigIdx)];
+  scheduleOrder=scheduleOrder.map(Number);
+  const si=scheduleOrder.indexOf(src); scheduleOrder.splice(si,1);
+  const di=scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di,0,src);
+  persist();
+}
+
+function makeDateBlock(date, arr, today){
+  const isPast  = date<today, isToday=date===today;
+  const[,dm,dd] = date.split('-');
+  const dtObj   = new Date(Date.UTC(...date.split('-').map(Number).map((v,i)=>i===1?v-1:v),12));
+  const dowFull = DOWS_VI[dtObj.getUTCDay()];
+  const dowShort= DOWS_SHORT[dtObj.getUTCDay()];
+  const isReserve = arr===null;
+  const done = isReserve?0:arr.filter(i=>{ const r=getResult(i); return r&&r.score1!==undefined; }).length;
+  const total= isReserve?0:arr.length;
+  const block=document.createElement('div'); block.className='matchday-block';
+  let badgeHTML='';
+  if(isToday) badgeHTML='<span class="md-today-badge">Hôm nay</span>';
+  else if(isPast&&!isReserve) badgeHTML='<span class="md-past-badge">Đã qua</span>';
+  else if(isReserve) badgeHTML='<span class="md-reserve-badge">Dự phòng</span>';
+  block.innerHTML=`<div class="matchday-header">
+    <div class="cal-tile ${isToday?'today':isPast?'past':''}" style="${isReserve?'opacity:.4':''}">
+      <div class="cal-month">${MONTHS_VI[+dm-1]}</div>
+      <div class="cal-day">${dd}</div>
+      <div class="cal-dow">${dowShort}</div>
+    </div>
+    <div class="matchday-meta">
+      <div class="matchday-label" style="${isReserve?'color:var(--text-muted)':''}">${dowFull}${badgeHTML}</div>
+      <div class="matchday-count">${isReserve?'Kéo trận vào đây để mở rộng lịch':`${done}/${total} trận đã đấu`}</div>
+    </div></div>`;
+  return block;
+}
+function makeDropZone(targetDate){
+  const z=document.createElement('div'); z.className='matchday-drop-zone';
+  z.addEventListener('dragover',onZoneDragOver); z.addEventListener('dragleave',onZoneDragLeave);
+  z.addEventListener('drop',function(e){ onZoneDrop.call(this,e,targetDate); });
+  return z;
+}
+function makeEmptyZone(targetDate,isReserve=false){
+  const emp=document.createElement('div'); emp.className='empty-day';
+  if(isReserve) emp.style.opacity='.55';
+  emp.textContent=isReserve?'＋ Kéo trận vào để thêm vào ngày này':'Kéo trận vào đây';
+  emp.addEventListener('dragover',onZoneDragOver); emp.addEventListener('dragleave',onZoneDragLeave);
+  emp.addEventListener('drop',function(e){ onZoneDrop.call(this,e,targetDate); });
+  return emp;
+}
 
 function renderFixtures(){
-  const wrap=document.getElementById('fixturesList');wrap.innerHTML='';
-  const today=todayISO();const matchdays=buildMatchdays();let gpos=0;
-  const MONTHS=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-  const DOWS=['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+  const wrap=document.getElementById('fixturesList'); wrap.innerHTML='';
+  const today=todayISO();
+  const matchdays=buildFullDayMap(); // ← fills workday gaps
+  let gpos=0;
+
   matchdays.forEach((arr,date)=>{
-    const isPast=date<today,isToday=date===today;
-    const[dy,dm,dd]=date.split('-');
-    const dtObj=new Date(Date.UTC(+dy,+dm-1,+dd,12));
-    const dowFull=DOWS[dtObj.getUTCDay()];
-    const done=arr.filter(i=>results[i]&&results[i].score1!==undefined).length;
-    const block=document.createElement('div');block.className='matchday-block';
-    block.innerHTML=`<div class="matchday-header">
-      <div class="cal-tile ${isToday?'today':isPast?'past':''}">
-        <div class="cal-month">${MONTHS[+dm-1]}</div>
-        <div class="cal-day">${dd}</div>
-        <div class="cal-dow">${dowFull.replace('Thứ ','T')}</div>
-      </div>
-      <div class="matchday-meta">
-        <div class="matchday-label">${dowFull}${isToday?'<span class="md-today-badge">Hôm nay</span>':isPast?'<span class="md-past-badge">Đã qua</span>':''}</div>
-        <div class="matchday-count">${done}/${arr.length} trận đã đấu</div>
-      </div></div>`;
-    const addZone=(targetDate)=>{const z=document.createElement('div');z.className='matchday-drop-zone';z.addEventListener('dragover',onZoneDragOver);z.addEventListener('dragleave',onZoneDragLeave);z.addEventListener('drop',function(e){onZoneDrop.call(this,e,targetDate);});return z;};
-    block.appendChild(addZone(date));
-    if(arr.length===0){const emp=document.createElement('div');emp.className='empty-day';emp.textContent='Kéo trận vào đây';emp.addEventListener('dragover',onZoneDragOver);emp.addEventListener('dragleave',onZoneDragLeave);emp.addEventListener('drop',function(e){onZoneDrop.call(this,e,date);});block.appendChild(emp);}
+    const block=makeDateBlock(date,arr,today);
+    block.appendChild(makeDropZone(date));
+    if(arr.length===0){ block.appendChild(makeEmptyZone(date)); }
     arr.forEach(origIdx=>{
-      gpos++;const m=BASE_SCHEDULE[origIdx];const r=results[origIdx]||{};const hasResult=r.score1!==undefined&&r.score2!==undefined;
-      const row=document.createElement('div');row.className='fixture-row'+(hasResult?' completed':'');row.draggable=true;row.dataset.orig=origIdx;
-      row.innerHTML=`<div class="fixture-num">${gpos}</div>
+      gpos++;
+      const m=BASE_SCHEDULE[origIdx];
+      const r=getResult(origIdx)||{};
+      const hasResult=r.score1!==undefined&&r.score2!==undefined;
+      const row=document.createElement('div');
+      row.className='fixture-row'+(hasResult?' completed':'');
+      row.draggable=true; row.dataset.orig=origIdx;
+      row.innerHTML=`
+        <div class="fixture-num">${gpos}</div>
         <div class="fixture-team home"><span style="margin-left:3px">${teams[m[0]]}</span><span style="color:${teamColors[m[0]]}">${teamEmojis[m[0]]}</span></div>
         <div class="fixture-vs">VS</div>
         <div class="fixture-team away"><span style="color:${teamColors[m[1]]}">${teamEmojis[m[1]]}</span><span>${teams[m[1]]}</span></div>
@@ -651,151 +1149,311 @@ function renderFixtures(){
       row.addEventListener('dragend',onFixtureDragEnd);
       row.addEventListener('dragover',onRowDragOver);
       row.addEventListener('dragleave',onRowDragLeave);
-      row.addEventListener('drop',function(e){onRowDrop.call(this,e,origIdx);});
+      row.addEventListener('drop',function(e){ onRowDrop.call(this,e,origIdx); });
       row.querySelector('.btn-icon').addEventListener('mousedown',e=>e.stopPropagation());
-      block.appendChild(row);block.appendChild(addZone(date));
+      block.appendChild(row); block.appendChild(makeDropZone(date));
     });
     wrap.appendChild(block);
   });
+
+  // Reserve day
+  const last=getLastScheduledDate();
+  if(last){
+    const reserveDate=nextWorkday(last);
+    if(![...matchdays.keys()].includes(reserveDate)){
+      const rBlock=makeDateBlock(reserveDate,null,today);
+      rBlock.appendChild(makeEmptyZone(reserveDate,true));
+      wrap.appendChild(rBlock);
+    }
+  }
 }
 
+/* ═══════════════════════
+   STATS
+═══════════════════════ */
 function renderStats(){
   let played=0,goals=0,yellow=0,red=0;
-  Object.values(results).forEach(r=>{if(!r||r.score1===undefined)return;played++;goals+=(r.score1||0)+(r.score2||0);yellow+=(r.y1||0)+(r.y2||0);red+=(r.r1||0)+(r.r2||0);});
+  for(let i=0;i<TOTAL;i++){
+    const r=getResult(i); if(!r||r.score1===undefined) continue;
+    played++; goals+=(r.score1||0)+(r.score2||0);
+    yellow+=(r.y1||0)+(r.y2||0); red+=(r.r1||0)+(r.r2||0);
+  }
   document.getElementById('statTotalMatches').textContent=played;
   document.getElementById('statTotalGoals').textContent=goals;
   document.getElementById('statTotalYellow').textContent=yellow;
   document.getElementById('statTotalRed').textContent=red;
-  const raw=calcStandingsRaw();const wg=Object.entries(raw).filter(([,v])=>v.played>0);
-  if(wg.length){const fp=[...wg].sort((a,b)=>(a[1].y+a[1].r*3)-(b[1].y+b[1].r*3));const[fpId]=fp[0];document.getElementById('statFairplay').innerHTML=`<span style="color:${teamColors[fpId]}">${teamEmojis[fpId]}</span>&nbsp;${teams[fpId]}`;}
-  else document.getElementById('statFairplay').textContent=' - ';
+  const raw=calcStandingsRaw();
+  const wg=Object.entries(raw).filter(([,v])=>v.played>0);
+  if(wg.length){
+    const fp=[...wg].sort((a,b)=>(a[1].y+a[1].r*3)-(b[1].y+b[1].r*3));
+    const[fpId]=fp[0];
+    document.getElementById('statFairplay').innerHTML=`<span style="color:${teamColors[fpId]}">${teamEmojis[fpId]}</span>&nbsp;${teams[fpId]}`;
+  } else document.getElementById('statFairplay').textContent=' - ';
 }
 
+/* ═══════════════════════
+   STANDINGS
+═══════════════════════ */
 function calcStandingsRaw(){
-  const s={};IDS.forEach(id=>s[id]={p:0,w:0,d:0,l:0,gf:0,ga:0,y:0,r:0,played:0});
-  BASE_SCHEDULE.forEach((m,i)=>{const r=results[i];if(!r||r.score1===undefined)return;const[a,b]=m;s[a].played++;s[b].played++;s[a].gf+=r.score1;s[a].ga+=r.score2;s[b].gf+=r.score2;s[b].ga+=r.score1;s[a].y+=r.y1||0;s[a].r+=r.r1||0;s[b].y+=r.y2||0;s[b].r+=r.r2||0;if(r.score1>r.score2){s[a].p+=3;s[a].w++;s[b].l++;}else if(r.score2>r.score1){s[b].p+=3;s[b].w++;s[a].l++;}else{s[a].p++;s[b].p++;s[a].d++;s[b].d++;}});
+  const s={};
+  IDS.forEach(id=>s[id]={p:0,w:0,d:0,l:0,gf:0,ga:0,y:0,r:0,played:0});
+  for(let i=0;i<TOTAL;i++){
+    const r=getResult(i); if(!r||r.score1===undefined) continue;
+    const[a,b]=BASE_SCHEDULE[i];
+    s[a].played++;s[b].played++;
+    s[a].gf+=r.score1;s[a].ga+=r.score2;s[b].gf+=r.score2;s[b].ga+=r.score1;
+    s[a].y+=r.y1||0;s[a].r+=r.r1||0;s[b].y+=r.y2||0;s[b].r+=r.r2||0;
+    if(r.score1>r.score2){s[a].p+=3;s[a].w++;s[b].l++;}
+    else if(r.score2>r.score1){s[b].p+=3;s[b].w++;s[a].l++;}
+    else{s[a].p++;s[b].p++;s[a].d++;s[b].d++;}
+  }
   return s;
 }
-function calcStandings(){ return Object.entries(calcStandingsRaw()).sort((x,y)=>y[1].p-x[1].p||((y[1].gf-y[1].ga)-(x[1].gf-x[1].ga))||y[1].gf-x[1].gf); }
-
+function calcStandings(){
+  return Object.entries(calcStandingsRaw())
+    .sort((x,y)=>y[1].p-x[1].p||((y[1].gf-y[1].ga)-(x[1].gf-x[1].ga))||y[1].gf-x[1].gf);
+}
 function renderStandings(){
-  const rows=calcStandings();const pa=document.getElementById('podiumArea');const top3=rows.slice(0,3);const anyPoints=top3.some(([,v])=>v.p>0);
+  const rows=calcStandings();
+  const pa=document.getElementById('podiumArea');
+  const top3=rows.slice(0,3);
+  const anyPoints=top3.some(([,v])=>v.p>0);
   if(anyPoints){
-    const ordered=[top3[1],top3[0],top3[2]].filter(Boolean);const pClasses=top3[1]?['p2','p1','p3']:['p1','p3'];const medals=['🥇','🥈','🥉'];
-    pa.innerHTML=`<div class="podium-wrap">${ordered.map((entry,idx)=>{if(!entry)return'';const[id,v]=entry;const pClass=pClasses[idx];const rankNum=pClass==='p1'?1:pClass==='p2'?2:3;const standH=pClass==='p1'?56:pClass==='p2'?40:28;return`<div class="podium-item ${pClass}">${pClass==='p1'?'<div class="podium-crown">👑</div>':''}<div class="podium-avatar ${pClass}" style="background:${teamColors[id]}22;color:${teamColors[id]}">${teamEmojis[id]}</div><div class="podium-name">${medals[rankNum-1]} ${teams[id]}</div><div class="podium-pts">${v.p} điểm</div><div class="podium-stand" style="height:${standH}px">${rankNum}</div></div>`;}).join('')}</div>`;
+    const ordered=[top3[1],top3[0],top3[2]].filter(Boolean);
+    const pClasses=['p2','p1','p3'], medals=['🥇','🥈','🥉'];
+    pa.innerHTML=`<div class="podium-wrap">${ordered.map((entry,idx)=>{
+      if(!entry) return '';
+      const[id,v]=entry; const pClass=pClasses[idx];
+      const rankNum=pClass==='p1'?1:pClass==='p2'?2:3;
+      const standH=pClass==='p1'?56:pClass==='p2'?40:28;
+      return `<div class="podium-item ${pClass}">
+        ${pClass==='p1'?'<div class="podium-crown">👑</div>':''}
+        <div class="podium-avatar ${pClass}" style="background:${teamColors[id]}22;color:${teamColors[id]}">${teamEmojis[id]}</div>
+        <div class="podium-name">${medals[rankNum-1]} ${teams[id]}</div>
+        <div class="podium-pts">${v.p} điểm</div>
+        <div class="podium-stand" style="height:${standH}px">${rankNum}</div>
+      </div>`;
+    }).join('')}</div>`;
   } else pa.innerHTML='';
   const rc=['rank-1','rank-2','rank-3'];
   let h=`<tr><th>Hạng</th><th style="text-align:left">Đội</th><th>Tr</th><th>T</th><th>H</th><th>B</th><th>Điểm</th><th>HS</th><th>⚽</th><th>🟨</th><th>🟥</th></tr>`;
-  rows.forEach(([id,v],i)=>{const gd=v.gf-v.ga;const gdC=gd>0?'gd-positive':gd<0?'gd-negative':'';const rowC=i===0?' class="tr-rank1"':'';const ns=i===0?'font-weight:700;color:var(--gold);':'font-weight:600;';
-    h+=`<tr${rowC}><td><span class="rank-badge ${i<3?rc[i]:'rank-other'}">${i+1}</span></td><td><div class="team-name-cell"><span class="team-avatar" style="background:${teamColors[id]}20;color:${teamColors[id]}">${teamEmojis[id]}</span><span style="${ns}">${teams[id]}</span>${i===0&&v.p>0?'<span style="margin-left:4px;font-size:.8rem">🔥</span>':''}</div></td><td style="color:var(--text-muted)">${v.played}</td><td style="color:var(--green)">${v.w}</td><td style="color:var(--silver)">${v.d}</td><td style="color:var(--red)">${v.l}</td><td><span class="points-badge">${v.p}</span></td><td class="${gdC}">${gd>0?'+'+gd:gd}</td><td>${v.gf}</td><td class="yellow-card">${v.y}</td><td class="red-card">${v.r}</td></tr>`;
+  rows.forEach(([id,v],i)=>{
+    const gd=v.gf-v.ga, gdC=gd>0?'gd-positive':gd<0?'gd-negative':'';
+    const rowC=i===0?' class="tr-rank1"':'', ns=i===0?'font-weight:700;color:var(--gold);':'font-weight:600;';
+    h+=`<tr${rowC}>
+      <td><span class="rank-badge ${i<3?rc[i]:'rank-other'}">${i+1}</span></td>
+      <td><div class="team-name-cell">
+        <span class="team-avatar" style="background:${teamColors[id]}20;color:${teamColors[id]}">${teamEmojis[id]}</span>
+        <span style="${ns}">${teams[id]}</span>
+        ${i===0&&v.p>0?'<span style="margin-left:4px;font-size:.8rem">🔥</span>':''}
+      </div></td>
+      <td style="color:var(--text-muted)">${v.played}</td><td style="color:var(--green)">${v.w}</td>
+      <td style="color:var(--silver)">${v.d}</td><td style="color:var(--red)">${v.l}</td>
+      <td><span class="points-badge">${v.p}</span></td>
+      <td class="${gdC}">${gd>0?'+'+gd:gd}</td><td>${v.gf}</td>
+      <td class="yellow-card">${v.y}</td><td class="red-card">${v.r}</td>
+    </tr>`;
   });
   document.getElementById('standingsTable').innerHTML=h;
 }
 
-/* ═══════════════════════════════════════
-   MODALS (exposed to window for onclick)
-═══════════════════════════════════════ */
+/* ═══════════════════════
+   MODALS
+═══════════════════════ */
 window.openModal  = id=>{ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; };
-window.closeModal = id=>{ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; };
-document.querySelectorAll('.modal-overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) window.closeModal(el.id); }); });
+window.closeModal = id=>{ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; dpClose(); };
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) window.closeModal(el.id); });
+});
 
-/* TEAM MODAL */
+/* ── Team ── */
 window.renderTeamModalInputs = ()=>{
-  document.getElementById('teamInputsGrid').innerHTML=IDS.map((id,i)=>`
+  document.getElementById('teamInputsGrid').innerHTML=IDS.map(id=>`
     <div class="team-entry" id="team-entry-${id}">
       <div class="team-entry-header">
-        <div class="emoji-trigger" id="emoji-trigger-${id}" style="background:${teamColors[id]}33;border-color:${teamColors[id]}" onclick="openEmojiPicker('${id}',this)">
+        <div class="emoji-trigger" id="emoji-trigger-${id}"
+          style="background:${teamColors[id]}33;border-color:${teamColors[id]}"
+          onclick="openEmojiPicker('${id}',this)">
           <span class="trigger-emoji">${teamEmojis[id]}</span><span class="change-hint">✎</span>
         </div>
-        <div><div class="team-entry-label" style="color:${teamColors[id]}">Đội ${id}</div><div style="font-size:.72rem;color:var(--text-muted);margin-top:1px;">Click icon để đổi</div></div>
+        <div>
+          <div class="team-entry-label" style="color:${teamColors[id]}">Đội ${id}</div>
+          <div style="font-size:.72rem;color:var(--text-muted);margin-top:1px;">Click icon để đổi</div>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:8px"><input class="form-input" id="tname_${id}" value="${teams[id]}" placeholder="Tên đội"></div>
+      <div class="form-group" style="margin-bottom:8px">
+        <input class="form-input" id="tname_${id}" value="${teams[id]}" placeholder="Tên đội">
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
         <input class="form-input" style="font-size:.8rem;padding:7px" id="tmem1_${id}" value="${(members[id]||['',''])[0]}" placeholder="TV 1">
         <input class="form-input" style="font-size:.8rem;padding:7px" id="tmem2_${id}" value="${(members[id]||['',''])[1]}" placeholder="TV 2">
-      </div></div>`).join('');
+      </div>
+    </div>`).join('');
 };
 window.saveTeamsModal = ()=>{
-  IDS.forEach(id=>{ teams[id]=document.getElementById(`tname_${id}`).value||teams[id]; members[id]=[document.getElementById(`tmem1_${id}`).value,document.getElementById(`tmem2_${id}`).value]; });
+  IDS.forEach(id=>{
+    teams[id]=document.getElementById(`tname_${id}`).value||teams[id];
+    members[id]=[document.getElementById(`tmem1_${id}`).value,document.getElementById(`tmem2_${id}`).value];
+  });
   closeEmojiPicker(); persist(); window.closeModal('teamModal'); showToast('✅ Đã lưu thông tin đội!');
 };
 
-/* EMOJI PICKER */
-let currentEmojiCat=Object.keys(EMOJI_CATS)[0],pickerTarget=null,pickerEmoji='',pickerColor='';
+/* ── Emoji picker ── */
+let currentEmojiCat=Object.keys(EMOJI_CATS)[0], pickerTarget=null, pickerEmoji='', pickerColor='';
 function buildEmojiPicker(){
-  document.getElementById('emojiCats').innerHTML=Object.keys(EMOJI_CATS).map(cat=>`<button class="emoji-cat-btn ${cat===currentEmojiCat?'active':''}" onclick="switchEmojiCat('${cat}')">${cat.split(' ')[0]}</button>`).join('');
+  document.getElementById('emojiCats').innerHTML=Object.keys(EMOJI_CATS).map(cat=>
+    `<button class="emoji-cat-btn ${cat===currentEmojiCat?'active':''}" onclick="switchEmojiCat('${cat}')">${cat.split(' ')[0]}</button>`).join('');
   renderEmojiGrid();
-  document.getElementById('colorSwatches').innerHTML=COLOR_PALETTE.map(c=>`<div class="color-swatch ${c===pickerColor?'selected':''}" style="background:${c}" onclick="selectPickerColor('${c}')"></div>`).join('');
+  document.getElementById('colorSwatches').innerHTML=COLOR_PALETTE.map(c=>
+    `<div class="color-swatch ${c===pickerColor?'selected':''}" style="background:${c}" onclick="selectPickerColor('${c}')"></div>`).join('');
 }
-function renderEmojiGrid(){ document.getElementById('emojiGrid').innerHTML=EMOJI_CATS[currentEmojiCat].map(e=>`<button class="emoji-btn ${e===pickerEmoji?'selected':''}" onclick="selectPickerEmoji('${e}')">${e}</button>`).join(''); }
-window.switchEmojiCat = cat=>{ currentEmojiCat=cat; document.querySelectorAll('.emoji-cat-btn').forEach(b=>b.classList.toggle('active',b.textContent.trim()===cat.split(' ')[0])); renderEmojiGrid(); };
-window.selectPickerEmoji = e=>{ pickerEmoji=e; document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.toggle('selected',b.textContent===e)); if(pickerTarget) document.getElementById(`emoji-trigger-${pickerTarget}`).querySelector('.trigger-emoji').textContent=e; };
-window.selectPickerColor = c=>{ pickerColor=c; document.querySelectorAll('.color-swatch').forEach(s=>s.classList.toggle('selected',s.style.background===c||s.style.backgroundColor===c)); if(pickerTarget){const t=document.getElementById(`emoji-trigger-${pickerTarget}`);t.style.background=c+'33';t.style.borderColor=c;} };
-window.openEmojiPicker = (teamId,triggerEl)=>{ pickerTarget=teamId;pickerEmoji=teamEmojis[teamId];pickerColor=teamColors[teamId];buildEmojiPicker();const picker=document.getElementById('emojiPicker');picker.style.display='block';const rect=triggerEl.getBoundingClientRect();const pw=300,ph=320;let left=rect.left,top=rect.bottom+8;if(left+pw>window.innerWidth-12)left=window.innerWidth-pw-12;if(top+ph>window.innerHeight-12)top=rect.top-ph-8;picker.style.left=left+'px';picker.style.top=top+'px'; };
-function closeEmojiPicker(){ if(pickerTarget){teamEmojis[pickerTarget]=pickerEmoji;teamColors[pickerTarget]=pickerColor;} document.getElementById('emojiPicker').style.display='none';pickerTarget=null; }
-window.closeEmojiPicker = closeEmojiPicker;
-document.addEventListener('click',e=>{ const picker=document.getElementById('emojiPicker'); if(picker.style.display==='none')return; if(picker.contains(e.target))return; if(e.target.closest('.emoji-trigger'))return; closeEmojiPicker(); });
+function renderEmojiGrid(){
+  document.getElementById('emojiGrid').innerHTML=EMOJI_CATS[currentEmojiCat].map(e=>
+    `<button class="emoji-btn ${e===pickerEmoji?'selected':''}" onclick="selectPickerEmoji('${e}')">${e}</button>`).join('');
+}
+window.switchEmojiCat = cat=>{
+  currentEmojiCat=cat;
+  document.querySelectorAll('.emoji-cat-btn').forEach(b=>b.classList.toggle('active',b.textContent.trim()===cat.split(' ')[0]));
+  renderEmojiGrid();
+};
+window.selectPickerEmoji = e=>{
+  pickerEmoji=e;
+  document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.toggle('selected',b.textContent===e));
+  if(pickerTarget) document.getElementById(`emoji-trigger-${pickerTarget}`).querySelector('.trigger-emoji').textContent=e;
+};
+window.selectPickerColor = c=>{
+  pickerColor=c;
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.toggle('selected',s.style.background===c||s.style.backgroundColor===c));
+  if(pickerTarget){ const t=document.getElementById(`emoji-trigger-${pickerTarget}`); t.style.background=c+'33'; t.style.borderColor=c; }
+};
+window.openEmojiPicker = (teamId,triggerEl)=>{
+  pickerTarget=teamId; pickerEmoji=teamEmojis[teamId]; pickerColor=teamColors[teamId];
+  buildEmojiPicker();
+  const picker=document.getElementById('emojiPicker'); picker.style.display='block';
+  const rect=triggerEl.getBoundingClientRect();
+  const pw=300,ph=320;
+  let left=rect.left, top=rect.bottom+8;
+  if(left+pw>window.innerWidth-12) left=window.innerWidth-pw-12;
+  if(top+ph>window.innerHeight-12) top=rect.top-ph-8;
+  picker.style.left=left+'px'; picker.style.top=top+'px';
+};
+function closeEmojiPicker(){
+  if(pickerTarget){ teamEmojis[pickerTarget]=pickerEmoji; teamColors[pickerTarget]=pickerColor; }
+  document.getElementById('emojiPicker').style.display='none'; pickerTarget=null;
+}
+window.closeEmojiPicker=closeEmojiPicker;
+document.addEventListener('click',e=>{
+  const p=document.getElementById('emojiPicker');
+  if(p.style.display==='none') return;
+  if(p.contains(e.target)) return;
+  if(e.target.closest('.emoji-trigger')) return;
+  closeEmojiPicker();
+});
 
-/* RESULT MODAL */
-window.openResultModal = preselect=>{ window.openModal('resultModal'); renderResultModal(preselect); };
+/* ── Result modal ── */
+let _resultDateISO='';
+window.openResultModal = preselect=>{
+  if(!isAdmin){ requireAdmin(()=>openResultModal(preselect)); return; }
+  window.openModal('resultModal');
+  renderResultModal(preselect);
+};
 function renderResultModal(preselect){
   document.getElementById('matchSelectModal').innerHTML=scheduleOrder.map((origIdx,pos)=>{
-    const m=BASE_SCHEDULE[origIdx];const r=results[origIdx];const done=(r&&r.score1!==undefined)?' ✓':'';
-    return `<option value="${origIdx}" ${origIdx==preselect?'selected':''}>Trận ${pos+1}: ${teams[m[0]]} vs ${teams[m[1]]}${done}</option>`;
+    const m=BASE_SCHEDULE[origIdx]; const r=getResult(origIdx);
+    const done=(r&&r.score1!==undefined)?' ✓':'';
+    return `<option value="${origIdx}" ${Number(origIdx)===Number(preselect)?'selected':''}>Trận ${pos+1}: ${teams[m[0]]} vs ${teams[m[1]]}${done}</option>`;
   }).join('');
-  onMatchChange();
+  window.onMatchChange();
 }
 window.onMatchChange = ()=>{
   const origIdx=parseInt(document.getElementById('matchSelectModal').value);
   const m=BASE_SCHEDULE[origIdx];
   document.getElementById('scoreTeam1Label').textContent=`${teamEmojis[m[0]]} ${teams[m[0]]}`;
   document.getElementById('scoreTeam2Label').textContent=`${teamEmojis[m[1]]} ${teams[m[1]]}`;
-  const r=results[origIdx]||{};
-  document.getElementById('matchDateModal').value=matchDates[origIdx]||todayISO();
+  const r=getResult(origIdx)||{};
+  _resultDateISO=matchDates[String(origIdx)]||todayISO();
+
+  // Replace date input with datepicker
+  const dateGroup=document.getElementById('resultDateGroup');
+  dateGroup.innerHTML='';
+  const dpWrap=makeDpInput('matchDateModal', _resultDateISO, iso=>{
+    _resultDateISO=iso||matchDates[String(origIdx)]||todayISO();
+  });
+  dateGroup.appendChild(dpWrap);
+
   document.getElementById('score1Modal').value=r.score1!==undefined?r.score1:'';
   document.getElementById('score2Modal').value=r.score2!==undefined?r.score2:'';
-  document.getElementById('yellow1Modal').value=r.y1||'';document.getElementById('red1Modal').value=r.r1||'';
-  document.getElementById('yellow2Modal').value=r.y2||'';document.getElementById('red2Modal').value=r.r2||'';
-};
-window.saveResultModal = ()=>{
-  const origIdx=parseInt(document.getElementById('matchSelectModal').value);
-  const s1=document.getElementById('score1Modal').value,s2=document.getElementById('score2Modal').value;
-  if(s1===''||s2===''){showToast('⚠️ Vui lòng nhập tỷ số!','warn');return;}
-  const enteredDate=document.getElementById('matchDateModal').value;
-  if(enteredDate) matchDates[origIdx]=enteredDate;
-  results[origIdx]={date:enteredDate||matchDates[origIdx],score1:+s1,score2:+s2,y1:+document.getElementById('yellow1Modal').value||0,r1:+document.getElementById('red1Modal').value||0,y2:+document.getElementById('yellow2Modal').value||0,r2:+document.getElementById('red2Modal').value||0};
-  persist();window.closeModal('resultModal');showToast('✅ Kết quả đã được lưu!');
+  document.getElementById('yellow1Modal').value=r.y1||'';
+  document.getElementById('red1Modal').value=r.r1||'';
+  document.getElementById('yellow2Modal').value=r.y2||'';
+  document.getElementById('red2Modal').value=r.r2||'';
 };
 
-/* RESET */
+window.resetResultModal = ()=>{
+  const origIdx=parseInt(document.getElementById('matchSelectModal').value);
+  delete results[String(origIdx)];
+  persist();
+  window.onMatchChange(); // refresh UI
+  showToast('🔄 Đã reset kết quả về TBD');
+};
+
+window.saveResultModal = ()=>{
+  const origIdx=parseInt(document.getElementById('matchSelectModal').value);
+  const s1=document.getElementById('score1Modal').value;
+  const s2=document.getElementById('score2Modal').value;
+  // ★ Cho phép lưu kể cả khi trống (= reset về TBD)
+  if(s1===''||s2===''){
+    delete results[String(origIdx)];
+    if(_resultDateISO) matchDates[String(origIdx)]=_resultDateISO;
+    persist(); window.closeModal('resultModal');
+    showToast('🔄 Trận đấu đặt lại thành TBD');
+    return;
+  }
+  if(_resultDateISO) matchDates[String(origIdx)]=_resultDateISO;
+  results[String(origIdx)]={
+    score1:+s1, score2:+s2,
+    y1:+document.getElementById('yellow1Modal').value||0,
+    r1:+document.getElementById('red1Modal').value||0,
+    y2:+document.getElementById('yellow2Modal').value||0,
+    r2:+document.getElementById('red2Modal').value||0,
+  };
+  persist(); window.closeModal('resultModal'); showToast('✅ Kết quả đã được lưu!');
+};
+
+/* ── Reset modal ── */
 let resetConfirmStep=0;
 const RESET_MSGS=['Bước 1: Xác nhận xóa toàn bộ kết quả','Bước 2: Xác nhận xóa thông tin đội','Bước 3: Xác nhận lần cuối - không thể hoàn tác'];
 window.openResetModal = ()=>{ resetConfirmStep=0; renderResetSteps(); window.openModal('resetModal'); };
 function renderResetSteps(){
-  document.getElementById('resetSteps').innerHTML=RESET_MSGS.map((msg,i)=>`<div class="reset-step ${i<resetConfirmStep?'active':''}"><div class="reset-step-num">${i<resetConfirmStep?'✓':i+1}</div><span>${msg}</span></div>`).join('');
-  const btn=document.getElementById('resetConfirmBtn');if(btn) btn.textContent=`Xác nhận lần ${resetConfirmStep+1}`;
+  document.getElementById('resetSteps').innerHTML=RESET_MSGS.map((msg,i)=>
+    `<div class="reset-step ${i<resetConfirmStep?'active':''}">
+      <div class="reset-step-num">${i<resetConfirmStep?'✓':i+1}</div><span>${msg}</span>
+    </div>`).join('');
+  const btn=document.getElementById('resetConfirmBtn');
+  if(btn) btn.textContent=`Xác nhận lần ${resetConfirmStep+1}`;
 }
-window.renderResetSteps = renderResetSteps;
+window.renderResetSteps=renderResetSteps;
 window.handleResetConfirm = ()=>{
   resetConfirmStep++;
   if(resetConfirmStep>=3){
-    window.closeModal('resetModal');resetConfirmStep=0;
-    // reset Firebase state
-    set(dbRef('state'),null).then(()=>{ location.reload(); });
-  } else { renderResetSteps();showToast(`⚠️ Còn ${3-resetConfirmStep} lần xác nhận nữa`,'warn'); }
+    window.closeModal('resetModal'); resetConfirmStep=0;
+    set(dbRef('state'),null).then(()=>location.reload());
+  } else { renderResetSteps(); showToast(`⚠️ Còn ${3-resetConfirmStep} lần xác nhận nữa`,'warn'); }
 };
 
-/* TOAST */
+/* ── Toast ── */
 function showToast(msg,type='success'){
-  const t=document.getElementById('toast');t.textContent=msg;
-  t.style.borderColor=type==='warn'?'#fbbf24':'#22c55e';t.style.color=type==='warn'?'#fbbf24':'#22c55e';
+  const t=document.getElementById('toast');
+  t.textContent=msg;
   t.style.background=type==='warn'?'linear-gradient(135deg,#451a03,#78350f)':'linear-gradient(135deg,#064e3b,#065f46)';
   t.style.border=`1px solid ${type==='warn'?'#fbbf24':'#22c55e'}`;
-  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+  t.style.color=type==='warn'?'#fbbf24':'#22c55e';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
 }
-window.showToast = showToast;
+window.showToast=showToast;
 
-/* ─── BOOT ─── */
+/* ── Boot ── */
+updateAuthUI();
 subscribeFirebase();
 </script>
 </body>

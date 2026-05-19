@@ -347,7 +347,24 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
     </div>
   </div>
 </div>
-
+<!-- AUTO SCHEDULE MODAL -->
+<div class="modal-overlay" id="autoScheduleModal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title">⚡ Auto xếp lịch</div>
+      <button class="modal-close" onclick="closeModal('autoScheduleModal')">✕</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:.88rem;">Chọn ngày bắt đầu để các trận pending được dàn đều cách nhau 3 ngày/trận.</p>
+    <div class="form-group">
+      <label class="form-label">Ngày bắt đầu</label>
+      <input class="form-input" type="date" id="autoScheduleDateInput">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('autoScheduleModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="confirmAutoSchedule()">Xác nhận</button>
+    </div>
+  </div>
+</div>
 <!-- MAIN -->
 <div class="container">
   <div class="sync-bar offline" id="syncBar">
@@ -380,7 +397,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
     <div class="card">
       <div class="section-header">
         <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
-        <button class="btn btn-teal btn-sm" onclick="autoSchedule()">⚡ Auto</button>
+        <button class="btn btn-teal btn-sm" onclick="openAutoScheduleModal()">⚡ Auto</button>
       </div>
       <div class="fixtures-wrap" id="fixturesList"></div>
     </div>
@@ -473,6 +490,13 @@ function addWorkdays(startISO, n){
   let dt=new Date(Date.UTC(y,m-1,d,12));
   let added=0;
   while(added<n){ dt.setUTCDate(dt.getUTCDate()+1); if(![0,6].includes(dt.getUTCDay())) added++; }
+  return isoOf(dt);
+}
+function addDays(startISO, n){
+  if(n===0) return startISO;
+  const[y,m,d]=startISO.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d,12));
+  dt.setUTCDate(dt.getUTCDate()+n);
   return isoOf(dt);
 }
 
@@ -598,25 +622,32 @@ function persist(){ pushToFirebase(); render(); }
    ★ Pending matches → redistribute từ hôm nay
    Không đụng vào SEASON_START
 ═══════════════════════════════ */
-window.autoSchedule = function(){
-  let baseDay = todayISO();
-  if(isWeekend(baseDay)){
-    const[y,m,d]=baseDay.split('-').map(Number);
-    let dt=new Date(Date.UTC(y,m-1,d,12));
-    while([0,6].includes(dt.getUTCDay())) dt.setUTCDate(dt.getUTCDate()+1);
-    baseDay=isoOf(dt);
-  }
+window.autoSchedule = function(startDate){
+  let baseDay = startDate || todayISO();
   const completed=[], pending=[];
   scheduleOrder.forEach(i=>{
     (results[String(i)]&&results[String(i)].score1!==undefined ? completed : pending).push(Number(i));
   });
   completed.sort((a,b)=>(matchDates[String(a)]||'').localeCompare(matchDates[String(b)]||''));
   pending.forEach((origIdx,pos)=>{
-    matchDates[String(origIdx)] = pos===0 ? baseDay : addWorkdays(baseDay, Math.floor(pos/3));
+    matchDates[String(origIdx)] = addDays(baseDay, pos * 3);
   });
   scheduleOrder=[...completed,...pending];
   persist();
   showToast('⚡ Đã tự động sắp xếp lại lịch!');
+};
+window.openAutoScheduleModal = function(){
+  const input=document.getElementById('autoScheduleDateInput');
+  let defaultDate = todayISO();
+  if(isWeekend(defaultDate)) defaultDate = nextWorkday(defaultDate);
+  input.value = defaultDate;
+  window.openModal('autoScheduleModal');
+};
+window.confirmAutoSchedule = function(){
+  const date=document.getElementById('autoScheduleDateInput').value;
+  if(!date){ showToast('⚠️ Vui lòng chọn ngày bắt đầu.','warn'); return; }
+  window.closeModal('autoScheduleModal');
+  window.autoSchedule(date);
 };
 
 /* ═══════════════════════════════
@@ -731,6 +762,34 @@ function renderFixtures(){
     });
     wrap.appendChild(block);
   });
+
+  const allDates = Array.from(matchdays.keys());
+  if(allDates.length){
+    const lastDate = allDates.reduce((a,b)=> a>b ? a : b, allDates[0]);
+    const extraDate = addDays(lastDate, 1);
+    const isPast = extraDate < today, isToday = extraDate === today;
+    const [,dm,dd] = extraDate.split('-');
+    const dtObj=new Date(Date.UTC(...extraDate.split('-').map(Number).map((v,i)=>i===1?v-1:v),12));
+    const dowFull=DOWS[dtObj.getUTCDay()];
+    const block=document.createElement('div'); block.className='matchday-block';
+    block.innerHTML=`<div class="matchday-header">
+      <div class="cal-tile ${isToday?'today':isPast?'past':''}">
+        <div class="cal-month">${MONTHS[+dm-1]}</div>
+        <div class="cal-day">${dd}</div>
+        <div class="cal-dow">${dowFull.replace('Thứ ','T')}</div>
+      </div>
+      <div class="matchday-meta">
+        <div class="matchday-label">${dowFull}${isToday?'<span class="md-today-badge">Hôm nay</span>':isPast?'<span class="md-past-badge">Đã qua</span>':''}</div>
+        <div class="matchday-count">0 trận đã đấu</div>
+      </div></div>`;
+    const addZone=zDate=>{ const z=document.createElement('div'); z.className='matchday-drop-zone'; z.addEventListener('dragover',onZoneDragOver); z.addEventListener('dragleave',onZoneDragLeave); z.addEventListener('drop',function(e){onZoneDrop.call(this,e,zDate);}); return z; };
+    block.appendChild(addZone(extraDate));
+    const emp=document.createElement('div'); emp.className='empty-day'; emp.textContent='Ngày mở rộng - kéo trận vào đây';
+    emp.addEventListener('dragover',onZoneDragOver); emp.addEventListener('dragleave',onZoneDragLeave);
+    emp.addEventListener('drop',function(e){onZoneDrop.call(this,e,extraDate);});
+    block.appendChild(emp);
+    wrap.appendChild(block);
+  }
 }
 
 function renderStats(){

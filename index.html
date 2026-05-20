@@ -977,6 +977,145 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   transform:rotate(-8deg);
 }
 
+/* ── Match story (impact note inline) ── */
+.fixture-story{
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) 1fr minmax(0,1.35fr);
+  gap:4px;
+  padding:5px 9px 7px;
+  margin-top:-4px;
+  margin-bottom:3px;
+  border-radius:0 0 9px 9px;
+  background:rgba(13,26,10,.45);
+  border:1px solid rgba(46,53,80,.45);
+  border-top:none;
+  backdrop-filter:blur(4px);
+  position:relative;
+  overflow:hidden;
+}
+.fixture-story::before{
+  content:'';
+  position:absolute;
+  top:0;left:9px;right:9px;
+  height:1px;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(197,248,81,.12) 30%,
+    rgba(197,248,81,.18) 50%,
+    rgba(197,248,81,.12) 70%,
+    transparent
+  );
+}
+.fixture-row.completed + .fixture-story{
+  border-left:3px solid var(--green);
+}
+
+.story-side{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  min-width:0;
+}
+.story-side.home{ align-items:flex-end; text-align:right; }
+.story-side.away{ align-items:flex-start; text-align:left; }
+
+.story-mid{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  padding-top:1px;
+}
+
+.story-rank-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  font-size:.60rem;
+  font-weight:600;
+  line-height:1;
+  padding:2px 5px;
+  border-radius:5px;
+  white-space:nowrap;
+  max-width:100%;
+  overflow:hidden;
+}
+.story-rank-chip.up{
+  color:#4ade80;
+  background:rgba(0,214,143,.10);
+}
+.story-rank-chip.down{
+  color:#f87171;
+  background:rgba(235,69,96,.10);
+}
+.story-rank-chip.same{
+  color:#4f6080;
+  background:rgba(79,96,128,.08);
+}
+.story-rank-chip.new-entry{
+  color:#c5f851;
+  background:rgba(197,248,81,.08);
+}
+.story-rank-chip .chip-arrow{
+  font-size:.62rem;
+  flex-shrink:0;
+}
+.story-rank-chip .chip-text{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.story-pts-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  font-size:.58rem;
+  font-weight:500;
+  color:var(--text-muted);
+  white-space:nowrap;
+}
+.story-pts-chip .pts-gained{
+  font-family:'Rajdhani',sans-serif;
+  font-size:.72rem;
+  font-weight:700;
+}
+.story-pts-chip .pts-gained.win { color:var(--green); }
+.story-pts-chip .pts-gained.draw{ color:#00adef;      }
+.story-pts-chip .pts-gained.lose{ color:#4f6080;      }
+
+.story-divider{
+  font-size:.56rem;
+  color:#2e3550;
+  text-align:center;
+  letter-spacing:.5px;
+  margin-top:1px;
+}
+
+.story-tiebreak{
+  font-size:.56rem;
+  color:#4f6080;
+  text-align:center;
+  font-style:italic;
+  line-height:1.4;
+  padding:0 2px;
+}
+
+@media(max-width:640px){
+  .fixture-story{
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    padding:4px 6px 6px;
+  }
+  .story-rank-chip{ font-size:.56rem; padding:2px 4px; }
+  .story-pts-chip { font-size:.54rem; }
+}
+@media(max-width:400px){
+  .fixture-story{ grid-template-columns:1fr auto 1fr; gap:2px; }
+  .story-rank-chip .chip-text{ max-width:72px; }
+}
+
 /* ── Icon animations on screen ── */
 @keyframes icon-pulse {
   0%,100% { transform: scale(1);   filter: drop-shadow(0 0 0px currentColor); }
@@ -1066,7 +1205,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   <div class="loading-text-fx" id="loadingText">=[ Cập nhật dữ liệu ]=</div>
 </div>
 <div class="toast" id="toast"></div>
-<div class="impact-note" id="impactNote"></div>
 
 <!-- EMOJI PICKER -->
 <div class="emoji-picker" id="emojiPicker" style="display:none;">
@@ -1685,6 +1823,190 @@ window.confirmAutoSchedule = function() {
   scheduleOrder = [...completed, ...groups.flat()]; closeModal('autoModal'); persist(); showToast(`⚡ Đã xếp ${pending.length} trận từ ${formatDateShort(startISO)}!`);
 };
 
+/* ═══════════════════ MATCH STORY ═══════════════════ */
+
+/**
+ * Tính BXH tại thời điểm sau trận matchIdx
+ * (dùng kết quả của tất cả trận có date <= date của matchIdx
+ *  và index <= matchIdx nếu cùng ngày)
+ */
+function calcStandingsAtMatch(upToMatchIdx) {
+  const s = {};
+  teamIds.forEach(id => {
+    s[id] = { p:0, w:0, d:0, l:0, gf:0, ga:0, played:0 };
+  });
+
+  const targetDate = matchDates[String(upToMatchIdx)] || '9999-12-31';
+
+  for (let i = 0; i < TOTAL; i++) {
+    const r = getResult(i);
+    if (!r || r.score1 === undefined) continue;
+    const d = matchDates[String(i)] || '9999-12-31';
+    if (d > targetDate) continue;
+    if (d === targetDate && i > upToMatchIdx) continue;
+
+    const [a, b] = BASE_SCHEDULE[i];
+    if (!s[a] || !s[b]) continue;
+
+    s[a].played++; s[b].played++;
+    s[a].gf += r.score1; s[a].ga += r.score2;
+    s[b].gf += r.score2; s[b].ga += r.score1;
+
+    const wp = leagueConfig.winPts || 3;
+    const dp = leagueConfig.drawPts || 1;
+
+    if (r.score1 > r.score2) {
+      s[a].p += wp; s[a].w++; s[b].l++;
+    } else if (r.score2 > r.score1) {
+      s[b].p += wp; s[b].w++; s[a].l++;
+    } else {
+      s[a].p += dp; s[b].p += dp; s[a].d++; s[b].d++;
+    }
+  }
+
+  /* Sắp xếp theo tiêu chí chuẩn */
+  return Object.entries(s).sort((x, y) =>
+    y[1].p - x[1].p ||
+    (y[1].gf - y[1].ga) - (x[1].gf - x[1].ga) ||
+    y[1].gf - x[1].gf
+  );
+}
+
+function calcStandingsBeforeMatch(matchIdx) {
+  const s = {};
+  teamIds.forEach(id => {
+    s[id] = { p:0, w:0, d:0, l:0, gf:0, ga:0, played:0 };
+  });
+
+  const targetDate = matchDates[String(matchIdx)] || '9999-12-31';
+
+  for (let i = 0; i < TOTAL; i++) {
+    if (i === matchIdx) continue;
+    const r = getResult(i);
+    if (!r || r.score1 === undefined) continue;
+    const d = matchDates[String(i)] || '9999-12-31';
+    if (d > targetDate) continue;
+    if (d === targetDate && i >= matchIdx) continue;
+
+    const [a, b] = BASE_SCHEDULE[i];
+    if (!s[a] || !s[b]) continue;
+
+    s[a].played++; s[b].played++;
+    s[a].gf += r.score1; s[a].ga += r.score2;
+    s[b].gf += r.score2; s[b].ga += r.score1;
+
+    const wp = leagueConfig.winPts || 3;
+    const dp = leagueConfig.drawPts || 1;
+
+    if (r.score1 > r.score2) {
+      s[a].p += wp; s[a].w++; s[b].l++;
+    } else if (r.score2 > r.score1) {
+      s[b].p += wp; s[b].w++; s[a].l++;
+    } else {
+      s[a].p += dp; s[b].p += dp; s[a].d++; s[b].d++;
+    }
+  }
+
+  return Object.entries(s).sort((x, y) =>
+    y[1].p - x[1].p ||
+    (y[1].gf - y[1].ga) - (x[1].gf - x[1].ga) ||
+    y[1].gf - x[1].gf
+  );
+}
+
+function getTiebreakReason(rowsAfter, idA, idB) {
+  const a = Object.fromEntries(rowsAfter)[idA];
+  const b = Object.fromEntries(rowsAfter)[idB];
+  if (!a || !b || a.p !== b.p) return '';
+  const gdA = a.gf - a.ga, gdB = b.gf - b.ga;
+  if (gdA !== gdB) return 'nhờ hiệu số';
+  if (a.gf !== b.gf) return 'nhờ bàn thắng';
+  return 'thứ tự bảng chữ cái';
+}
+
+function buildMatchStoryHTML(origIdx) {
+  const r = getResult(origIdx);
+  if (!r || r.score1 === undefined) return '';
+
+  const [hId, aId]  = BASE_SCHEDULE[origIdx];
+  const s1 = r.score1, s2 = r.score2;
+  const wp = leagueConfig.winPts || 3;
+  const dp = leagueConfig.drawPts || 1;
+
+  /* Điểm nhận được */
+  let hPts = 0, aPts = 0, matchOutcome = 'draw';
+  if (s1 > s2) { hPts = wp; matchOutcome = 'home'; }
+  else if (s2 > s1) { aPts = wp; matchOutcome = 'away'; }
+  else { hPts = dp; aPts = dp; }
+
+  /* BXH trước và sau trận */
+  const rowsBefore = calcStandingsBeforeMatch(origIdx);
+  const rowsAfter  = calcStandingsAtMatch(origIdx);
+
+  const rankBefore = Object.fromEntries(rowsBefore.map(([id], i) => [id, i + 1]));
+  const rankAfter  = Object.fromEntries(rowsAfter.map(([id],  i) => [id, i + 1]));
+
+  /* Hàm tạo story cho 1 đội */
+  function sideStoryHTML(id, ptsGained, side) {
+    const before  = rankBefore[id];
+    const after   = rankAfter[id];
+    const delta   = before != null ? before - after : 0;
+    const isFirst = before == null; /* đội chưa từng đá trước trận này */
+
+    const color = teamColors[id] || 'var(--accent)';
+    const outcome = id === hId
+      ? (matchOutcome === 'home' ? 'win' : matchOutcome === 'away' ? 'lose' : 'draw')
+      : (matchOutcome === 'away' ? 'win' : matchOutcome === 'home' ? 'lose' : 'draw');
+
+    /* Dòng điểm */
+    const ptsLabel = ptsGained > 0
+      ? `<span class="pts-gained ${outcome}">+${ptsGained}đ</span>`
+      : `<span class="pts-gained lose">+0đ</span>`;
+    const ptsLine = `<span class="story-pts-chip">${ptsLabel} → ${rankAfter[id] != null ? rankAfter[id] + ' / ' + teamIds.length : '?'}</span>`;
+
+    /* Dòng thứ hạng */
+    let rankChipHTML = '';
+    if (isFirst) {
+      rankChipHTML = `<span class="story-rank-chip new-entry">
+        <span class="chip-arrow">🆕</span>
+        <span class="chip-text">Lần đầu lên BXH: #${after}</span>
+      </span>`;
+    } else if (delta > 0) {
+      rankChipHTML = `<span class="story-rank-chip up">
+        <span class="chip-arrow">▲${delta}</span>
+        <span class="chip-text">${before} → ${after}</span>
+      </span>`;
+    } else if (delta < 0) {
+      rankChipHTML = `<span class="story-rank-chip down">
+        <span class="chip-arrow">▼${Math.abs(delta)}</span>
+        <span class="chip-text">${before} → ${after}</span>
+      </span>`;
+    } else {
+      rankChipHTML = `<span class="story-rank-chip same">
+        <span class="chip-arrow">–</span>
+        <span class="chip-text">Giữ hạng ${after}</span>
+      </span>`;
+    }
+
+    return `<div class="story-side ${side}">${rankChipHTML}${ptsLine}</div>`;
+  }
+
+  const homeHTML = sideStoryHTML(hId, hPts, 'home');
+  const awayHTML = sideStoryHTML(aId, aPts, 'away');
+
+  /* Tiebreak giữa 2 đội này nếu đồng điểm */
+  const tbReason = getTiebreakReason(rowsAfter, hId, aId);
+  const midHTML = tbReason
+    ? `<div class="story-mid">
+        <div class="story-tiebreak" title="Tiêu chí phân định">⚖️ ${tbReason}</div>
+       </div>`
+    : `<div class="story-mid">
+        <div class="story-divider">·</div>
+       </div>`;
+
+  return `<div class="fixture-story">${homeHTML}${midHTML}${awayHTML}</div>`;
+}
+
 /* ═══════════════════ RENDER FIXTURES ═══════════════════ */
 function render() {
   renderFixtures();
@@ -1996,7 +2318,16 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
     row.querySelector('.btn-icon').addEventListener('mousedown', e => e.stopPropagation());
     if (!isLocked) initTouchDrag(row, origIdx);
 
-    block.appendChild(row);
+        block.appendChild(row);
+
+    /* Match story - chỉ render khi đã có kết quả */
+    const storyHTML = buildMatchStoryHTML(origIdx);
+    if (storyHTML) {
+      const storyEl = document.createElement('div');
+      storyEl.innerHTML = storyHTML;
+      block.appendChild(storyEl.firstElementChild);
+    }
+
     block.appendChild(makeDropZone(date));
   });
 }
@@ -2400,106 +2731,6 @@ function renderPodiumMovementBadge(id) {
 
 /* ═══════════════════ MODALS GENERAL ═══════════════════ */
 function showToast(msg, type = 'success') { const t = document.getElementById('toast'); t.textContent = msg; t.style.background = type === 'success' ? 'rgba(0,214,143,.9)' : 'rgba(235,69,96,.9)'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-
-let _impactTimer = null;
-function showImpactNote(matchIdx) {
-  const note = document.getElementById('impactNote');
-  if (!note) return;
-
-  const m = BASE_SCHEDULE[matchIdx];
-  if (!m) return;
-
-  const r = getResult(matchIdx);
-  if (!r || r.score1 === undefined) return;
-
-  const rows = calcStandings();
-
-  /* Map id → rank hiện tại */
-  const currRankMap = {};
-  rows.forEach(([id], idx) => { currRankMap[id] = idx + 1; });
-
-  /* Map id → rank trước đó (từ previousRanks đã được update trước) */
-  const prevRankMap = {};
-  rows.forEach(([id]) => {
-    const s = rankMovementState[id];
-    if (s) prevRankMap[id] = currRankMap[id] + s.delta;
-    else   prevRankMap[id] = currRankMap[id];
-  });
-
-  const [hId, aId] = m;
-  const s1 = r.score1, s2 = r.score2;
-
-  let winnerLine = '';
-  let loserLine  = '';
-
-  const scoreStr = `${s1}–${s2}`;
-
-  function rankChangeLine(id, opponentId) {
-    const mv = rankMovementState[id];
-    if (!mv || mv.dir === 'same') return '';
-    const name  = teams[id] || id;
-    const emoji = teamEmojis[id] || '⚽';
-    const color = teamColors[id] || 'var(--accent)';
-    const dir   = mv.dir === 'up' ? 'tăng' : 'giảm';
-    const bkgCls = mv.dir === 'up' ? 'var(--green)' : 'var(--red)';
-    const arrow  = mv.dir === 'up' ? '▲' : '▼';
-    return `<div class="impact-note-line">
-      <span style="color:${bkgCls};font-size:.82rem;">${arrow}</span>
-      <span style="color:${color}">${emoji}</span>
-      <span><strong style="color:var(--text)">${name}</strong>
-        ${dir} <strong style="color:${bkgCls}">${Math.abs(mv.delta)} bậc</strong>
-      </span>
-    </div>`;
-  }
-
-  /* Dòng kết quả trận */
-  const hName  = teams[hId] || hId;
-  const aName  = teams[aId] || aId;
-  const hColor = teamColors[hId] || 'var(--accent)';
-  const aColor = teamColors[aId] || 'var(--accent)';
-  const hEmoji = teamEmojis[hId] || '⚽';
-  const aEmoji = teamEmojis[aId] || '⚽';
-
-  let resultLabel = '';
-  if (s1 > s2) {
-    resultLabel = `<span style="color:${hColor}">${hEmoji} ${hName}</span>
-      <span style="color:var(--green);font-weight:700;margin:0 4px;">thắng</span>
-      <span style="color:${aColor}">${aEmoji} ${aName}</span>
-      <span style="color:var(--text-muted);margin-left:4px;">${scoreStr}</span>`;
-  } else if (s2 > s1) {
-    resultLabel = `<span style="color:${aColor}">${aEmoji} ${aName}</span>
-      <span style="color:var(--green);font-weight:700;margin:0 4px;">thắng</span>
-      <span style="color:${hColor}">${hEmoji} ${hName}</span>
-      <span style="color:var(--text-muted);margin-left:4px;">${scoreStr}</span>`;
-  } else {
-    resultLabel = `<span style="color:${hColor}">${hEmoji} ${hName}</span>
-      <span style="color:#00adef;font-weight:700;margin:0 4px;">hòa</span>
-      <span style="color:${aColor}">${aEmoji} ${aName}</span>
-      <span style="color:var(--text-muted);margin-left:4px;">${scoreStr}</span>`;
-  }
-
-  const moveLine1 = rankChangeLine(hId, aId);
-  const moveLine2 = rankChangeLine(aId, hId);
-  const hasMove   = moveLine1 || moveLine2;
-
-  note.innerHTML = `
-    <div class="impact-note-line" style="font-size:.76rem;">
-      <span style="font-size:.85rem;">⚡</span>
-      ${resultLabel}
-    </div>
-    ${hasMove ? moveLine1 + moveLine2 : `
-      <div class="impact-note-line" style="color:var(--text-muted);font-size:.75rem;">
-        Thứ hạng không thay đổi
-      </div>`}
-  `;
-
-  note.classList.add('show');
-
-  if (_impactTimer) clearTimeout(_impactTimer);
-  _impactTimer = setTimeout(() => {
-    note.classList.remove('show');
-  }, 6000);
-}
 window.openModal = id => { const m = document.getElementById(id); if (m) m.classList.add('open'); };
 window.closeModal = id => { const m = document.getElementById(id); if (m) m.classList.remove('open'); };
 window.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
@@ -2556,10 +2787,6 @@ armRankMovement('result-save');
 closeModal('resultModal');
 persist();
 showToast('✅ Lưu kết quả thành công!');
-/* Impact note cần đợi render xong */
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => showImpactNote(_savedIdx));
-});
   // Burst animation ở giữa màn hình
   if (window.triggerEmojiBurst) {
     const m = BASE_SCHEDULE[_editMatchIdx];

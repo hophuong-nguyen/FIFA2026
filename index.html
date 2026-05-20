@@ -906,11 +906,18 @@ function renderStats() {
   box.innerHTML = `<div class="sc-item"><div class="sc-icon">🏟️</div><div class="sc-val">${played}</div><div class="sc-label">Đã đấu</div></div><div class="sc-item"><div class="sc-icon">⚽</div><div class="sc-val">${goals}</div><div class="sc-label">Bàn thắng</div></div><div class="sc-item"><div class="sc-icon">🟨</div><div class="sc-val">${yellow}</div><div class="sc-label">Thẻ vàng</div></div><div class="sc-item"><div class="sc-icon">🟥</div><div class="sc-val">${red}</div><div class="sc-label">Thẻ đỏ</div></div><div class="sc-item fairplay"><div class="sc-icon">🕊️</div><div class="sc-val">${fpHTML}</div><div class="sc-label">Fair Play</div></div>`;
 }
 function renderStandings() {
-  const rows = calcStandings(); const pa = document.getElementById('podiumArea'); const top3 = rows.slice(0, 3); const anyPts = top3.some(([, v]) => v.p > 0);
+  const rows = calcStandings(); 
+  const pa = document.getElementById('podiumArea'); 
+  const top3 = rows.slice(0, 3); 
+  const anyPts = top3.some(([, v]) => v.p > 0);
+  
   if (anyPts) {
-    const ordered = [top3[1], top3[0], top3[2]].filter(Boolean); const pC = ['p2', 'p1', 'p3'], medals = ['🥇', '🥈', '🥉']; const pw = document.createElement('div'); pw.className = 'podium-wrap';
+    const ordered = [top3[1], top3[0], top3[2]].filter(Boolean); 
+    const pC = ['p2', 'p1', 'p3'], medals = ['🥇', '🥈', '🥉']; 
+    const pw = document.createElement('div'); pw.className = 'podium-wrap';
     ordered.forEach((entry, idx) => {
-      if (!entry) return; const [id, v] = entry; const pClass = pC[idx];
+      if (!entry) return; 
+      const [id, v] = entry; const pClass = pC[idx];
       const item = document.createElement('div'); item.className = `podium-item ${pClass}`;
       if (pClass === 'p1') { const cr = document.createElement('div'); cr.className = 'podium-crown'; cr.textContent = '👑'; item.appendChild(cr); }
       const av = document.createElement('div'); av.className = 'podium-avatar'; av.style.background = teamColors[id]; av.textContent = teamEmojis[id]; item.appendChild(av);
@@ -924,10 +931,39 @@ function renderStandings() {
   } else { pa.innerHTML = ''; }
   
   const tb = document.getElementById('standingsTable');
-  tb.innerHTML = `<tr><th>XH</th><th class="team-name-cell">Đội</th><th>Trận</th><th>HS</th><th>Điểm</th></tr>` + rows.map((r, idx) => {
-    const [id, v] = r; const gd = v.gf - v.ga; const gdCls = gd > 0 ? 'gd-positive' : gd < 0 ? 'gd-negative' : ''; const gdSign = gd > 0 ? '+' : '';
-    let rbCls = 'rank-other'; if (idx === 0) rbCls = 'rank-1'; else if (idx === 1) rbCls = 'rank-2'; else if (idx === 2) rbCls = 'rank-3';
-    return `<tr class="${idx === 0 ? 'tr-rank1' : ''}"><td><span class="rank-badge ${rbCls}">${idx + 1}</span></td><td class="team-name-cell"><div class="team-avatar" style="background:${teamColors[id]}">${teamEmojis[id]}</div><div style="font-weight:600">${teams[id] || id}</div></td><td>${v.played}</td><td class="${gdCls}" style="font-weight:600">${gdSign}${gd}</td><td><span class="points-badge">${v.p}</span></td></tr>`;
+  tb.innerHTML = `<tr>
+    <th>XH</th>
+    <th class="team-name-cell">Đội</th>
+    <th>Trận</th>
+    <th>T</th>
+    <th>H</th>
+    <th>B</th>
+    <th>Điểm</th>
+    <th>HS</th>
+    <th>BT</th>
+    <th>🟨</th>
+    <th>🟥</th>
+  </tr>` + rows.map((r, idx) => {
+    const [id, v] = r; 
+    const gd = v.gf - v.ga; 
+    const gdCls = gd > 0 ? 'gd-positive' : gd < 0 ? 'gd-negative' : ''; 
+    const gdSign = gd > 0 ? '+' : '';
+    let rbCls = 'rank-other'; 
+    if (idx === 0) rbCls = 'rank-1'; else if (idx === 1) rbCls = 'rank-2'; else if (idx === 2) rbCls = 'rank-3';
+    
+    return `<tr class="${idx === 0 ? 'tr-rank1' : ''}">
+      <td><span class="rank-badge ${rbCls}">${idx + 1}</span></td>
+      <td class="team-name-cell"><div class="team-avatar" style="background:${teamColors[id]}">${teamEmojis[id]}</div><div style="font-weight:600">${teams[id] || id}</div></td>
+      <td>${v.played}</td>
+      <td>${v.w}</td>
+      <td>${v.d}</td>
+      <td>${v.l}</td>
+      <td><span class="points-badge">${v.p}</span></td>
+      <td class="${gdCls}" style="font-weight:600">${gdSign}${gd}</td>
+      <td>${v.gf}</td>
+      <td class="yellow-card">${v.y}</td>
+      <td class="red-card">${v.r}</td>
+    </tr>`;
   }).join('');
 }
 

@@ -897,7 +897,14 @@ window.confirmAutoSchedule = function() {
 };
 
 /* ═══════════════════ RENDER FIXTURES ═══════════════════ */
-function render() { renderFixtures(); renderStandings(); renderStats(); }
+function render() {
+  renderFixtures();
+  renderStandings();
+  renderStats();
+  // Cập nhật emoji pool cho canvas animation
+  window._liveTeamEmojis = { ...teamEmojis };
+}
+
 function buildFullDayMap() { const map = new Map(); scheduleOrder.forEach(i => { const d = getDate(i); if (!map.has(d)) map.set(d, []); map.get(d).push(Number(i)); }); const keys = [...map.keys()].filter(d => d < '9999').sort(); if (keys.length) { const first = keys[0], last = keys[keys.length - 1]; workdaysInRange(first, last).forEach(d => { if (!map.has(d)) map.set(d, []); }); } return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))); }
 
 let dragData = null;
@@ -1062,11 +1069,30 @@ window.saveResultModal = function() {
     r1: Number(document.getElementById('red1Modal').value) || 0,
     r2: Number(document.getElementById('red2Modal').value) || 0
   };
-  const dInp = document.getElementById('resultDate'); if (dInp) {
-    const raw = dInp.value; if (raw) { const p = raw.split('/'); if (p.length === 3) { const m = MONTHS_SHORT.indexOf(p[1]) + 1; matchDates[String(_editMatchIdx)] = `${p[2]}-${String(m).padStart(2, '0')}-${String(p[0]).padStart(2, '0')}`; } }
+  const dInp = document.getElementById('resultDate');
+  if (dInp) {
+    const raw = dInp.value;
+    if (raw) {
+      const p = raw.split('/');
+      if (p.length === 3) {
+        const m = MONTHS_SHORT.indexOf(p[1]) + 1;
+        matchDates[String(_editMatchIdx)] = `${p[2]}-${String(m).padStart(2,'0')}-${String(p[0]).padStart(2,'0')}`;
+      }
+    }
   }
-  closeModal('resultModal'); persist(); showToast('✅ Lưu kết quả thành công!');
+  closeModal('resultModal');
+  persist();
+  showToast('✅ Lưu kết quả thành công!');
+  // Burst animation ở giữa màn hình
+  if (window.triggerEmojiBurst) {
+    const m = BASE_SCHEDULE[_editMatchIdx];
+    const e1 = teamEmojis[m[0]] || '⚽', e2 = teamEmojis[m[1]] || '⚽';
+    window.triggerEmojiBurst(window.innerWidth / 2, window.innerHeight / 2, e1, 10);
+    setTimeout(() => window.triggerEmojiBurst(window.innerWidth / 2 + 40, window.innerHeight / 2 + 20, e2, 10), 200);
+    setTimeout(() => window.triggerEmojiBurst(window.innerWidth / 2 - 20, window.innerHeight / 2 - 10, '⚽', 8), 400);
+  }
 };
+
 window.resetResultModal = function() {
   if (confirm('Khôi phục trận này về trạng thái TBD?')) {
     delete results[String(_editMatchIdx)]; document.getElementById('score1Modal').value = ''; document.getElementById('score2Modal').value = ''; document.getElementById('yellow1Modal').value = ''; document.getElementById('yellow2Modal').value = ''; document.getElementById('red1Modal').value = ''; document.getElementById('red2Modal').value = ''; persist(); closeModal('resultModal'); showToast('🔄 Đã reset TBD!');
@@ -1532,5 +1558,130 @@ subscribeFirebase();
     </div>
   </div>
 </div>
+
+<canvas id="particleCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.7;"></canvas>
+
+<script>
+(function() {
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], emojiPool = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Lấy emoji từ state (cập nhật định kỳ)
+  function refreshEmojiPool() {
+    try {
+      const emojis = Object.values(window._liveTeamEmojis || {});
+      emojiPool = emojis.length > 0 ? emojis : ['⚽','🏆','⚡','🔥','🌊','💎','👑','🦅'];
+    } catch(e) {
+      emojiPool = ['⚽','🏆','⚡','🔥','🌊','💎','👑','🦅'];
+    }
+  }
+
+  class Particle {
+    constructor() { this.reset(true); }
+    reset(init = false) {
+      this.x = Math.random() * W;
+      this.y = init ? Math.random() * H : H + 40;
+      this.emoji = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+      this.size = 14 + Math.random() * 22;
+      this.speedY = -(0.25 + Math.random() * 0.55);
+      this.speedX = (Math.random() - 0.5) * 0.4;
+      this.opacity = 0.08 + Math.random() * 0.18;
+      this.rotation = Math.random() * Math.PI * 2;
+      this.rotSpeed = (Math.random() - 0.5) * 0.012;
+      this.wobble = Math.random() * Math.PI * 2;
+      this.wobbleSpeed = 0.012 + Math.random() * 0.018;
+      this.wobbleAmp = 0.4 + Math.random() * 0.8;
+    }
+    update() {
+      this.y += this.speedY;
+      this.wobble += this.wobbleSpeed;
+      this.x += this.speedX + Math.sin(this.wobble) * this.wobbleAmp;
+      this.rotation += this.rotSpeed;
+      if (this.y < -50) this.reset();
+    }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.opacity;
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.rotation);
+      ctx.font = `${this.size}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.emoji, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // Khởi tạo particles
+  function init() {
+    refreshEmojiPool();
+    particles = Array.from({ length: 38 }, () => new Particle());
+  }
+
+  let frameCount = 0;
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    frameCount++;
+    // Refresh emoji pool mỗi 180 frames (~3s)
+    if (frameCount % 180 === 0) refreshEmojiPool();
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+  }
+
+  init();
+  animate();
+
+  // Burst animation khi lưu kết quả / có sự kiện đặc biệt
+  window.triggerEmojiBurst = function(x, y, emoji, count = 12) {
+    const burst = [];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 / count) * i;
+      const speed = 2 + Math.random() * 3;
+      burst.push({
+        x, y,
+        emoji: emoji || emojiPool[Math.floor(Math.random() * emojiPool.length)],
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        opacity: 1,
+        size: 18 + Math.random() * 14,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.15,
+        life: 1
+      });
+    }
+    function drawBurst() {
+      let alive = false;
+      burst.forEach(p => {
+        if (p.life <= 0) return;
+        alive = true;
+        p.x += p.vx; p.y += p.vy;
+        p.vy += 0.12; // gravity
+        p.life -= 0.022;
+        p.opacity = Math.max(0, p.life);
+        p.rotation += p.rotSpeed;
+        ctx.save();
+        ctx.globalAlpha = p.opacity * 0.9;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.font = `${p.size}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.emoji, 0, 0);
+        ctx.restore();
+      });
+      if (alive) requestAnimationFrame(drawBurst);
+    }
+    drawBurst();
+  };
+})();
+</script>
 </body>
 </html>

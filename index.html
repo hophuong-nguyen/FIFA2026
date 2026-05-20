@@ -1343,38 +1343,6 @@ window.requireAdmin=fn=>{
 };
 
 /* ═══════════════════════
-   CONSTANTS & HELPERS
-═══════════════════════ */
-const EMOJI_CATS = {
-  '⚽ Bóng đá':    ['⚽','🥅','🏆','🥇','🎯','🏅','🎖️','🥈'],
-  '🐾 Thú vật':   ['🦅','🐉','🦁','🐯','🦊','🐺','🦋','🦈','🐻','🦂','🦉','🦏'],
-  '⚡ Huyền thoại':['⚡','🔥','🌊','🌙','💫','❄️','🌪️','☄️'],
-  '💎 Biểu tượng': ['💎','👑','⚔️','🛡️','🗡️','🎭','🏹','🔱'],
-  '🚀 Sci-fi':     ['🚀','🛸','🤖','👾','💥','🌌','⭐','🔮'],
-  '😈 Mạnh mẽ':   ['😈','💀','🎃','👹','🤺','🥊','💪','🦾'],
-  '🌿 Tự nhiên':  ['🌿','🍀','🌸','🌻','🍁','🌴','🦚','🐬'],
-};
-const COLOR_PALETTE = [
-  '#00adef','#e8004d','#f5a623','#00d68f','#7c3aed',
-  '#f97316','#ec4899','#06b6d4','#8b5cf6','#10b981',
-  '#f43f5e','#84cc16','#6366f1','#14b8a6','#fb923c',
-  '#c5f851','#3145eb','#ef4444','#22d3ee','#a855f7',
-];
-const DEFAULT_EMOJIS = ['🦅','🐉','🦁','⚡','🔥','🌊','🌙','🏆','💎','🦊','🔱','☄️'];
-const DEFAULT_COLORS = [
-  '#00adef','#e8004d','#f5a623','#00d68f','#7c3aed',
-  '#f97316','#ec4899','#06b6d4','#8b5cf6','#10b981',
-  '#f43f5e','#84cc16',
-];
-const MIN_TEAMS = 3;
-const MAX_TEAMS = 12;
-
-const MONTHS_VI    = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const DOWS_VI      = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
-const DOWS_SHORT   = ['CN','T2','T3','T4','T5','T6','T7'];
-
-/* ═══════════════════════
    SCHEDULE GENERATOR
    Tạo lịch round-robin động theo số đội
 ═══════════════════════ */
@@ -1404,32 +1372,6 @@ function generateRoundRobin(teamIds, format = 'single') {
   }
   return schedule;
 }
-
-/* ═══════════════════════
-   STATE
-═══════════════════════ */
-// teamIds: mảng ID động thay vì cố định A-G
-let teamIds   = ['A','B','C','D','E','F','G'];
-let teams     = {A:'Team Alpha',B:'Team Beta',C:'Team Cobra',D:'Team Delta',E:'Team Eagle',F:'Team Fenix',G:'Team Ghost'};
-let members   = {A:['P1','P2'],B:['P3','P4'],C:['P5','P6'],D:['P7','P8'],E:['P9','P10'],F:['P11','P12'],G:['P13','P14']};
-let teamEmojis= Object.fromEntries(teamIds.map((id,i)=>[id,DEFAULT_EMOJIS[i]]));
-let teamColors= Object.fromEntries(teamIds.map((id,i)=>[id,DEFAULT_COLORS[i]]));
-let results   = {};
-let matchDates= {};
-let scheduleOrder = [];
-let leagueConfig  = {
-  leagueName: 'FIFA League Manager',
-  season: '2026',
-  matchesPerDay: 3,
-  format: 'single',
-  winPts: 3,
-  drawPts: 1,
-  desc: '',
-};
-// BASE_SCHEDULE tính động
-let BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
-let TOTAL = BASE_SCHEDULE.length;
-let fbReady = false;
 
 /* ═══════════════════════
    REBUILD SCHEDULE
@@ -1469,15 +1411,42 @@ function rebuildSchedule(keepResults = false) {
 ═══════════════════════ */
 function normalizeState(data) {
   if (!data) return;
-  teamIds      = data.teamIds      || teamIds;
+
+  // teamIds: ưu tiên từ DB, fallback về keys của teams
+  if (data.teamIds && Array.isArray(data.teamIds) && data.teamIds.length >= MIN_TEAMS) {
+    teamIds = data.teamIds;
+  } else if (data.teams && typeof data.teams === 'object') {
+    teamIds = Object.keys(data.teams);
+  }
+  // Fallback cuối cùng
+  if (!teamIds || teamIds.length < MIN_TEAMS) {
+    teamIds = ['A','B','C','D','E','F','G'];
+  }
+
   teams        = data.teams        || teams;
   members      = data.members      || members;
   teamEmojis   = data.teamEmojis   || teamEmojis;
   teamColors   = data.teamColors   || teamColors;
   results      = data.results      || {};
   leagueConfig = { ...leagueConfig, ...(data.leagueConfig || {}) };
-  BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
-  TOTAL         = BASE_SCHEDULE.length;
+
+  // Đảm bảo mọi teamId đều có đủ thông tin
+  teamIds.forEach((id, i) => {
+    if (!teams[id])      teams[id]      = `Team ${id}`;
+    if (!members[id])    members[id]    = ['', ''];
+    if (!teamEmojis[id]) teamEmojis[id] = DEFAULT_EMOJIS[i % DEFAULT_EMOJIS.length];
+    if (!teamColors[id]) teamColors[id] = DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+  });
+
+  try {
+    BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+    TOTAL         = BASE_SCHEDULE.length;
+  } catch(e) {
+    console.error('generateRoundRobin error:', e);
+    BASE_SCHEDULE = [];
+    TOTAL = 0;
+  }
+
   matchDates    = normalizeMatchDates(data.matchDates);
   scheduleOrder = normalizeScheduleOrder(data.scheduleOrder);
 }
@@ -2024,28 +1993,56 @@ async function pushToFirebase(){
     setSyncState('connected');
   }catch(e){setSyncState('offline');showToast('⚠️ Lỗi lưu: '+e.message,'warn');}
 }
-function subscribeFirebase(){
-  onValue(dbRef('state'),snap=>{
-    const data=snap.val();
-    if(data){
-      teams        =data.teams        ||teams;
-      members      =data.members      ||members;
-      teamEmojis   =data.teamEmojis   ||teamEmojis;
-      teamColors   =data.teamColors   ||teamColors;
-      results      =data.results      ||{};
-      matchDates   =normalizeMatchDates(data.matchDates);
-      scheduleOrder=normalizeScheduleOrder(data.scheduleOrder);
-    } else {
-      matchDates=buildSeasonDates(); scheduleOrder=BASE_SCHEDULE.map((_,i)=>i);
-      pushToFirebase();
+function subscribeFirebase() {
+  onValue(dbRef('state'), snap => {
+    try {
+      const data = snap.val();
+      if (data) {
+        normalizeState(data);
+      } else {
+        // DB rỗng - dùng default & push lên
+        BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+        TOTAL         = BASE_SCHEDULE.length;
+        matchDates    = buildSeasonDates();
+        scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
+        pushToFirebase();
+      }
+    } catch(e) {
+      console.error('subscribeFirebase parse error:', e);
+      // Fallback về default state
+      BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+      TOTAL         = BASE_SCHEDULE.length;
+      matchDates    = buildSeasonDates();
+      scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
     }
-    if(!fbReady){ fbReady=true; document.getElementById('loadingOverlay').classList.add('hidden'); }
-    setSyncState('connected'); render();
-  },err=>{
-    document.getElementById('loadingText').textContent='❌ '+err.message;
-    document.querySelector('.loading-spinner').style.borderTopColor='#e8004d';
+
+    if (!fbReady) {
+      fbReady = true;
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+    setSyncState('connected');
+    updateHeaderTitle();
+    render();
+
+  }, err => {
+    console.error('Firebase error:', err);
+    document.getElementById('loadingText').textContent = '❌ ' + err.message;
+    document.querySelector('.loading-spinner').style.borderTopColor = '#e8004d';
     setSyncState('offline');
-    setTimeout(()=>document.getElementById('loadingOverlay').classList.add('hidden'),3000);
+
+    // Vẫn hiện app sau 3s dù lỗi
+    setTimeout(() => {
+      if (!fbReady) {
+        fbReady = true;
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+        TOTAL         = BASE_SCHEDULE.length;
+        matchDates    = buildSeasonDates();
+        scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
+        updateHeaderTitle();
+        render();
+      }
+    }, 3000);
   });
 }
 function setSyncState(state){
@@ -3026,6 +3023,20 @@ window.showToast=showToast;
 /* ── Boot ── */
 updateAuthUI();
 subscribeFirebase();
+// Thêm ngay SAU dòng subscribeFirebase();
+setTimeout(() => {
+  if (!fbReady) {
+    fbReady = true;
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    showToast('⚠️ Kết nối chậm - dùng dữ liệu cục bộ', 'warn');
+    BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+    TOTAL = BASE_SCHEDULE.length;
+    matchDates = buildSeasonDates();
+    scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
+    updateHeaderTitle();
+    render();
+  }
+}, 8000);
 </script>
 </body>
 </html>

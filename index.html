@@ -1080,74 +1080,97 @@ function renderFixtures() {
   wrap.innerHTML = '';
   const today = todayISO();
   const matchdays = buildFullDayMap();
-
-  // Phân loại ngày
   const allDates = [...matchdays.keys()].filter(d => d < '9999').sort();
+
   const pastDates = allDates.filter(d => d < today);
   const presentFutureDates = allDates.filter(d => d >= today);
+
+  // Ngày cuối cùng có kết quả
   const lastPlayedDate = [...pastDates].reverse().find(d => {
     const arr = matchdays.get(d) || [];
     return arr.some(i => { const r = getResult(i); return r && r.score1 !== undefined; });
   });
-  // Ngày ngay trước today có kết quả
-  const highlightPastDate = lastPlayedDate || (pastDates.length > 0 ? pastDates[pastDates.length - 1] : null);
 
-  // ── Nhóm các ngày đã qua (trừ highlight) vào 1 summary bar có thể mở rộng ──
-  const collapsedPastDates = pastDates.filter(d => d !== highlightPastDate);
+  // Các ngày cũ sẽ gộp vào summary (trừ lastPlayedDate)
+  const collapsedDates = pastDates.filter(d => d !== lastPlayedDate);
+
   let pastExpanded = false;
 
-  function renderPastSection() {
-    // Xóa past section cũ nếu có
-    const old = wrap.querySelector('.past-section-wrap');
+  // ── 1. Summary bar ──
+  function renderSummaryBar() {
+    const old = wrap.querySelector('.past-summary-bar');
     if (old) old.remove();
 
-    const section = document.createElement('div');
-    section.className = 'past-section-wrap';
+    if (collapsedDates.length === 0) return;
 
-    if (collapsedPastDates.length > 0) {
-      // Summary bar
-      const totalPastMatches = collapsedPastDates.reduce((s, d) => s + (matchdays.get(d) || []).length, 0);
-      const playedPastMatches = collapsedPastDates.reduce((s, d) => {
-        return s + (matchdays.get(d) || []).filter(i => { const r = getResult(i); return r && r.score1 !== undefined; }).length;
-      }, 0);
+    const totalMatches = collapsedDates.reduce((s, d) => s + (matchdays.get(d) || []).length, 0);
+    const playedMatches = collapsedDates.reduce((s, d) => {
+      return s + (matchdays.get(d) || []).filter(i => {
+        const r = getResult(i); return r && r.score1 !== undefined;
+      }).length;
+    }, 0);
 
-      const bar = document.createElement('div');
-      bar.className = 'past-summary-bar';
-      bar.innerHTML = `<span style="font-size:.85rem;">📁</span>
-        <span><span class="psb-count">${collapsedPastDates.length}</span> ngày trước</span>
-        <span style="color:var(--border)">·</span>
-        <span><span class="psb-count">${playedPastMatches}/${totalPastMatches}</span> trận</span>
-        <span style="margin-left:auto;font-size:.7rem;">${pastExpanded ? '▲ Thu gọn' : '▼ Xem lại'}</span>`;
-      bar.onclick = () => { pastExpanded = !pastExpanded; renderPastSection(); };
-      section.appendChild(bar);
+    const bar = document.createElement('div');
+    bar.className = 'past-summary-bar';
+    bar.innerHTML = `
+      <span style="font-size:.9rem;">📁</span>
+      <span><span class="psb-count">${collapsedDates.length}</span> ngày trước</span>
+      <span style="color:var(--border)">·</span>
+      <span><span class="psb-count">${playedMatches}/${totalMatches}</span> trận đã đấu</span>
+      <span style="margin-left:auto;font-size:.7rem;transition:all .18s;">
+        ${pastExpanded ? '▲ Thu gọn' : '▼ Xem lại'}
+      </span>`;
 
-      if (pastExpanded) {
-        collapsedPastDates.forEach(date => {
-          const arr = matchdays.get(date) || [];
-          const block = makeDateBlock(date, arr, today);
-          appendMatchRows(block, arr, date, today, true);
-          section.appendChild(block);
-        });
-      }
-    }
+    bar.onclick = () => {
+      pastExpanded = !pastExpanded;
+      renderCollapsedBlocks();
+      renderSummaryBar();
+    };
 
-    // Chèn vào đầu wrap
-    wrap.insertBefore(section, wrap.firstChild);
+    wrap.insertBefore(bar, wrap.firstChild);
   }
 
-  // ── Render ngày highlight (ngày cuối có kết quả) ──
-  if (highlightPastDate) {
-    const arr = matchdays.get(highlightPastDate) || [];
-    const block = makeDateBlock(highlightPastDate, arr, today);
+  // ── 2. Các block ngày cũ (mở rộng khi click summary) ──
+  function renderCollapsedBlocks() {
+    // Xóa block cũ nếu có
+    wrap.querySelectorAll('.past-collapsed-block').forEach(el => el.remove());
+
+    if (!pastExpanded || collapsedDates.length === 0) return;
+
+    // Chèn sau summary bar
+    const bar = wrap.querySelector('.past-summary-bar');
+    let insertAfter = bar;
+
+    collapsedDates.forEach(date => {
+      const arr = matchdays.get(date) || [];
+      const block = makeDateBlock(date, arr, today);
+      block.classList.add('past-collapsed-block');
+      block.style.opacity = '.62';
+      block.style.transform = 'scale(.985)';
+      block.style.transformOrigin = 'left center';
+      block.addEventListener('mouseenter', () => block.style.opacity = '1');
+      block.addEventListener('mouseleave', () => block.style.opacity = '.62');
+      appendMatchRows(block, arr, date, today, true);
+
+      if (insertAfter && insertAfter.nextSibling) {
+        wrap.insertBefore(block, insertAfter.nextSibling);
+      } else {
+        wrap.appendChild(block);
+      }
+      insertAfter = block;
+    });
+  }
+
+  // ── 3. Highlight ngày cuối có kết quả ──
+  if (lastPlayedDate) {
+    const arr = matchdays.get(lastPlayedDate) || [];
+    const block = makeDateBlock(lastPlayedDate, arr, today);
     block.classList.add('is-last-played');
-    appendMatchRows(block, arr, highlightPastDate, today, true);
+    appendMatchRows(block, arr, lastPlayedDate, today, true);
     wrap.appendChild(block);
   }
 
-  // ── Render ngày hiện tại & tương lai ──
-  let gpos = (collapsedPastDates.reduce((s, d) => s + (matchdays.get(d) || []).length, 0))
-           + (highlightPastDate ? (matchdays.get(highlightPastDate) || []).length : 0);
-
+  // ── 4. Hôm nay & tương lai ──
   presentFutureDates.forEach(date => {
     const arr = matchdays.get(date) || [];
     const block = makeDateBlock(date, arr, today);
@@ -1156,7 +1179,7 @@ function renderFixtures() {
     wrap.appendChild(block);
   });
 
-  // Reserve day
+  // ── 5. Reserve day ──
   const last = getLastScheduledDate();
   if (last) {
     const rd = nextWorkday(last);
@@ -1167,19 +1190,11 @@ function renderFixtures() {
     }
   }
 
-  // Render past section ở đầu
-  renderPastSection();
-
-  // Auto scroll đến today hoặc ngày gần nhất
-  requestAnimationFrame(() => {
-    const todayBlock = wrap.querySelector('.is-today') || wrap.querySelector('.is-last-played');
-    if (todayBlock) {
-      todayBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  });
+  // Render summary bar lên đầu
+  renderSummaryBar();
+  renderCollapsedBlocks();
 }
 
-// ── Helper: gắn rows vào block ──
 function appendMatchRows(block, arr, date, today, isPast) {
   block.appendChild(makeDropZone(date));
   if (arr.length === 0) { block.appendChild(makeEmptyZone(date)); return; }
@@ -1189,23 +1204,21 @@ function appendMatchRows(block, arr, date, today, isPast) {
     const m = BASE_SCHEDULE[origIdx];
     const r = getResult(origIdx) || {};
     const hasResult = r.score1 !== undefined && r.score2 !== undefined;
-
-    // Lock drag: trận đã có kết quả KHÔNG được kéo về ngày khác
-    // Trận tương lai KHÔNG được kéo về ngày đã qua
     const isLocked = hasResult;
 
     const row = document.createElement('div');
     row.className = 'fixture-row' + (hasResult ? ' completed' : '') + (isLocked ? ' drag-locked' : '');
     row.draggable = !isLocked;
     row.dataset.orig = origIdx;
-    row.dataset.locked = isLocked ? '1' : '0';
 
     const editBtn = isAdmin
       ? `<button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>`
       : `<button class="btn-icon" style="opacity:.38;cursor:not-allowed;background:rgba(232,0,77,.07);border-color:rgba(232,0,77,.18);color:var(--red);" onclick="requireAdmin(()=>openResultModal(${origIdx}))">🔒</button>`;
 
     row.innerHTML = `
-      <div class="fixture-num" style="${isLocked ? 'color:var(--green);' : ''}">${isLocked ? '✓' : ''}</div>
+      <div class="fixture-num" style="${isLocked ? 'color:var(--green);' : ''}">
+        ${isLocked ? '✓' : ''}
+      </div>
       <div class="fixture-team home">
         <span class="tname">${teams[m[0]] || m[0]}</span>
         <span style="color:${teamColors[m[0]] || '#fff'};flex-shrink:0">${teamEmojis[m[0]] || '⚽'}</span>
@@ -1224,7 +1237,6 @@ function appendMatchRows(block, arr, date, today, isPast) {
 
     if (!isLocked) {
       row.addEventListener('dragstart', e => {
-        // Chặn kéo trận tương lai về ngày đã qua
         onFixtureDragStart(e, origIdx);
         window._dragFromPast = isPast;
       });
@@ -1232,7 +1244,6 @@ function appendMatchRows(block, arr, date, today, isPast) {
       row.addEventListener('dragover', onRowDragOver);
       row.addEventListener('dragleave', onRowDragLeave);
       row.addEventListener('drop', function(e) {
-        // Chặn drop vào ngày đã qua nếu kéo từ tương lai
         const targetDate = matchDates[String(origIdx)];
         if (!window._dragFromPast && targetDate < today) {
           showToast('⚠️ Không thể kéo trận chưa đấu về ngày đã qua!', 'warn');

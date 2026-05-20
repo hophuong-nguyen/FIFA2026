@@ -1986,65 +1986,6 @@ let fbReady      =false;
    FIREBASE
 ═══════════════════════ */
 function dbRef(path){return ref(db,`${ROOT}/${path}`);}
-async function pushToFirebase(){
-  setSyncState('syncing');
-  try{
-    await set(dbRef('state'),{teams,members,teamEmojis,teamColors,results,matchDates,scheduleOrder});
-    setSyncState('connected');
-  }catch(e){setSyncState('offline');showToast('⚠️ Lỗi lưu: '+e.message,'warn');}
-}
-function subscribeFirebase() {
-  onValue(dbRef('state'), snap => {
-    try {
-      const data = snap.val();
-      if (data) {
-        normalizeState(data);
-      } else {
-        // DB rỗng - dùng default & push lên
-        BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
-        TOTAL         = BASE_SCHEDULE.length;
-        matchDates    = buildSeasonDates();
-        scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
-        pushToFirebase();
-      }
-    } catch(e) {
-      console.error('subscribeFirebase parse error:', e);
-      // Fallback về default state
-      BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
-      TOTAL         = BASE_SCHEDULE.length;
-      matchDates    = buildSeasonDates();
-      scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
-    }
-
-    if (!fbReady) {
-      fbReady = true;
-      document.getElementById('loadingOverlay').classList.add('hidden');
-    }
-    setSyncState('connected');
-    updateHeaderTitle();
-    render();
-
-  }, err => {
-    console.error('Firebase error:', err);
-    document.getElementById('loadingText').textContent = '❌ ' + err.message;
-    document.querySelector('.loading-spinner').style.borderTopColor = '#e8004d';
-    setSyncState('offline');
-
-    // Vẫn hiện app sau 3s dù lỗi
-    setTimeout(() => {
-      if (!fbReady) {
-        fbReady = true;
-        document.getElementById('loadingOverlay').classList.add('hidden');
-        BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
-        TOTAL         = BASE_SCHEDULE.length;
-        matchDates    = buildSeasonDates();
-        scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
-        updateHeaderTitle();
-        render();
-      }
-    }, 3000);
-  });
-}
 function setSyncState(state){
   const bar=document.getElementById('syncInline');
   const text=document.getElementById('syncText');

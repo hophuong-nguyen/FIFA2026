@@ -1106,6 +1106,52 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   opacity: .80;
 }
 
+/* Ép fixture-row thành 8 cột: BadgeTrái | ĐộiNhà | TỉSố | VS | TỉSố | ĐộiKhách | BadgePhải | EditBtn */
+.fixture-row {
+  grid-template-columns: 44px minmax(0,1fr) 28px 24px 28px minmax(0,1fr) 44px 28px !important;
+}
+
+/* Xóa wrap cũ, không dùng nữa */
+.fixture-edit-wrap { display: none !important; }
+
+/* ── Cấu hình Collapse cho Story ── */
+.fixture-sub {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 4px 5px;
+}
+
+/* Ẩn các dòng từ thứ 2 trở đi nếu chưa có class expanded */
+.fixture-sub:not(.expanded) .sub-line:nth-child(n+2) {
+  display: none;
+}
+
+/* Nút toggle */
+.story-toggle-btn {
+  font-size: .56rem;
+  color: #8fa3b8;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+.fixture-sub.expanded .story-toggle-btn { background: rgba(255,255,255,.1); }
+.story-toggle-btn::after { content: '▼'; font-size: .5rem; }
+.fixture-sub.expanded .story-toggle-btn::after { content: '▲'; }
+
+@media(max-width:400px){
+  .fixture-row { grid-template-columns: 36px minmax(0,1fr) 22px 18px 22px minmax(0,1fr) 36px 24px !important; }
+}
+
 /* ── Icon animations on screen ── */
 @keyframes icon-pulse {
   0%,100% { transform: scale(1);   filter: drop-shadow(0 0 0px currentColor); }
@@ -2153,10 +2199,10 @@ function buildMatchStoryParts(origIdx) {
     if (hPts > 0 || hBef !== hAft) lines.push(gapToTopLine(hId));
     if (aPts > 0 || aBef !== aAft) lines.push(gapToTopLine(aId));
 
-    return {
+        return {
       homeBadge,
       awayBadge,
-      subLines: lines.filter(Boolean).join('')
+      lines: lines.filter(Boolean) /* <-- Trả về mảng */
     };
   }
 
@@ -2300,10 +2346,10 @@ function buildMatchStoryParts(origIdx) {
     </div>`);
   }
 
-  return {
+    return {
     homeBadge,
     awayBadge,
-    subLines  : predLines.filter(Boolean).join(''),
+    lines: predLines.filter(Boolean), /* <-- Trả về mảng */
     isPrediction: true
   };
 }
@@ -2596,20 +2642,26 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
       ? (story.awayBadge ?? '')
       : editBtn;
 
-    /* ── Sub lines (tiebreak / gap / context) ── */
-    const subLineHTML = story?.subLines
-      ? `<div class="fixture-sub">${story.subLines}</div>`
-      : '';
+        /* ── Sub lines (Expand/Collapse logic) ── */
+    let subLineHTML = '';
+    if (story && story.lines && story.lines.length > 0) {
+      const linesHTML = story.lines.join('');
+      const toggleBtn = story.lines.length > 1
+        ? `<div class="story-toggle-btn" onmousedown="event.stopPropagation()" onclick="this.parentElement.classList.toggle('expanded'); event.stopPropagation();">
+             Xem thêm ${story.lines.length - 1} dự đoán
+           </div>`
+        : '';
+      subLineHTML = `<div class="fixture-sub">${linesHTML}${toggleBtn}</div>`;
+    }
 
+    /* ── HTML Layout (8 Cột) ── */
     row.innerHTML = `
-      ${leftSlot}
+      ${story?.homeBadge ?? `<div class="fixture-num" style="${numStyle}">${num}</div>`}
 
       <div class="fixture-team home ${homeState}">
         ${homeCards ? `<span class="team-cards">${homeCards}</span>` : ''}
         <span class="tname">${teams[m[0]] || m[0]}</span>
-        <span class="team-emoji"
-              style="color:${teamColors[m[0]] || '#fff'}"
-        >${teamEmojis[m[0]] || '⚽'}</span>
+        <span class="team-emoji" style="color:${teamColors[m[0]] || '#fff'}">${teamEmojis[m[0]] || '⚽'}</span>
       </div>
 
       <div class="fixture-score-box ${hasResult ? homeScoreState : 'pending'}">
@@ -2623,17 +2675,21 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
       </div>
 
       <div class="fixture-team away ${awayState}">
-        <span class="team-emoji"
-              style="color:${teamColors[m[1]] || '#fff'}"
-        >${teamEmojis[m[1]] || '⚽'}</span>
+        <span class="team-emoji" style="color:${teamColors[m[1]] || '#fff'}">${teamEmojis[m[1]] || '⚽'}</span>
         <span class="tname">${teams[m[1]] || m[1]}</span>
         ${awayCards ? `<span class="team-cards">${awayCards}</span>` : ''}
       </div>
 
-      ${rightSlot}
+      ${story?.awayBadge ?? '<div></div>'}
+
+      <div style="display:flex;align-items:center;justify-content:center;">
+        ${editBtn}
+      </div>
 
       ${subLineHTML}
     `;
+
+    /* KHÔNG append fixture-edit-wrap nữa, xóa phần if (story) { append(editWrap) } cũ đi */
 
     /* ── Khi có story: edit button ra ngoài grid, append riêng ── */
     if (story) {

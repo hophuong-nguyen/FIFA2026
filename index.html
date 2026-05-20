@@ -572,62 +572,316 @@ body::after {
 <body>
 <!-- PITCH BACKGROUND -->
 <svg id="pitchSvg" xmlns="http://www.w3.org/2000/svg"
-  style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.45;"
+  style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.38;"
   preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 900">
-
-  <!-- Dải cỏ sáng/tối -->
   <defs>
+    <!-- Dải cỏ -->
     <pattern id="stripes" x="0" y="0" width="1600" height="96" patternUnits="userSpaceOnUse">
       <rect width="1600" height="48" fill="rgba(197,248,81,.07)"/>
       <rect y="48" width="1600" height="48" fill="rgba(0,0,0,0)"/>
     </pattern>
+
+    <!-- Glow accent -->
+    <filter id="glow-accent" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Glow mạnh cho bóng -->
+    <filter id="glow-ball" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Đổ bóng mềm -->
+    <filter id="shadow-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="rgba(0,0,0,.55)"/>
+    </filter>
+    <!-- Glow xanh cho đường chuyền -->
+    <filter id="glow-line" x="-10%" y="-50%" width="120%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Gradient thân người -->
+    <linearGradient id="body-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#c5f851" stop-opacity=".9"/>
+      <stop offset="100%" stop-color="#7aad1e" stop-opacity=".7"/>
+    </linearGradient>
+    <!-- Gradient áo đậm hơn -->
+    <linearGradient id="jersey-grad" x1="0%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%"   stop-color="#c5f851"/>
+      <stop offset="100%" stop-color="#4a7a10"/>
+    </linearGradient>
+    <!-- Gradient quần -->
+    <linearGradient id="shorts-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#3145eb"/>
+      <stop offset="100%" stop-color="#1a2580"/>
+    </linearGradient>
+    <!-- Gradient bóng -->
+    <radialGradient id="ball-grad" cx="38%" cy="32%" r="58%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="45%"  stop-color="#c5f851" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#2a4a00" stop-opacity=".8"/>
+    </radialGradient>
+    <!-- Đổ bóng cầu thủ xuống sân -->
+    <linearGradient id="player-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="rgba(0,0,0,.35)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </linearGradient>
+    <!-- Gradient vệt tốc độ -->
+    <linearGradient id="speed-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#c5f851" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#c5f851" stop-opacity=".55"/>
+    </linearGradient>
+    <!-- Gradient vệt bóng bay -->
+    <linearGradient id="ball-trail" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#c5f851" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity=".7"/>
+    </linearGradient>
   </defs>
+
+  <!-- ── NỀN SÂN CỎ ── -->
   <rect width="1600" height="900" fill="url(#stripes)"/>
 
-  <!-- Đường biên ngoài -->
+  <!-- Đường biên -->
   <rect x="60" y="50" width="1480" height="800"
-    fill="none" stroke="rgba(197,248,81,.55)" stroke-width="2.5" rx="4"/>
-
-  <!-- Vạch giữa sân -->
+    fill="none" stroke="rgba(197,248,81,.45)" stroke-width="2" rx="4"/>
+  <!-- Vạch giữa -->
   <line x1="800" y1="50" x2="800" y2="850"
-    stroke="rgba(197,248,81,.55)" stroke-width="2"/>
-
-  <!-- Vòng tròn giữa sân -->
+    stroke="rgba(197,248,81,.45)" stroke-width="1.8"/>
+  <!-- Vòng tròn giữa -->
   <circle cx="800" cy="450" r="110"
-    fill="none" stroke="rgba(197,248,81,.5)" stroke-width="2"/>
-  <!-- Chấm giữa -->
-  <circle cx="800" cy="450" r="5" fill="rgba(197,248,81,.6)"/>
-
+    fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.8"/>
+  <circle cx="800" cy="450" r="5" fill="rgba(197,248,81,.55)"/>
   <!-- Khung thành trái -->
   <rect x="60"  y="300" width="140" height="300"
-    fill="none" stroke="rgba(197,248,81,.45)" stroke-width="2"/>
-  <!-- Vùng cấm địa trái -->
+    fill="none" stroke="rgba(197,248,81,.38)" stroke-width="1.8"/>
   <rect x="60"  y="175" width="270" height="550"
-    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
-  <!-- Vòng cung penalty trái -->
-  <path d="M 330 355 A 110 110 0 0 1 330 545"
-    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
-  <!-- Chấm penalty trái -->
-  <circle cx="270" cy="450" r="4" fill="rgba(197,248,81,.5)"/>
-
+    fill="none" stroke="rgba(197,248,81,.25)" stroke-width="1.4"/>
+  <circle cx="270" cy="450" r="4" fill="rgba(197,248,81,.45)"/>
   <!-- Khung thành phải -->
   <rect x="1400" y="300" width="140" height="300"
-    fill="none" stroke="rgba(197,248,81,.45)" stroke-width="2"/>
-  <!-- Vùng cấm địa phải -->
+    fill="none" stroke="rgba(197,248,81,.38)" stroke-width="1.8"/>
   <rect x="1270" y="175" width="270" height="550"
-    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
-  <!-- Vòng cung penalty phải -->
-  <path d="M 1270 355 A 110 110 0 0 0 1270 545"
-    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
-  <!-- Chấm penalty phải -->
-  <circle cx="1330" cy="450" r="4" fill="rgba(197,248,81,.5)"/>
+    fill="none" stroke="rgba(197,248,81,.25)" stroke-width="1.4"/>
+  <circle cx="1330" cy="450" r="4" fill="rgba(197,248,81,.45)"/>
 
-  <!-- 4 góc sân -->
-  <path d="M 60  50  A 22 22 0 0 1 82  50"  fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
-  <path d="M 60  850 A 22 22 0 0 0 82  850" fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
-  <path d="M 1540 50  A 22 22 0 0 0 1518 50"  fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
-  <path d="M 1540 850 A 22 22 0 0 1 1518 850" fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
+  <!-- ════════════════════════════════════
+       NHÂN VẬT - Cầu thủ đang SÚT BÓNG
+       Vị trí trung tâm, hơi lệch trái
+  ════════════════════════════════════ -->
+  <g id="player" transform="translate(680,200)" filter="url(#shadow-soft)">
+
+    <!-- Bóng đổ xuống sân (ellipse phía dưới chân) -->
+    <ellipse cx="60" cy="490" rx="55" ry="12"
+      fill="rgba(0,0,0,.38)" filter="url(#shadow-soft)"/>
+
+    <!-- ── CHÂN TRÁI (chân trụ, thẳng) ── -->
+    <!-- Đùi trái -->
+    <path d="M 52,340 Q 46,390 44,430"
+      stroke="url(#shorts-grad)" stroke-width="22" stroke-linecap="round" fill="none"/>
+    <!-- Bắp chân trái -->
+    <path d="M 44,430 Q 40,465 38,490"
+      stroke="#c5f851" stroke-width="17" stroke-linecap="round" fill="none"/>
+    <!-- Giày trái -->
+    <ellipse cx="34" cy="494" rx="22" ry="10" fill="#1a1a2e"/>
+    <ellipse cx="38" cy="491" rx="14" ry="7"  fill="#2a2a4e"/>
+
+    <!-- ── CHÂN PHẢI (chân sút, vung ra trước-lên) ── -->
+    <!-- Đùi phải - vung lên -->
+    <path d="M 68,340 Q 90,310 118,290"
+      stroke="url(#shorts-grad)" stroke-width="22" stroke-linecap="round" fill="none"/>
+    <!-- Bắp chân phải - duỗi ra -->
+    <path d="M 118,290 Q 150,278 178,272"
+      stroke="#c5f851" stroke-width="17" stroke-linecap="round" fill="none"/>
+    <!-- Giày phải - đang tiếp xúc bóng -->
+    <ellipse cx="186" cy="270" rx="24" ry="11"
+      fill="#1a1a2e" transform="rotate(-18,186,270)"/>
+    <ellipse cx="184" cy="268" rx="16" ry="8"
+      fill="#2a2a4e" transform="rotate(-18,184,268)"/>
+
+    <!-- ── THÂN ── -->
+    <!-- Hông / quần (shorts) -->
+    <path d="M 40,320 Q 60,345 80,320 Q 72,295 60,290 Q 48,295 40,320 Z"
+      fill="url(#shorts-grad)" opacity=".95"/>
+
+    <!-- Áo (jersey) - thân trên nghiêng về trước -->
+    <path d="M 35,220 Q 28,265 40,320 Q 60,330 80,320 Q 90,268 82,220
+             Q 70,205 58,202 Q 46,205 35,220 Z"
+      fill="url(#jersey-grad)" opacity=".95"/>
+
+    <!-- Số áo -->
+    <text x="58" y="278" text-anchor="middle"
+      font-family="'Rajdhani',sans-serif" font-size="22" font-weight="700"
+      fill="rgba(0,0,0,.55)">10</text>
+
+    <!-- ── TAY TRÁI (vung ra sau giữ thăng bằng) ── -->
+    <path d="M 38,235 Q 14,248 -8,270"
+      stroke="url(#jersey-grad)" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <!-- Bàn tay trái -->
+    <circle cx="-10" cy="273" r="9" fill="#c5f851" opacity=".75"/>
+
+    <!-- ── TAY PHẢI (vung ra trước) ── -->
+    <path d="M 80,230 Q 105,220 126,210"
+      stroke="url(#jersey-grad)" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <!-- Bàn tay phải -->
+    <circle cx="129" cy="208" r="9" fill="#c5f851" opacity=".75"/>
+
+    <!-- ── CỔ & ĐẦU ── -->
+    <!-- Cổ -->
+    <rect x="51" y="188" width="16" height="18" rx="7"
+      fill="#c5f851" opacity=".85"/>
+    <!-- Đầu - nghiêng về phía bóng -->
+    <circle cx="60" cy="175" r="32" fill="#c5f851" opacity=".88"/>
+    <!-- Mặt - silhouette đơn giản -->
+    <ellipse cx="67" cy="170" rx="19" ry="22"
+      fill="rgba(180,220,60,.6)"/>
+    <!-- Tóc -->
+    <path d="M 35,163 Q 38,138 60,135 Q 84,136 88,158 Q 76,148 60,147 Q 44,148 35,163 Z"
+      fill="rgba(20,20,20,.7)"/>
+    <!-- Mắt -->
+    <circle cx="63" cy="168" r="3.5" fill="rgba(0,0,0,.6)"/>
+    <circle cx="64.5" cy="167" r="1.2" fill="rgba(255,255,255,.7)"/>
+
+    <!-- ── HIGHLIGHT ánh sáng trên áo ── -->
+    <path d="M 48,220 Q 52,250 50,290"
+      stroke="rgba(255,255,255,.22)" stroke-width="6"
+      stroke-linecap="round" fill="none"/>
+
+  </g>
+
+  <!-- ════════════════════════════════════
+       BÓNG ĐÁ - đang bay sau cú sút
+  ════════════════════════════════════ -->
+
+  <!-- Vệt bóng (motion trail) -->
+  <g filter="url(#glow-line)" opacity=".7">
+    <ellipse cx="910" cy="375" rx="55" ry="10"
+      fill="url(#ball-trail)" transform="rotate(-22,910,375)"/>
+    <ellipse cx="950" cy="358" rx="38" ry="7"
+      fill="url(#ball-trail)" transform="rotate(-22,950,358)" opacity=".55"/>
+    <ellipse cx="982" cy="343" rx="24" ry="5"
+      fill="url(#ball-trail)" transform="rotate(-22,982,343)" opacity=".3"/>
+  </g>
+
+  <!-- Bóng chính -->
+  <g filter="url(#glow-ball)">
+    <circle cx="1005" cy="330" r="30" fill="url(#ball-grad)"/>
+    <!-- Hoa văn bóng đá (pentagon pattern) -->
+    <path d="M1005,305 L1012,318 L1026,318 L1016,328 L1020,342
+             L1005,334 L990,342 L994,328 L984,318 L998,318 Z"
+      fill="rgba(0,0,0,.22)" stroke="rgba(0,0,0,.18)" stroke-width="1"/>
+    <!-- Dot highlight -->
+    <circle cx="995" cy="318" r="6" fill="rgba(255,255,255,.55)"/>
+  </g>
+
+  <!-- ════════════════════════════════════
+       VỆT TỐC ĐỘ - đường chạy cầu thủ
+  ════════════════════════════════════ -->
+  <g filter="url(#glow-line)" opacity=".5">
+    <!-- Vệt tốc độ ngang dưới chân -->
+    <line x1="480" y1="688" x2="690" y2="688"
+      stroke="url(#speed-grad)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="500" y1="698" x2="680" y2="698"
+      stroke="url(#speed-grad)" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+    <line x1="520" y1="707" x2="665" y2="707"
+      stroke="url(#speed-grad)" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+  </g>
+
+  <!-- ════════════════════════════════════
+       NHÂN VẬT PHỤ - Thủ môn (góc phải)
+       Dáng lao người bắt bóng
+  ════════════════════════════════════ -->
+  <g id="goalkeeper" transform="translate(1310,280)" opacity=".55"
+    filter="url(#shadow-soft)">
+
+    <!-- Bóng đổ -->
+    <ellipse cx="40" cy="310" rx="40" ry="9" fill="rgba(0,0,0,.28)"/>
+
+    <!-- ── Chân phải (chân trụ đẩy) ── -->
+    <path d="M 48,255 Q 52,280 55,305"
+      stroke="#3145eb" stroke-width="19" stroke-linecap="round" fill="none"/>
+    <path d="M 55,305 Q 54,318 52,328"
+      stroke="#c5f851" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <ellipse cx="50" cy="332" rx="18" ry="8" fill="#1a1a2e"/>
+
+    <!-- ── Chân trái (vung lên cao) ── -->
+    <path d="M 30,250 Q 14,230 -2,205"
+      stroke="#3145eb" stroke-width="19" stroke-linecap="round" fill="none"/>
+    <path d="M -2,205 Q -14,188 -20,172"
+      stroke="#c5f851" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <ellipse cx="-24" cy="168" rx="18" ry="8"
+      fill="#1a1a2e" transform="rotate(30,-24,168)"/>
+
+    <!-- Thân (nghiêng lao) -->
+    <path d="M 20,155 Q 14,195 30,250 Q 50,258 68,248
+             Q 76,200 68,158 Q 58,143 44,140 Q 30,142 20,155 Z"
+      fill="#eb4560" opacity=".9"/>
+
+    <!-- Số áo -->
+    <text x="44" y="210" text-anchor="middle"
+      font-family="'Rajdhani',sans-serif" font-size="18" font-weight="700"
+      fill="rgba(255,255,255,.5)">1</text>
+
+    <!-- ── Tay trái (lao về phía bóng, vươn lên) ── -->
+    <path d="M 22,168 Q -10,145 -38,118"
+      stroke="#eb4560" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <circle cx="-42" cy="114" r="10" fill="#c5f851" opacity=".7"/>
+
+    <!-- ── Tay phải (chống xuống) ── -->
+    <path d="M 66,165 Q 80,175 90,190"
+      stroke="#eb4560" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <circle cx="93" cy="194" r="10" fill="#c5f851" opacity=".7"/>
+
+    <!-- Cổ + Đầu -->
+    <rect x="37" y="125" width="14" height="18" rx="6"
+      fill="#c5f851" opacity=".8"/>
+    <circle cx="44" cy="112" r="26" fill="#c5f851" opacity=".82"/>
+    <!-- Tóc thủ môn -->
+    <path d="M 22,105 Q 24,85 44,82 Q 64,83 68,100 Q 58,93 44,92 Q 30,93 22,105 Z"
+      fill="rgba(20,20,20,.65)"/>
+    <!-- Mắt -->
+    <circle cx="50" cy="108" r="3" fill="rgba(0,0,0,.55)"/>
+
+    <!-- Găng tay thủ môn (highlight) -->
+    <circle cx="-42" cy="114" r="11"
+      fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+  </g>
+
+  <!-- ════════════════════════════════════
+       HIỆU ỨNG BỔ SUNG
+  ════════════════════════════════════ -->
+
+  <!-- Tia sáng từ điểm sút (chân cầu thủ) -->
+  <g filter="url(#glow-line)" opacity=".35">
+    <line x1="866" y1="468" x2="1000" y2="330"
+      stroke="#c5f851" stroke-width="2.5" stroke-linecap="round"
+      stroke-dasharray="8,6"/>
+  </g>
+
+  <!-- Hào quang dưới chân cầu thủ chính -->
+  <ellipse cx="738" cy="692" rx="80" ry="14"
+    fill="rgba(197,248,81,.12)" filter="url(#glow-line)"/>
+
+  <!-- Hào quang dưới chân thủ môn -->
+  <ellipse cx="1348" cy="592" rx="55" ry="10"
+    fill="rgba(235,69,96,.1)" filter="url(#glow-line)"/>
+
+  <!-- Tia sáng ambient góc trái trên -->
+  <radialGradient id="ambient-tl" cx="0%" cy="0%" r="60%">
+    <stop offset="0%"   stop-color="rgba(49,69,235,.2)"/>
+    <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+  </radialGradient>
+  <rect width="600" height="400" fill="url(#ambient-tl)" opacity=".6"/>
+
+  <!-- Tia sáng ambient góc phải dưới -->
+  <radialGradient id="ambient-br" cx="100%" cy="100%" r="55%">
+    <stop offset="0%"   stop-color="rgba(197,248,81,.12)"/>
+    <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+  </radialGradient>
+  <rect width="1600" height="900" fill="url(#ambient-br)" opacity=".7"/>
+
 </svg>
+
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">Đang kết nối Firebase...</div>

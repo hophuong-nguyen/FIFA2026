@@ -1115,6 +1115,14 @@ function renderFixtures() {
   const matchdays = buildFullDayMap();
   const allDates = [...matchdays.keys()].filter(d => d < '9999').sort();
 
+  // ── Tính toán số thứ tự trận đấu (chronological) ──
+  const matchNumMap = {};
+  let gpos = 1;
+  allDates.forEach(d => {
+    const arr = matchdays.get(d) || [];
+    arr.forEach(idx => { matchNumMap[idx] = gpos++; });
+  });
+
   const pastDates = allDates.filter(d => d < today);
   const presentFutureDates = allDates.filter(d => d >= today);
 
@@ -1165,12 +1173,9 @@ function renderFixtures() {
 
   // ── 2. Các block ngày cũ (mở rộng khi click summary) ──
   function renderCollapsedBlocks() {
-    // Xóa block cũ nếu có
     wrap.querySelectorAll('.past-collapsed-block').forEach(el => el.remove());
-
     if (!pastExpanded || collapsedDates.length === 0) return;
 
-    // Chèn sau summary bar
     const bar = wrap.querySelector('.past-summary-bar');
     let insertAfter = bar;
 
@@ -1183,7 +1188,7 @@ function renderFixtures() {
       block.style.transformOrigin = 'left center';
       block.addEventListener('mouseenter', () => block.style.opacity = '1');
       block.addEventListener('mouseleave', () => block.style.opacity = '.62');
-      appendMatchRows(block, arr, date, today, true);
+      appendMatchRows(block, arr, date, today, true, matchNumMap);
 
       if (insertAfter && insertAfter.nextSibling) {
         wrap.insertBefore(block, insertAfter.nextSibling);
@@ -1199,7 +1204,7 @@ function renderFixtures() {
     const arr = matchdays.get(lastPlayedDate) || [];
     const block = makeDateBlock(lastPlayedDate, arr, today);
     block.classList.add('is-last-played');
-    appendMatchRows(block, arr, lastPlayedDate, today, true);
+    appendMatchRows(block, arr, lastPlayedDate, today, true, matchNumMap);
     wrap.appendChild(block);
   }
 
@@ -1208,7 +1213,7 @@ function renderFixtures() {
     const arr = matchdays.get(date) || [];
     const block = makeDateBlock(date, arr, today);
     if (date === today) block.classList.add('is-today');
-    appendMatchRows(block, arr, date, today, false);
+    appendMatchRows(block, arr, date, today, false, matchNumMap);
     wrap.appendChild(block);
   });
 
@@ -1223,12 +1228,11 @@ function renderFixtures() {
     }
   }
 
-  // Render summary bar lên đầu
   renderSummaryBar();
   renderCollapsedBlocks();
 }
 
-function appendMatchRows(block, arr, date, today, isPast) {
+function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
   block.appendChild(makeDropZone(date));
   if (arr.length === 0) { block.appendChild(makeEmptyZone(date)); return; }
 
@@ -1238,6 +1242,7 @@ function appendMatchRows(block, arr, date, today, isPast) {
     const r = getResult(origIdx) || {};
     const hasResult = r.score1 !== undefined && r.score2 !== undefined;
     const isLocked = hasResult;
+    const num = matchNumMap[origIdx]; // Lấy số thứ tự đã tính toán
 
     const row = document.createElement('div');
     row.className = 'fixture-row' + (hasResult ? ' completed' : '') + (isLocked ? ' drag-locked' : '');
@@ -1248,9 +1253,12 @@ function appendMatchRows(block, arr, date, today, isPast) {
       ? `<button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>`
       : `<button class="btn-icon" style="opacity:.38;cursor:not-allowed;background:rgba(232,0,77,.07);border-color:rgba(232,0,77,.18);color:var(--red);" onclick="requireAdmin(()=>openResultModal(${origIdx}))">🔒</button>`;
 
+    // Nổi bật số thứ tự trận nếu đã có kết quả
+    const numStyle = isLocked ? 'color:var(--green); background:rgba(197,248,81,.1); border:1px solid rgba(197,248,81,.25);' : '';
+
     row.innerHTML = `
-      <div class="fixture-num" style="${isLocked ? 'color:var(--green);' : ''}">
-        ${isLocked ? '✓' : ''}
+      <div class="fixture-num" style="${numStyle}">
+        ${num}
       </div>
       <div class="fixture-team home">
         <span class="tname">${teams[m[0]] || m[0]}</span>

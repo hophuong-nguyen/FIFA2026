@@ -21,21 +21,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   pointer-events:none;}
 .container{position:relative;z-index:1;max-width:1500px;margin:auto;padding:16px 24px;}
 
-/* SYNC BAR */
-.sync-bar{display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:10px;margin-bottom:14px;font-size:.8rem;font-weight:600;background:var(--bg-card);border:1px solid var(--border);transition:all .3s;}
-.sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s;}
-.sync-bar.connected .sync-dot{background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s ease-in-out infinite;}
-.sync-bar.syncing .sync-dot{background:var(--gold);box-shadow:0 0 6px var(--gold);animation:blink .5s ease-in-out infinite;}
-.sync-bar.offline .sync-dot{background:var(--red);box-shadow:0 0 6px var(--red);}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
-.sync-bar.connected{border-color:rgba(34,197,94,.3);}
-.sync-bar.syncing{border-color:rgba(251,191,36,.3);}
-.sync-bar.offline{border-color:rgba(239,68,68,.3);}
-.sync-text{color:var(--text-muted);}
-.sync-bar.connected .sync-text{color:var(--green);}
-.sync-bar.syncing .sync-text{color:var(--gold);}
-.sync-bar.offline .sync-text{color:var(--red);}
-.sync-time{margin-left:auto;color:var(--text-muted);font-size:.72rem;font-weight:400;}
+
 
 /* HEADER */
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:14px 24px;
@@ -57,7 +43,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   animation:shimmer 3s linear infinite;letter-spacing:1px;}
 @keyframes shimmer{to{background-position:200%;}}
 .header-title p{color:var(--text-muted);font-size:.75rem;margin-top:1px;letter-spacing:2px;text-transform:uppercase;}
-.header-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
 
 /* BUTTONS */
 .btn{padding:8px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;
@@ -93,15 +79,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 @media(max-width:1100px){.grid-2{grid-template-columns:1fr;}}
 
-/* STATS */
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
-@media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr);}}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;position:relative;overflow:hidden;}
-.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
-.stat-card .stat-val{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;color:var(--accent);}
-.stat-card .stat-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-top:1px;}
-.stat-card .stat-icon{font-size:1.2rem;margin-bottom:3px;}
 
 /* FIXTURES */
 .fixtures-wrap{max-height:640px;overflow-y:auto;padding-right:4px;}
@@ -307,16 +284,64 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 .dp-clear:hover{border-color:var(--red);color:var(--red);}
 
 /* AUTH */
-.auth-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;
-  font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);
-  background:rgba(255,255,255,.04);color:var(--text-muted);transition:all .2s;}
-.auth-badge:hover{border-color:var(--accent);color:var(--accent);}
-.auth-badge.logged-in{border-color:rgba(34,197,94,.3);color:var(--green);background:rgba(34,197,94,.06);}
-.auth-badge .auth-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);flex-shrink:0;}
-.auth-badge.logged-in .auth-dot{background:var(--green);box-shadow:0 0 5px var(--green);}
 .admin-lock{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;color:var(--text-muted);
   background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;
   padding:2px 7px;margin-left:6px;vertical-align:middle;}
+
+/* HEADER REVISED */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;
+  padding:14px 24px;background:linear-gradient(135deg,#0d1b2e 0%,#112240 50%,#0d1b2e 100%);
+  border-radius:18px;border:1px solid var(--border);
+  box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.header-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+
+/* FLAT BUTTONS - tối giản, đồng nhất */
+.btn-flat{padding:6px 14px;border-radius:8px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--text);font-size:.8rem;font-weight:600;
+  font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;
+  display:inline-flex;align-items:center;gap:5px;letter-spacing:.2px;white-space:nowrap;}
+.btn-flat:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.35);color:var(--accent);}
+.btn-flat-danger{color:#f87171;}
+.btn-flat-danger:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35);color:var(--red);}
+.btn-flat-teal{color:#2dd4bf;}
+.btn-flat-teal:hover{background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.35);color:#14b8a6;}
+
+/* AUTH BADGE - đồng nhất với btn-flat */
+.auth-badge{padding:6px 14px;border-radius:8px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--text-muted);font-size:.8rem;font-weight:600;
+  font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.auth-badge:hover{border-color:rgba(0,212,255,.35);color:var(--accent);}
+.auth-badge.logged-in{border-color:rgba(34,197,94,.3);color:var(--green);background:rgba(34,197,94,.06);}
+.auth-badge.logged-in:hover{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#f87171;}
+.auth-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0;transition:all .3s;}
+.auth-badge.logged-in .auth-dot{background:var(--green);box-shadow:0 0 5px var(--green);}
+
+/* SYNC INLINE - bên dưới các nút */
+.sync-inline{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:500;
+  color:var(--text-muted);padding:3px 8px;border-radius:6px;border:1px solid transparent;transition:all .3s;}
+.sync-inline.connected{color:var(--green);border-color:rgba(34,197,94,.15);background:rgba(34,197,94,.04);}
+.sync-inline.syncing{color:var(--gold);border-color:rgba(251,191,36,.15);background:rgba(251,191,36,.04);}
+.sync-inline.offline{color:var(--red);border-color:rgba(239,68,68,.15);background:rgba(239,68,68,.04);}
+.sync-inline .sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sync-inline.connected .sync-dot{background:var(--green);box-shadow:0 0 4px var(--green);animation:blink 2s ease-in-out infinite;}
+.sync-inline.syncing  .sync-dot{background:var(--gold);animation:blink .5s ease-in-out infinite;}
+.sync-inline.offline  .sync-dot{background:var(--red);}
+#syncTime{color:var(--text-muted);font-size:.68rem;opacity:.7;}
+
+/* STATS COMPACT - nằm dưới podium */
+.stats-compact{display:flex;gap:0;margin:12px 0 16px;border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;background:var(--bg-deep);}
+.sc-item{flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border);position:relative;}
+.sc-item:last-child{border-right:none;}
+.sc-val{font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:var(--accent);line-height:1;}
+.sc-label{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-top:3px;}
+.sc-icon{font-size:.85rem;margin-bottom:2px;}
+.sc-item.fairplay .sc-val{font-size:.8rem;padding-top:3px;}
+
+/* remove old stats-row if remnant */
+.stats-row{display:none;}
 
 @media(max-width:600px){
   .header{flex-direction:column;gap:12px;text-align:center;}
@@ -479,31 +504,35 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 
 <!-- MAIN -->
 <div class="container">
-  <div class="sync-bar offline" id="syncBar">
-    <div class="sync-dot"></div>
-    <span class="sync-text" id="syncText">Đang kết nối...</span>
-    <span class="sync-time" id="syncTime"></span>
-  </div>
   <div class="header">
-    <div class="header-left">
-      <div class="header-logo">⚽</div>
-      <div class="header-title">
-        <h1>FIFA LEAGUE MANAGER</h1>
-        <p>⚡ Pro Edition · SEASON 2026 · Real-time Sync</p>
-      </div>
+  <div class="header-left">
+    <div class="header-logo">⚽</div>
+    <div class="header-title">
+      <h1>FIFA LEAGUE MANAGER</h1>
+      <p>⚡ Pro Edition · Season 2026 · Real-time Sync</p>
     </div>
+  </div>
+  <div class="header-right">
     <div class="header-actions">
-  <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
-    <div class="auth-dot"></div>
-    <span id="authLabel">Đăng nhập</span>
+      <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
+        <div class="auth-dot"></div>
+        <span id="authLabel">Đăng nhập</span>
+      </div>
+      <button class="btn btn-flat" onclick="openModal('teamModal');renderTeamModalInputs()">🛡️ Đội</button>
+      <button class="btn btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
+        ⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span>
+      </button>
+      <button class="btn btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">
+        🔄 Reset <span class="admin-lock" id="lockReset">🔒</span>
+      </button>
+    </div>
+    <div class="sync-inline" id="syncInline">
+      <div class="sync-dot"></div>
+      <span id="syncText">Đang kết nối...</span>
+      <span id="syncTime"></span>
+    </div>
   </div>
-  <button class="btn btn-primary" onclick="openModal('teamModal');renderTeamModalInputs()">🛡️ Quản lý đội</button>
-  <button class="btn btn-purple" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
-    ⚽ Nhập kết quả <span class="admin-lock" id="lockResult">🔒</span>
-  </button>
-  <button class="btn btn-danger btn-sm" onclick="openResetModal()">🔄 Reset</button>
 </div>
-  </div>
   <div class="stats-row">
     <div class="stat-card"><div class="stat-icon">🏟️</div><div class="stat-val" id="statTotalMatches">0</div><div class="stat-label">Trận đã đấu</div></div>
     <div class="stat-card"><div class="stat-icon">⚽</div><div class="stat-val" id="statTotalGoals">0</div><div class="stat-label">Tổng bàn thắng</div></div>
@@ -512,21 +541,23 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
     <div class="stat-card"><div class="stat-icon">🕊️</div><div class="stat-val" id="statFairplay" style="font-size:.9rem;padding-top:6px;"> - </div><div class="stat-label">Fair Play</div></div>
   </div>
   <div class="grid-2">
-    <div class="card">
-      <div class="section-header">
-        <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
-        <button class="btn btn-teal btn-sm" id="btnAuto" onclick="requireAdmin(()=>openAutoModal())">
-  ⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span>
-</button>
-      </div>
-      <div class="fixtures-wrap" id="fixturesList"></div>
+  <div class="card">
+    <div class="section-header">
+      <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
+      <button class="btn btn-flat btn-flat-teal btn-sm" id="btnAuto"
+        onclick="requireAdmin(()=>openAutoModal())">
+        ⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span>
+      </button>
     </div>
-    <div class="card">
-      <div class="card-title"><div class="icon">🏆</div>Bảng xếp hạng</div>
-      <div id="podiumArea"></div>
-      <table class="standings-table" id="standingsTable"></table>
-    </div>
+    <div class="fixtures-wrap" id="fixturesList"></div>
   </div>
+  <div class="card">
+    <div class="card-title"><div class="icon">🏆</div>Bảng xếp hạng</div>
+    <div id="podiumArea"></div>
+    <div class="stats-compact" id="statsCompact"></div>
+    <table class="standings-table" id="standingsTable"></table>
+  </div>
+</div>
 </div>
 
 <script type="module">
@@ -910,13 +941,21 @@ function subscribeFirebase(){
   });
 }
 function setSyncState(state){
-  const bar=document.getElementById('syncBar');
-  const text=document.getElementById('syncText');
-  const time=document.getElementById('syncTime');
-  bar.className=`sync-bar ${state}`;
-  if(state==='connected'){ text.textContent='Đã kết nối · Real-time sync'; time.textContent='Cập nhật: '+new Date().toLocaleTimeString('vi-VN'); }
-  else if(state==='syncing'){ text.textContent='Đang đồng bộ...'; time.textContent=''; }
-  else { text.textContent='Mất kết nối'; time.textContent=''; }
+  const bar  = document.getElementById('syncInline');
+  const text = document.getElementById('syncText');
+  const time = document.getElementById('syncTime');
+  if(!bar) return;
+  bar.className = `sync-inline ${state}`;
+  if(state==='connected'){
+    text.textContent = 'Đã kết nối · Real-time';
+    time.textContent = new Date().toLocaleTimeString('vi-VN');
+  } else if(state==='syncing'){
+    text.textContent = 'Đang đồng bộ...';
+    time.textContent = '';
+  } else {
+    text.textContent = 'Mất kết nối';
+    time.textContent = '';
+  }
 }
 function persist(){ pushToFirebase(); render(); }
 
@@ -1222,17 +1261,42 @@ function renderStats(){
     played++; goals+=(r.score1||0)+(r.score2||0);
     yellow+=(r.y1||0)+(r.y2||0); red+=(r.r1||0)+(r.r2||0);
   }
-  document.getElementById('statTotalMatches').textContent=played;
-  document.getElementById('statTotalGoals').textContent=goals;
-  document.getElementById('statTotalYellow').textContent=yellow;
-  document.getElementById('statTotalRed').textContent=red;
   const raw=calcStandingsRaw();
   const wg=Object.entries(raw).filter(([,v])=>v.played>0);
+  let fairplayHTML=' - ';
   if(wg.length){
     const fp=[...wg].sort((a,b)=>(a[1].y+a[1].r*3)-(b[1].y+b[1].r*3));
     const[fpId]=fp[0];
-    document.getElementById('statFairplay').innerHTML=`<span style="color:${teamColors[fpId]}">${teamEmojis[fpId]}</span>&nbsp;${teams[fpId]}`;
-  } else document.getElementById('statFairplay').textContent=' - ';
+    fairplayHTML=`<span style="color:${teamColors[fpId]}">${teamEmojis[fpId]}</span> ${teams[fpId]}`;
+  }
+  const box=document.getElementById('statsCompact');
+  if(!box) return;
+  box.innerHTML=`
+    <div class="sc-item">
+      <div class="sc-icon">🏟️</div>
+      <div class="sc-val">${played}</div>
+      <div class="sc-label">Đã đấu</div>
+    </div>
+    <div class="sc-item">
+      <div class="sc-icon">⚽</div>
+      <div class="sc-val">${goals}</div>
+      <div class="sc-label">Bàn thắng</div>
+    </div>
+    <div class="sc-item">
+      <div class="sc-icon">🟨</div>
+      <div class="sc-val">${yellow}</div>
+      <div class="sc-label">Thẻ vàng</div>
+    </div>
+    <div class="sc-item">
+      <div class="sc-icon">🟥</div>
+      <div class="sc-val">${red}</div>
+      <div class="sc-label">Thẻ đỏ</div>
+    </div>
+    <div class="sc-item fairplay">
+      <div class="sc-icon">🕊️</div>
+      <div class="sc-val">${fairplayHTML}</div>
+      <div class="sc-label">Fair Play</div>
+    </div>`;
 }
 
 /* ═══════════════════════

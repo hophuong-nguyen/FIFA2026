@@ -692,17 +692,52 @@ body::after{
 </div>
 
 <!-- AUTO SCHEDULE MODAL -->
+<!-- AUTO SCHEDULE MODAL -->
 <div class="modal-overlay" id="autoModal">
-  <div class="modal-box" style="max-width:430px;">
+  <div class="modal-box" style="max-width:460px;">
     <div class="modal-header">
       <div class="modal-title">⚡ Tự động xếp lịch</div>
       <button class="modal-close" onclick="closeModal('autoModal')">✕</button>
     </div>
-    <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:16px;line-height:1.6;">
-      Chọn ngày bắt đầu - hệ thống chia đều
-      <strong style="color:var(--accent)">3 trận / ngày làm việc</strong>.<br>
-      Các trận <strong style="color:var(--green)">đã có kết quả</strong> giữ nguyên ngày.
-    </p>
+
+    <div class="form-group">
+      <label class="form-label">Logic xếp lịch</label>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <label style="display:flex;align-items:flex-start;gap:9px;padding:10px 12px;
+          border-radius:9px;border:1px solid var(--border);background:var(--bg-deep);
+          cursor:pointer;transition:border-color .18s;" id="logic-opt-A">
+          <input type="radio" name="scheduleLogic" value="independent" checked
+            style="margin-top:3px;accent-color:var(--accent);flex-shrink:0;"
+            onchange="onLogicChange()">
+          <div>
+            <div style="font-size:.83rem;font-weight:600;color:var(--text);">
+              🔀 3 cặp độc lập / ngày
+            </div>
+            <div style="font-size:.72rem;color:var(--text-muted);margin-top:3px;line-height:1.5;">
+              Mỗi ngày 3 trận với 6 đội khác nhau.<br>
+              Không đội nào phải đá 2 trận trong cùng 1 ngày.
+            </div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:9px;padding:10px 12px;
+          border-radius:9px;border:1px solid var(--border);background:var(--bg-deep);
+          cursor:pointer;transition:border-color .18s;" id="logic-opt-B">
+          <input type="radio" name="scheduleLogic" value="back2back"
+            style="margin-top:3px;accent-color:var(--accent);flex-shrink:0;"
+            onchange="onLogicChange()">
+          <div>
+            <div style="font-size:.83rem;font-weight:600;color:var(--text);">
+              ⚡ 1 đội đá 2 trận liên tiếp / ngày
+            </div>
+            <div style="font-size:.72rem;color:var(--text-muted);margin-top:3px;line-height:1.5;">
+              1 đội đá 2 trận liền trong ngày (A–B, A–C).<br>
+              Chỉ cần 5 đội có mặt thay vì 6, giảm di chuyển.
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+
     <div class="form-group">
       <label class="form-label">Ngày bắt đầu xếp lịch</label>
       <div id="autoDateGroup"></div>

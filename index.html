@@ -408,6 +408,36 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   cursor: default !important;
 }
 
+/* ── Loading text fading effect ── */
+.loading-text-fx {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--text-muted) 20%,
+    var(--accent)     40%,
+    #fff              50%,
+    var(--accent)     60%,
+    var(--text-muted) 80%,
+    var(--text-muted) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer-ltr 1.6s linear infinite;
+  user-select: none;
+}
+
+@keyframes shimmer-ltr {
+  0%   { background-position: 150% center; }
+  100% { background-position: -50% center; }
+}
+
 /* ── Icon animations on screen ── */
 @keyframes icon-pulse {
   0%,100% { transform: scale(1);   filter: drop-shadow(0 0 0px currentColor); }
@@ -480,7 +510,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   <circle cx="1330" cy="450" r="4" fill="rgba(197,248,81,.5)"/>
 </svg>
 
-<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text" id="loadingText">Đang kết nối Firebase...</div></div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text-fx" id="loadingText">=[ Cập nhật dữ liệu ]=</div>
+</div>
 <div class="toast" id="toast"></div>
 
 <!-- EMOJI PICKER -->

@@ -26,34 +26,50 @@
   --glow2:0 0 24px rgba(49,69,235,.18);
 }
 html,body{height:100%;-webkit-text-size-adjust:100%;}
-body{font-family:'Inter',sans-serif;background:var(--bg-deep);color:var(--text);
-  min-height:100vh;overflow-x:hidden;margin:0;padding:0;}
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  /* Sân cỏ: dải sáng tối xen kẽ */
+
+/* ── BODY BACKGROUND: sân cỏ hiển thị rõ ── */
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0d1a0a;
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Lớp 1: Sân cỏ dải sáng tối thật sự */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background:
     repeating-linear-gradient(
       180deg,
-      rgba(28,38,20,.0)  0px,
-      rgba(28,38,20,.0)  48px,
-      rgba(10,20,8,.25)  48px,
-      rgba(10,20,8,.25)  96px
+      rgba(40,80,20,.18)  0px,
+      rgba(40,80,20,.18)  56px,
+      rgba(10,30,8,.32)   56px,
+      rgba(10,30,8,.32)   112px
     ),
-    /* Nền xanh cỏ đậm */
-    linear-gradient(180deg,#0d1a0a 0%,#0f2010 40%,#0a1808 100%);
+    linear-gradient(180deg, #0d1a0a 0%, #0f2210 40%, #0a1808 100%);
 }
-body::after{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+
+/* Lớp 2: Overlay theme - giảm opacity để lộ sân cỏ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background:
-    /* Overlay màu theme đè lên sân cỏ */
-    radial-gradient(ellipse 80% 55% at 50% 0%,   rgba(49,69,235,.28) 0%,transparent 65%),
-    radial-gradient(ellipse 60% 40% at 0%  100%,  rgba(37,42,73,.55)  0%,transparent 60%),
-    radial-gradient(ellipse 55% 45% at 100% 60%,  rgba(197,248,81,.06) 0%,transparent 55%),
-    /* Tối 4 góc vignette */
-    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,.65) 100%),
-    /* Màu nền theme */
-    linear-gradient(160deg,#1c2030 0%,#20242d 50%,#1a1e2a 100%);
-  opacity:.92;
+    radial-gradient(ellipse 80% 55% at 50% 0%,   rgba(49,69,235,.18) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 0%  100%,  rgba(37,42,73,.35)  0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 100% 60%,  rgba(197,248,81,.04) 0%, transparent 55%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 55%, rgba(0,0,0,.45) 100%);
+  /* BỎ linear-gradient đặc màu theme - đó là nguyên nhân che sân cỏ */
+  opacity: .85;
 }
 
 /* ── SCROLLBAR ── */
@@ -556,7 +572,7 @@ body::after{
 <body>
 <!-- PITCH BACKGROUND -->
 <svg id="pitchSvg" xmlns="http://www.w3.org/2000/svg"
-  style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.13;"
+  style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.45;"
   preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 900">
 
   <!-- Dải cỏ sáng/tối -->

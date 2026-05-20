@@ -370,7 +370,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     </div>
     <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg-deep);border-radius:10px;padding:4px;border:1px solid var(--border);">
       <button id="tab-teams" onclick="switchTeamTab('teams')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:rgba(197,248,81,.12);color:var(--accent);">🛡️ Danh sách đội</button>
-      <button id="tab-settings" onclick="switchTeamTab('settings')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:transparent;color:var(--text-muted);">⚙️ Cài đặt giải đấu</button>
+      <button id="tab-settings" onclick="switchTeamTab('settings')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:transparent;color:var(--text-muted);">🔒 Cài đặt giải đấu</button>
     </div>
     <div id="tab-content-teams">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -1169,7 +1169,7 @@ function genTeamId() {
 }
 
 window.addNewTeam = () => {
-  if (!isAdmin) { requireAdmin(() => {}); return; }
+  if (!isAdmin) { openModal('loginModal'); showToast('🔒 Cần đăng nhập Admin', 'warn'); return; }
   if (_tempTeamIds.length >= MAX_TEAMS) { showToast(`⚠️ Tối đa ${MAX_TEAMS} đội`, 'warn'); return; }
   const newCount = _tempTeamIds.length + 1;
   const newTotal = generateRoundRobin([..._tempTeamIds, 'X'], leagueConfig.format).length;
@@ -1192,7 +1192,7 @@ window.addNewTeam = () => {
 };
 
 window.removeTeamById = (id) => {
-  if (!isAdmin) { requireAdmin(() => {}); return; }
+  if (!isAdmin) { openModal('loginModal'); showToast('🔒 Cần đăng nhập Admin', 'warn'); return; }
   if (_tempTeamIds.length <= MIN_TEAMS) { showToast(`⚠️ Tối thiểu ${MIN_TEAMS} đội`, 'warn'); return; }
   const newCount = _tempTeamIds.length - 1;
   const newIds = _tempTeamIds.filter(t => t !== id);
@@ -1245,7 +1245,8 @@ window.renderTeamModalInputs = () => {
               style="width:22px;height:22px;border-radius:5px;border:1px solid rgba(235,69,96,.3);
               background:rgba(235,69,96,.08);color:var(--red);cursor:pointer;font-size:11px;
               display:flex;align-items:center;justify-content:center;flex-shrink:0;
-              transition:all .15s;-webkit-tap-highlight-color:transparent;">✕</button>`
+              transition:all .15s;-webkit-tap-highlight-color:transparent;"
+              title="${isAdmin ? 'Xóa đội này' : '🔒 Cần Admin'}">${isAdmin ? '✕' : '🔒'}</button>`
           : ''}
       </div>
       <div class="form-group" style="margin-bottom:7px">
@@ -1259,8 +1260,16 @@ window.renderTeamModalInputs = () => {
       </div>
     </div>`).join('');
   updateTeamCountLabel();
-  document.getElementById('btnRemoveTeam').style.opacity = _tempTeamIds.length <= MIN_TEAMS ? '.4' : '1';
-  document.getElementById('btnAddTeam').style.opacity = _tempTeamIds.length >= MAX_TEAMS ? '.4' : '1';
+  const btnRemove = document.getElementById('btnRemoveTeam');
+  const btnAdd = document.getElementById('btnAddTeam');
+  if (btnRemove) {
+    btnRemove.style.opacity = _tempTeamIds.length <= MIN_TEAMS ? '.4' : '1';
+    btnRemove.innerHTML = `${isAdmin ? '➖' : '🔒'} Bớt đội`;
+  }
+  if (btnAdd) {
+    btnAdd.style.opacity = _tempTeamIds.length >= MAX_TEAMS ? '.4' : '1';
+    btnAdd.innerHTML = `${isAdmin ? '➕' : '🔒'} Thêm đội`;
+  }
   document.getElementById('teamChangeWarning').style.display = 'none';
 };
 
@@ -1333,6 +1342,11 @@ window.teamDrop = (e, targetId) => { e.preventDefault(); if (!_dragTeamId || _dr
 window.teamDragEnd = () => { _dragTeamId = null; document.querySelectorAll('.team-entry').forEach(el => el.style.opacity = '1'); };
 
 window.switchTeamTab = (tab) => {
+  if (tab === 'settings' && !isAdmin) {
+    openModal('loginModal');
+    showToast('🔒 Cần đăng nhập Admin', 'warn');
+    return;
+  }
   ['teams', 'settings'].forEach(t => {
     const btn = document.getElementById(`tab-${t}`), content = document.getElementById(`tab-content-${t}`), active = t === tab;
     if (btn) { btn.style.background = active ? 'rgba(197,248,81,.12)' : 'transparent'; btn.style.color = active ? 'var(--accent)' : 'var(--text-muted)'; }

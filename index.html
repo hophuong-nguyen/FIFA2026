@@ -1609,28 +1609,37 @@ function normalizeState(data) {
   catch(e) { console.error(e); BASE_SCHEDULE = []; TOTAL = 0; }
   
   matchDates = normalizeMatchDates(data.matchDates); scheduleOrder = normalizeScheduleOrder(data.scheduleOrder);
+
+  /* Nhận rankMovement từ người khác gửi qua Firebase */
+  if (data.rankMovement) {
+    rankMovementState = data.rankMovement;
+    /* Tắt glow/animation để máy người nhận không bị nháy sáng */
+    Object.values(rankMovementState).forEach(s => {
+      s.isFresh = false;
+      s.glowUntil = Date.now() - 1;
+    });
+  } else {
+    rankMovementState = {};
+  }
 }
+
 async function pushToFirebase() {
   setSyncState('syncing');
-  try { await set(dbRef('state'), { teamIds, teams, members, teamEmojis, teamColors, results, matchDates, scheduleOrder, leagueConfig }); setSyncState('connected'); }
-  catch(e) { setSyncState('offline'); showToast('⚠️ Lỗi lưu: ' + e.message, 'warn'); }
+  try { 
+    await set(dbRef('state'), { 
+      teamIds, teams, members, teamEmojis, teamColors, results, 
+      matchDates, scheduleOrder, leagueConfig,
+      rankMovement: rankMovementState  /* <-- CHỈ THÊM ĐÚNG DÒNG NÀY */
+    }); 
+    setSyncState('connected'); 
+  }
+  catch(e) { 
+    setSyncState('offline'); 
+    showToast('⚠️ Lỗi lưu: ' + e.message, 'warn'); 
+  }
 }
-function persist() { 
-  /* Lưu rank movement state để restore sau reload */
-try {
-  const saveable = {};
-  Object.entries(rankMovementState).forEach(([id, v]) => {
-    saveable[id] = {
-      delta    : v.delta,
-      dir      : v.dir,
-      source   : v.source,
-      tooltip  : v.tooltip,
-      /* Không lưu changedAt/glowUntil vì glow chỉ dùng 1 lần */
-    };
-  });
-  localStorage.setItem('rankMovement', JSON.stringify(saveable));
-} catch(e) {}
 
+function persist() { 
   pushToFirebase(); 
   render(); 
 }
@@ -1661,7 +1670,6 @@ function subscribeFirebase() {
 
     setSyncState('connected');
     updateHeaderTitle();
-    restoreRankMovement(); /* ← thêm vào đây */
     render();
 
   }, err => {
@@ -1679,7 +1687,6 @@ function subscribeFirebase() {
         matchDates = buildSeasonDates();
         scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
         updateHeaderTitle();
-        restoreRankMovement(); /* ← thêm vào đây */
         render();
       }
     }, 6000);
@@ -2944,31 +2951,6 @@ function buildRankMovementTooltip(delta, source, rows, idx) {
 
   return base;
 }
-function restoreRankMovement() {
-  try {
-    const raw = localStorage.getItem('rankMovement');
-    if (!raw) return;
-    const saved = JSON.parse(raw);
-
-    /* Validate các id còn hợp lệ với danh sách đội hiện tại */
-    const validIds = new Set(teamIds);
-    const restored = {};
-    Object.entries(saved).forEach(([id, v]) => {
-      if (!validIds.has(id)) return;
-      restored[id] = {
-        ...v,
-        isFresh  : false,
-        changedAt: Date.now(),
-        glowUntil: Date.now() - 1, /* Không glow khi restore */
-        visibleUntil: Infinity     /* Không fade-out */
-      };
-    });
-
-    if (Object.keys(restored).length) {
-      rankMovementState = restored;
-    }
-  } catch(e) {}
-}
 
 /* ── Tính movement khi render ── */
 function computeRankMovement(rows) {
@@ -2994,6 +2976,7 @@ function computeRankMovement(rows) {
   const hasRankChange = rows.some(([id], idx) => previousRanks[id] !== idx + 1);
 
   if (rankMovementTrigger && hasRankChange) {
+    /* CHỈ TÍNH TOÁN NẾU LÀ MÁY CỦA NGƯỜI VỪA BẤM LƯU KẾT QUẢ */
     const now = Date.now();
     const nextState = {};
 
@@ -3016,25 +2999,16 @@ function computeRankMovement(rows) {
     rankMovementState = nextState;
     clearRankMovementTrigger();
 
-    /* Sau 600ms tắt is-fresh để không re-animate khi re-render */
+    /* Tắt animation is-fresh sau 600ms */
     setTimeout(() => {
       Object.values(rankMovementState).forEach(s => { s.isFresh = false; });
     }, 600);
 
-  } else if (hasRankChange && !rankMovementTrigger) {
-    /* BXH đổi không phải do save result → silent reset state */
-    rankMovementState = {};
+  } else if (rankMovementTrigger) {
     clearRankMovementTrigger();
   } else {
-    /* Không đổi BXH → cập nhật tooltip tiebreak mà giữ delta cũ */
-    rows.forEach(([id], idx) => {
-      if (rankMovementState[id]) {
-        rankMovementState[id].tooltip =
-          buildRankMovementTooltip(rankMovementState[id].delta, true, rows, idx);
-        rankMovementState[id].isFresh = false;
-      }
-    });
-    clearRankMovementTrigger();
+    /* NẾU KHÔNG CÓ TRIGGER: Máy đang nhận update từ Firebase của người khác
+       -> DO NOTHING. Giữ nguyên rankMovementState vừa được Firebase nạp vào. */
   }
 
   previousRanks = currentRanks;
@@ -3144,17 +3118,15 @@ window.saveResultModal = function() {
   }
   const _savedIdx = _editMatchIdx;
 armRankMovement('result-save');
-closeModal('resultModal');
-persist();
-showToast('✅ Lưu kết quả thành công!');
-  // Burst animation ở giữa màn hình
-  if (window.triggerEmojiBurst) {
-    const m = BASE_SCHEDULE[_editMatchIdx];
-    const e1 = teamEmojis[m[0]] || '⚽', e2 = teamEmojis[m[1]] || '⚽';
-    window.triggerEmojiBurst(window.innerWidth / 2, window.innerHeight / 2, e1, 10);
-    setTimeout(() => window.triggerEmojiBurst(window.innerWidth / 2 + 40, window.innerHeight / 2 + 20, e2, 10), 200);
-    setTimeout(() => window.triggerEmojiBurst(window.innerWidth / 2 - 20, window.innerHeight / 2 - 10, '⚽', 8), 400);
-  }
+  
+  /* ÉP TÍNH TOÁN THỨ HẠNG MỚI NGAY LẬP TỨC ĐỂ ĐẨY LÊN FIREBASE */
+  computeRankMovement(calcStandings());
+
+  closeModal('resultModal');
+  persist();  /* Lúc này persist gọi pushToFirebase sẽ mang theo rankMovement mới tinh! */
+  
+  showToast('✅ Lưu kết quả thành công!');
+  render();
 };
 
 window.resetResultModal = function() {

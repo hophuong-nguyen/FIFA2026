@@ -1244,62 +1244,283 @@ function initTouchDrag(rowEl,origIdx){
 /* ═══════════════════════
    AUTO SCHEDULE
 ═══════════════════════ */
-window.openAutoModal=function(){
-  const suggested=nearestWorkday(todayISO());
-  const dg=document.getElementById('autoDateGroup');
-  dg.innerHTML='';
-  let autoISO=suggested;
-  dg.appendChild(makeDpInput('autoStartDate',suggested,iso=>{ autoISO=iso||suggested; refreshAutoPreview(autoISO); }));
+/* ── Greedy grouping: mỗi ngày 3 trận, không đội nào đá 2 lần ── */
+function groupIndependent(pending) {
+  // pending: mảng origIdx chưa có kết quả
+  // Trả về: mảng các "ngày" = mảng origIdx, mỗi nhóm tối đa 3 trận, 6 đội khác nhau
+  const remaining = [...pending];
+  const days = [];
+
+  while (remaining.length > 0) {
+    const dayGroup = [];
+    const usedTeams = new Set();
+    // Vòng lặp chọn trận phù hợp cho ngày này
+    const skipped = [];
+    for (const origIdx of remaining) {
+      if (dayGroup.length >= 3) break;
+      const [ta, tb] = BASE_SCHEDULE[origIdx];
+      if (!usedTeams.has(ta) && !usedTeams.has(tb)) {
+        dayGroup.push(origIdx);
+        usedTeams.add(ta);
+        usedTeams.add(tb);
+      } else {
+        skipped.push(origIdx);
+      }
+    }
+    // Nếu không chọn được trận nào (deadlock rất hiếm) → đẩy 1 trận để tránh vòng lặp vô tận
+    if (dayGroup.length === 0) {
+      dayGroup.push(remaining[0]);
+      skipped.splice(0, 1); // bỏ phần tử đầu khỏi skipped vì đã chọn
+    }
+    days.push(dayGroup);
+    // Xây lại remaining = skipped + phần còn lại chưa xét
+    const chosen = new Set(dayGroup);
+    remaining.splice(0, remaining.length,
+      ...remaining.filter(i => !chosen.has(i))
+    );
+  }
+  return days;
+}
+
+/* ── Greedy grouping: 1 đội đá 2 trận liên tiếp trong ngày ── */
+function groupBack2Back(pending) {
+  // Mỗi "ngày" cố gắng xếp: 1 trận back2back (đội A đá 2 lần) + 1 trận độc lập
+  // = tổng 3 trận, chỉ cần 5 đội có mặt
+  // Nếu không tìm được cặp back2back → fallback về 3 trận độc lập
+  const remaining = [...pending];
+  const days = [];
+
+  while (remaining.length > 0) {
+    const dayGroup = [];
+
+    // Thử tìm 1 cặp back2back: 2 trận dùng chung 1 đội
+    let foundB2B = false;
+    outer:
+    for (let i = 0; i < remaining.length && !foundB2B; i++) {
+      const [a1, b1] = BASE_SCHEDULE[remaining[i]];
+      for (let j = i + 1; j < remaining.length && !foundB2B; j++) {
+        const [a2, b2] = BASE_SCHEDULE[remaining[j]];
+        // Tìm đội chung (pivot)
+        const pivotCombos = [];
+        if (a1 === a2) pivotCombos.push({ pivot: a1, others: [b1, b2] });
+        if (a1 === b2) pivotCombos.push({ pivot: a1, others: [b1, a2] });
+        if (b1 === a2) pivotCombos.push({ pivot: b1, others: [a1, b2] });
+        if (b1 === b2) pivotCombos.push({ pivot: b1, others: [a1, a2] });
+
+        if (pivotCombos.length > 0) {
+          const { pivot, others } = pivotCombos[0];
+          // Thêm 2 trận back2back vào ngày
+          dayGroup.push(remaining[i], remaining[j]);
+          const usedTeams = new Set([pivot, ...others]);
+
+          // Tìm trận thứ 3 độc lập (không dùng pivot hoặc others)
+          for (let k = 0; k < remaining.length; k++) {
+            if (k === i || k === j) continue;
+            const [a3, b3] = BASE_SCHEDULE[remaining[k]];
+            if (!usedTeams.has(a3) && !usedTeams.has(b3)) {
+              dayGroup.push(remaining[k]);
+              usedTeams.add(a3);
+              usedTeams.add(b3);
+              break;
+            }
+          }
+          foundB2B = true;
+        }
+      }
+    }
+
+    // Fallback: không tìm được back2back → chọn 3 trận độc lập như option 1
+    if (!foundB2B) {
+      const usedTeams = new Set();
+      for (const origIdx of remaining) {
+        if (dayGroup.length >= 3) break;
+        const [ta, tb] = BASE_SCHEDULE[origIdx];
+        if (!usedTeams.has(ta) && !usedTeams.has(tb)) {
+          dayGroup.push(origIdx);
+          usedTeams.add(ta);
+          usedTeams.add(tb);
+        }
+      }
+      if (dayGroup.length === 0) dayGroup.push(remaining[0]);
+    }
+
+    days.push(dayGroup);
+    const chosen = new Set(dayGroup);
+    remaining.splice(0, remaining.length,
+      ...remaining.filter(i => !chosen.has(i))
+    );
+  }
+  return days;
+}
+
+function getSelectedLogic() {
+  const el = document.querySelector('input[name="scheduleLogic"]:checked');
+  return el ? el.value : 'independent';
+}
+
+window.onLogicChange = () => {
+  // Cập nhật border highlight cho label được chọn
+  const val = getSelectedLogic();
+  document.getElementById('logic-opt-A').style.borderColor =
+    val === 'independent' ? 'rgba(197,248,81,.45)' : 'var(--border)';
+  document.getElementById('logic-opt-B').style.borderColor =
+    val === 'back2back' ? 'rgba(49,69,235,.55)' : 'var(--border)';
+
+  // Refresh preview nếu đã chọn ngày
+  const iso = window._autoGetISO ? window._autoGetISO() : '';
+  if (iso) refreshAutoPreview(iso);
+};
+
+window.openAutoModal = function () {
+  const suggested = nearestWorkday(todayISO());
+  const dg = document.getElementById('autoDateGroup');
+  dg.innerHTML = '';
+  let autoISO = suggested;
+  dg.appendChild(makeDpInput('autoStartDate', suggested, iso => {
+    autoISO = iso || suggested;
+    refreshAutoPreview(autoISO);
+  }));
+  // Reset radio về mặc định
+  const radios = document.querySelectorAll('input[name="scheduleLogic"]');
+  if (radios.length) radios[0].checked = true;
+  onLogicChange();
   refreshAutoPreview(suggested);
   openModal('autoModal');
-  window._autoGetISO=()=>autoISO;
+  window._autoGetISO = () => autoISO;
 };
-function refreshAutoPreview(rawISO){
-  const hint=document.getElementById('autoDateHint');
-  const preview=document.getElementById('autoPreview');
-  if(!rawISO){hint.textContent='';preview.innerHTML='<span style="color:var(--text-muted)">Chọn ngày để xem trước...</span>';return;}
-  let startISO=rawISO;
-  if(isWeekend(startISO)){hint.textContent='⚠️ Cuối tuần - sẽ chuyển sang ngày làm việc tiếp theo.';startISO=nearestWorkday(startISO);}
-  else hint.textContent='';
-  const pendingList=scheduleOrder.filter(i=>isPending(i));
-  const completedCnt=scheduleOrder.length-pendingList.length;
-  const pendingCnt=pendingList.length;
-  const daysNeeded=Math.ceil(pendingCnt/3);
-  const endISO=daysNeeded<=1?startISO:addWorkdays(startISO,daysNeeded-1);
-  let rows='';
-  let cur=startISO;
-  const show=Math.min(daysNeeded,5);
-  for(let d=0;d<show;d++){
-    const from=d*3+1,to=Math.min(d*3+3,pendingCnt);
-    rows+=`<div class="auto-preview-row">
-      <span style="color:var(--text)">${formatDateShort(cur)}</span>
-      <span style="color:var(--accent);font-size:.78rem">${from===to?`Trận ${from}`:`Trận ${from}–${to}`} (${to-from+1} trận)</span>
-    </div>`;
-    if(d<daysNeeded-1) cur=addWorkdays(cur,1);
+
+function refreshAutoPreview(rawISO) {
+  const hint    = document.getElementById('autoDateHint');
+  const preview = document.getElementById('autoPreview');
+  if (!rawISO) {
+    hint.textContent = '';
+    preview.innerHTML = '<span style="color:var(--text-muted)">Chọn ngày để xem trước...</span>';
+    return;
   }
-  if(daysNeeded>5) rows+=`<div style="color:var(--text-muted);font-size:.75rem;padding-top:4px;">... và ${daysNeeded-5} ngày nữa đến ${formatDateShort(endISO)}</div>`;
-  if(pendingCnt===0) rows='<div style="color:var(--green);font-size:.82rem;">✅ Tất cả trận đã có kết quả.</div>';
-  preview.innerHTML=`
-    <div style="display:flex;gap:18px;margin-bottom:9px;flex-wrap:wrap;">
-      <div><div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Đã đấu</div>
-        <strong style="color:var(--green)">${completedCnt}</strong> <span style="color:var(--text-muted);font-size:.75rem;">trận</span></div>
-      <div><div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Cần xếp</div>
-        <strong style="color:var(--accent)">${pendingCnt}</strong> <span style="color:var(--text-muted);font-size:.75rem;">trận</span></div>
-      <div><div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Kết thúc</div>
-        <strong style="color:var(--text)">${pendingCnt>0?formatDateShort(endISO):' - '}</strong></div>
+
+  let startISO = rawISO;
+  if (isWeekend(startISO)) {
+    hint.textContent = '⚠️ Cuối tuần - sẽ chuyển sang ngày làm việc tiếp theo.';
+    startISO = nearestWorkday(startISO);
+  } else {
+    hint.textContent = '';
+  }
+
+  const logic       = getSelectedLogic();
+  const pendingList = scheduleOrder.filter(i => isPending(i));
+  const completedCnt = scheduleOrder.length - pendingList.length;
+  const pendingCnt  = pendingList.length;
+
+  if (pendingCnt === 0) {
+    preview.innerHTML = '<div style="color:var(--green);font-size:.82rem;">✅ Tất cả trận đã có kết quả.</div>';
+    return;
+  }
+
+  // Tính nhóm theo logic được chọn
+  const groups = logic === 'back2back'
+    ? groupBack2Back(pendingList)
+    : groupIndependent(pendingList);
+
+  const daysNeeded = groups.length;
+  const endISO     = daysNeeded <= 1 ? startISO : addWorkdays(startISO, daysNeeded - 1);
+
+  // Render preview tối đa 5 ngày
+  let rows = '';
+  let cur  = startISO;
+  const show = Math.min(daysNeeded, 5);
+
+  for (let d = 0; d < show; d++) {
+    const grp = groups[d];
+    // Phân tích nhóm: tìm đội back2back nếu có
+    const teamCount = new Map();
+    grp.forEach(origIdx => {
+      BASE_SCHEDULE[origIdx].forEach(t => teamCount.set(t, (teamCount.get(t) || 0) + 1));
+    });
+    const pivotTeam = [...teamCount.entries()].find(([, cnt]) => cnt >= 2);
+
+    let tag = '';
+    if (logic === 'back2back' && pivotTeam) {
+      tag = `<span style="font-size:.68rem;padding:1px 6px;border-radius:4px;
+        background:rgba(49,69,235,.15);color:#7b96ff;border:1px solid rgba(49,69,235,.3);margin-left:5px;">
+        ${teamEmojis[pivotTeam[0]]} đá 2 trận</span>`;
+    }
+
+    rows += `<div class="auto-preview-row">
+      <span style="color:var(--text)">${formatDateShort(cur)}</span>
+      <span style="color:var(--accent);font-size:.78rem;display:flex;align-items:center;gap:4px;">
+        ${grp.length} trận${tag}
+      </span>
+    </div>`;
+
+    if (d < daysNeeded - 1) cur = addWorkdays(cur, 1);
+  }
+
+  if (daysNeeded > 5) {
+    rows += `<div style="color:var(--text-muted);font-size:.75rem;padding-top:4px;">
+      ... và ${daysNeeded - 5} ngày nữa đến ${formatDateShort(endISO)}
+    </div>`;
+  }
+
+  const logicLabel = logic === 'back2back'
+    ? '<span style="color:#7b96ff">⚡ Back-to-back</span>'
+    : '<span style="color:var(--accent)">🔀 Độc lập</span>';
+
+  preview.innerHTML = `
+    <div style="display:flex;gap:18px;margin-bottom:9px;flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Đã đấu</div>
+        <strong style="color:var(--green)">${completedCnt}</strong>
+        <span style="color:var(--text-muted);font-size:.75rem;"> trận</span>
+      </div>
+      <div>
+        <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Cần xếp</div>
+        <strong style="color:var(--accent)">${pendingCnt}</strong>
+        <span style="color:var(--text-muted);font-size:.75rem;"> trận / ${daysNeeded} ngày</span>
+      </div>
+      <div>
+        <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Kết thúc</div>
+        <strong style="color:var(--text)">${formatDateShort(endISO)}</strong>
+      </div>
+      <div>
+        <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Logic</div>
+        ${logicLabel}
+      </div>
     </div>${rows}`;
 }
-window.confirmAutoSchedule=function(){
-  let startISO=window._autoGetISO?window._autoGetISO():'';
-  if(!startISO){showToast('⚠️ Vui lòng chọn ngày bắt đầu!','warn');return;}
-  startISO=nearestWorkday(startISO);
-  const completed=[],pending=[];
-  scheduleOrder.forEach(i=>{(isPending(i)?pending:completed).push(Number(i));});
-  completed.sort((a,b)=>getDate(a).localeCompare(getDate(b)));
-  pending.forEach((origIdx,pos)=>{matchDates[String(origIdx)]=pos===0?startISO:addWorkdays(startISO,Math.floor(pos/3));});
-  scheduleOrder=[...completed,...pending];
-  closeModal('autoModal'); persist();
-  showToast(`⚡ Đã xếp ${pending.length} trận từ ${formatDateShort(startISO)}!`);
+
+window.confirmAutoSchedule = function () {
+  let startISO = window._autoGetISO ? window._autoGetISO() : '';
+  if (!startISO) { showToast('⚠️ Vui lòng chọn ngày bắt đầu!', 'warn'); return; }
+  startISO = nearestWorkday(startISO);
+
+  const logic     = getSelectedLogic();
+  const completed = scheduleOrder.filter(i => !isPending(i)).map(Number);
+  const pending   = scheduleOrder.filter(i =>  isPending(i)).map(Number);
+
+  // Sắp xếp completed theo ngày thi đấu cũ
+  completed.sort((a, b) => getDate(a).localeCompare(getDate(b)));
+
+  // Tính nhóm theo logic
+  const groups = logic === 'back2back'
+    ? groupBack2Back(pending)
+    : groupIndependent(pending);
+
+  // Gán ngày cho từng trận pending
+  let cur = startISO;
+  groups.forEach((grp, dayIdx) => {
+    const dayISO = dayIdx === 0 ? cur : addWorkdays(startISO, dayIdx);
+    grp.forEach(origIdx => {
+      matchDates[String(origIdx)] = dayISO;
+    });
+  });
+
+  // Cập nhật scheduleOrder: completed trước, rồi pending theo thứ tự nhóm
+  const newPendingOrder = groups.flat();
+  scheduleOrder = [...completed, ...newPendingOrder];
+
+  closeModal('autoModal');
+  persist();
+  showToast(`⚡ Đã xếp ${pending.length} trận (${logic === 'back2back' ? 'Back-to-back' : 'Độc lập'}) từ ${formatDateShort(startISO)}!`);
 };
 
 /* ═══════════════════════

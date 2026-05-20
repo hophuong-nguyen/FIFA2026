@@ -278,6 +278,38 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .loading-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
 .loading-text{color:var(--text-muted);font-size:.86rem;letter-spacing:1px;}
 
+.confirm-code-box {
+  background: var(--bg-deep);
+  border: 1.5px dashed rgba(235,69,96,.4);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 12px;
+}
+.confirm-code-display {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--red);
+  background: rgba(235,69,96,.08);
+  border: 1.5px dashed rgba(235,69,96,.4);
+  border-radius: 9px;
+  padding: 5px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: all .2s;
+  display: inline-block;
+}
+.confirm-code-input {
+  letter-spacing: 4px;
+  font-size: 1.1rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  margin-top: 8px;
+}
+
 /* Responsive */
 @media(max-width:640px){
   .container{padding:8px 10px;}.header{padding:11px 14px;border-radius:13px;}
@@ -1043,72 +1075,255 @@ window.resetResultModal = function() {
   }
 };
 
+/* ═══════════════════ CONFIRM CODE HELPER ═══════════════════ */
+let _confirmCode = '', _confirmCallback = null;
+
+function requireConfirmCode(title, descHTML, onConfirm) {
+  _confirmCallback = onConfirm;
+  document.getElementById('confirmCodeTitle').textContent = title;
+  document.getElementById('confirmCodeDesc').innerHTML = descHTML;
+  document.getElementById('confirmCodeInput').value = '';
+  document.getElementById('confirmCodeCheck').textContent = '';
+  document.getElementById('confirmCodeHint').textContent = 'Click vào mã để tạo mã mới';
+  document.getElementById('confirmCodeHint').style.color = 'var(--text-muted)';
+  document.getElementById('confirmCodeInput').style.borderColor = 'var(--border)';
+  document.getElementById('confirmCodeInput').style.boxShadow = 'none';
+  const btn = document.getElementById('confirmCodeBtn');
+  btn.disabled = true; btn.style.opacity = '.38'; btn.style.cursor = 'not-allowed';
+  openModal('confirmCodeModal');
+  setTimeout(refreshConfirmCode, 120);
+}
+
+window.refreshConfirmCode = () => {
+  _confirmCode = String(Math.floor(100000 + Math.random() * 900000));
+  const d = document.getElementById('confirmCodeDisplay');
+  const i = document.getElementById('confirmCodeInput');
+  const h = document.getElementById('confirmCodeHint');
+  const c = document.getElementById('confirmCodeCheck');
+  const b = document.getElementById('confirmCodeBtn');
+  if (d) { d.textContent = _confirmCode; d.style.transform = 'scale(1.1)'; setTimeout(() => d.style.transform = 'scale(1)', 200); }
+  if (i) { i.value = ''; i.style.borderColor = 'var(--border)'; i.style.boxShadow = 'none'; }
+  if (h) { h.textContent = 'Nhập chính xác 6 chữ số ở trên'; h.style.color = 'var(--text-muted)'; }
+  if (c) c.textContent = '';
+  if (b) { b.disabled = true; b.style.opacity = '.38'; b.style.cursor = 'not-allowed'; }
+};
+
+window.onConfirmCodeInput = () => {
+  const i = document.getElementById('confirmCodeInput');
+  const c = document.getElementById('confirmCodeCheck');
+  const h = document.getElementById('confirmCodeHint');
+  const b = document.getElementById('confirmCodeBtn');
+  if (!i) return;
+  i.value = i.value.replace(/\D/g, '').slice(0, 6);
+  const v = i.value, cor = v === _confirmCode, par = _confirmCode.startsWith(v) && v.length < 6;
+  if (v.length === 0) {
+    c.textContent = ''; h.textContent = 'Nhập chính xác 6 chữ số'; h.style.color = 'var(--text-muted)';
+    i.style.borderColor = 'var(--border)'; i.style.boxShadow = 'none';
+  } else if (cor) {
+    c.textContent = '✅'; h.textContent = '✓ Mã chính xác'; h.style.color = 'var(--green)';
+    i.style.borderColor = 'var(--green)'; i.style.boxShadow = '0 0 0 3px rgba(197,248,81,.15)';
+  } else if (v.length === 6 && !cor) {
+    c.textContent = '❌'; h.textContent = '✗ Mã sai - click vào mã để tạo mới';
+    h.style.color = 'var(--red)'; i.style.borderColor = 'var(--red)'; i.style.boxShadow = '0 0 0 3px rgba(235,69,96,.15)';
+  } else {
+    c.textContent = par ? '…' : '❌'; h.textContent = `Đã nhập ${v.length}/6`;
+    h.style.color = 'var(--text-muted)'; i.style.borderColor = 'var(--border)'; i.style.boxShadow = 'none';
+  }
+  if (b) { b.disabled = !cor; b.style.opacity = cor ? '1' : '.38'; b.style.cursor = cor ? 'pointer' : 'not-allowed'; }
+};
+
+window.executeConfirmCode = () => {
+  const i = document.getElementById('confirmCodeInput');
+  if (!i || i.value !== _confirmCode) { showToast('❌ Mã xác nhận sai!', 'warn'); return; }
+  closeModal('confirmCodeModal');
+  if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
+};
+
+window.cancelConfirmCode = () => {
+  closeModal('confirmCodeModal'); _confirmCallback = null;
+};
+
 /* ═══════════════════ MODAL: TEAM SETTINGS ═══════════════════ */
+
+// Bộ nhớ tạm khi edit trong modal - chỉ áp dụng khi nhấn "Lưu đội"
+let _tempTeamIds = [], _tempTeams = {}, _tempMembers = {};
+let _tempEmojis = {}, _tempColors = {};
+
+function cloneTeamState() {
+  _tempTeamIds = [...teamIds];
+  _tempTeams = { ...teams };
+  _tempMembers = Object.fromEntries(Object.entries(members).map(([k, v]) => [k, [...v]]));
+  _tempEmojis = { ...teamEmojis };
+  _tempColors = { ...teamColors };
+}
+function applyTempToReal() {
+  teamIds = [..._tempTeamIds];
+  teams = { ..._tempTeams };
+  members = Object.fromEntries(Object.entries(_tempMembers).map(([k, v]) => [k, [...v]]));
+  teamEmojis = { ..._tempEmojis };
+  teamColors = { ..._tempColors };
+}
+
 function genTeamId() {
-  const used = new Set(teamIds);
+  const used = new Set(_tempTeamIds);
   for (let c = 65; c <= 90; c++) { const id = String.fromCharCode(c); if (!used.has(id)) return id; }
   let n = 1; while (used.has('T' + n)) n++; return 'T' + n;
 }
+
 window.addNewTeam = () => {
-  if (teamIds.length >= MAX_TEAMS) { showToast(`⚠️ Tối đa ${MAX_TEAMS} đội`, 'warn'); return; }
-  const id = genTeamId(), idx = teamIds.length;
-  teamIds.push(id); teams[id] = `Team ${id}`; members[id] = ['', ''];
-  teamEmojis[id] = DEFAULT_EMOJIS[idx % DEFAULT_EMOJIS.length]; teamColors[id] = DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
-  renderTeamModalInputs(); showWarning(); showToast(`➕ Đã thêm Đội ${id}`);
-};
-window.removeLastTeam = () => {
-  if (teamIds.length <= MIN_TEAMS) { showToast(`⚠️ Tối thiểu ${MIN_TEAMS} đội`, 'warn'); return; }
-  const id = teamIds[teamIds.length - 1];
-  const hasResult = BASE_SCHEDULE.some(([a, b], i) => (a === id || b === id) && results[String(i)] !== undefined);
-  if (hasResult && !confirm(`Đội ${teams[id]} đã có kết quả thi đấu. Xóa sẽ mất dữ liệu này. Tiếp tục?`)) return;
-  teamIds.pop(); delete teams[id]; delete members[id]; delete teamEmojis[id]; delete teamColors[id];
-  renderTeamModalInputs(); showWarning(); showToast(`➖ Đã xóa Đội ${id}`, 'warn');
-};
-window.removeTeamById = (id) => {
-  if (teamIds.length <= MIN_TEAMS) { showToast(`⚠️ Tối thiểu ${MIN_TEAMS} đội`, 'warn'); return; }
-  const hasResult = BASE_SCHEDULE.some(([a, b], i) => (a === id || b === id) && results[String(i)] !== undefined);
-  if (hasResult && !confirm(`Đội ${teams[id]} đã có kết quả. Xóa sẽ mất dữ liệu. Tiếp tục?`)) return;
-  teamIds = teamIds.filter(t => t !== id); delete teams[id]; delete members[id]; delete teamEmojis[id]; delete teamColors[id];
-  renderTeamModalInputs(); showWarning(); showToast(`➖ Đã xóa ${id}`, 'warn');
-};
-function showWarning() {
-  const warn = document.getElementById('teamChangeWarning'), orig = BASE_SCHEDULE.length, newSchedule = generateRoundRobin(teamIds, leagueConfig.format), diff = newSchedule.length - orig;
-  const diffText = diff > 0 ? `tăng thêm ${diff}` : diff < 0 ? `giảm ${Math.abs(diff)}` : 'không thay đổi';
-  warn.style.display = 'block';
-  warn.innerHTML = `⚠️ <strong>Thay đổi số đội sẽ tái tạo toàn bộ lịch thi đấu!</strong><br>${teamIds.length} đội → <strong>${newSchedule.length} trận</strong> (${diffText} so với hiện tại ${orig} trận)<br><span style="opacity:.8">Kết quả các trận đã đấu sẽ được giữ lại nếu cặp đấu vẫn còn tồn tại.</span>`;
-  updateTeamCountLabel();
-}
-function updateTeamCountLabel() {
-  const el = document.getElementById('teamCountLabel'); if (!el) return;
-  const newTotal = generateRoundRobin(teamIds, leagueConfig.format).length;
-  el.innerHTML = `<span style="color:var(--accent);font-weight:600;">${teamIds.length}</span> đội • <span style="color:var(--accent);font-weight:600;">${newTotal}</span> trận • Min ${MIN_TEAMS} / Max ${MAX_TEAMS}`;
-}
-window.renderTeamModalInputs = () => {
-  const grid = document.getElementById('teamInputsGrid');
-  grid.innerHTML = teamIds.map((id, idx) => `
-    <div class="team-entry" id="team-entry-${id}" draggable="true" ondragstart="teamDragStart(event,'${id}')" ondragover="teamDragOver(event)" ondrop="teamDrop(event,'${id}')" ondragend="teamDragEnd()">
-      <div class="team-entry-header">
-        <div class="emoji-trigger" id="emoji-trigger-${id}" style="background:${teamColors[id]}33;border-color:${teamColors[id]}" onclick="openEmojiPicker('${id}',this)"><span class="trigger-emoji">${teamEmojis[id]}</span><span class="change-hint">✎</span></div>
-        <div style="flex:1;min-width:0;">
-          <div class="team-entry-label" style="color:${teamColors[id]}">Đội ${id} <span style="font-size:.6rem;color:var(--text-muted);font-weight:400;margin-left:4px;">#${idx + 1}</span></div>
-          <div style="font-size:.65rem;color:var(--text-muted);margin-top:1px;">⠿ kéo để sắp xếp</div>
-        </div>
-        ${teamIds.length > MIN_TEAMS ? `<button onclick="removeTeamById('${id}')" style="width:22px;height:22px;border-radius:5px;border:1px solid rgba(235,69,96,.3);background:rgba(235,69,96,.08);color:var(--red);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;-webkit-tap-highlight-color:transparent;" title="Xóa đội này">✕</button>` : ''}
-      </div>
-      <div class="form-group" style="margin-bottom:7px"><input class="form-input" id="tname_${id}" value="${teams[id] || ''}" placeholder="Tên đội"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px"><input class="form-input" style="font-size:.76rem;padding:6px 8px" id="tmem1_${id}" value="${(members[id] || ['',''])[0]}" placeholder="Thành viên 1"><input class="form-input" style="font-size:.76rem;padding:6px 8px" id="tmem2_${id}" value="${(members[id] || ['',''])[1]}" placeholder="Thành viên 2"></div>
-    </div>`).join('');
-  updateTeamCountLabel();
-  const btnRemove = document.getElementById('btnRemoveTeam'), btnAdd = document.getElementById('btnAddTeam');
-  if (btnRemove) btnRemove.style.opacity = teamIds.length <= MIN_TEAMS ? '.4' : '1';
-  if (btnAdd) btnAdd.style.opacity = teamIds.length >= MAX_TEAMS ? '.4' : '1';
+  if (!isAdmin) { requireAdmin(() => {}); return; }
+  if (_tempTeamIds.length >= MAX_TEAMS) { showToast(`⚠️ Tối đa ${MAX_TEAMS} đội`, 'warn'); return; }
+  const newCount = _tempTeamIds.length + 1;
+  const newTotal = generateRoundRobin([..._tempTeamIds, 'X'], leagueConfig.format).length;
+  requireConfirmCode(
+    '➕ Xác nhận thêm đội',
+    `Thêm 1 đội mới: <strong style="color:var(--accent)">${_tempTeamIds.length} → ${newCount} đội</strong><br>
+     Tổng trận sẽ thay đổi: <strong style="color:var(--accent)">${BASE_SCHEDULE.length} → ${newTotal} trận</strong><br>
+     <span style="opacity:.75">Lịch thi đấu sẽ được tái tạo khi bạn nhấn Lưu đội.</span>`,
+    () => {
+      const id = genTeamId(), idx = _tempTeamIds.length;
+      _tempTeamIds.push(id);
+      _tempTeams[id] = `Team ${id}`;
+      _tempMembers[id] = ['', ''];
+      _tempEmojis[id] = DEFAULT_EMOJIS[idx % DEFAULT_EMOJIS.length];
+      _tempColors[id] = DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
+      renderTeamModalInputs();
+      showToast(`➕ Đã thêm Đội ${id} (chưa lưu)`);
+    }
+  );
 };
 
-/* Drag Teams */
+window.removeTeamById = (id) => {
+  if (!isAdmin) { requireAdmin(() => {}); return; }
+  if (_tempTeamIds.length <= MIN_TEAMS) { showToast(`⚠️ Tối thiểu ${MIN_TEAMS} đội`, 'warn'); return; }
+  const newCount = _tempTeamIds.length - 1;
+  const newIds = _tempTeamIds.filter(t => t !== id);
+  const newTotal = generateRoundRobin(newIds, leagueConfig.format).length;
+  const hasResult = BASE_SCHEDULE.some(([a, b], i) => (a === id || b === id) && results[String(i)] !== undefined);
+  const warnResult = hasResult ? `<br>⚠️ <span style="color:var(--red)">Đội này đã có kết quả thi đấu, dữ liệu có thể bị ảnh hưởng.</span>` : '';
+  requireConfirmCode(
+    `➖ Xác nhận xóa đội`,
+    `Xóa đội <strong style="color:var(--red)">${_tempTeams[id] || id}</strong>: 
+     <strong style="color:var(--accent)">${_tempTeamIds.length} → ${newCount} đội</strong><br>
+     Tổng trận sẽ thay đổi: <strong style="color:var(--accent)">${BASE_SCHEDULE.length} → ${newTotal} trận</strong>${warnResult}<br>
+     <span style="opacity:.75">Thay đổi sẽ được áp dụng khi bạn nhấn Lưu đội.</span>`,
+    () => {
+      _tempTeamIds = _tempTeamIds.filter(t => t !== id);
+      delete _tempTeams[id]; delete _tempMembers[id];
+      delete _tempEmojis[id]; delete _tempColors[id];
+      renderTeamModalInputs();
+      showToast(`➖ Đã xóa ${id} (chưa lưu)`, 'warn');
+    }
+  );
+};
+
+window.removeLastTeam = () => {
+  if (_tempTeamIds.length > 0) removeTeamById(_tempTeamIds[_tempTeamIds.length - 1]);
+};
+
+window.renderTeamModalInputs = () => {
+  const grid = document.getElementById('teamInputsGrid');
+  grid.innerHTML = _tempTeamIds.map((id, idx) => `
+    <div class="team-entry" id="team-entry-${id}" draggable="true"
+      ondragstart="teamDragStart(event,'${id}')"
+      ondragover="teamDragOver(event)"
+      ondrop="teamDrop(event,'${id}')"
+      ondragend="teamDragEnd()">
+      <div class="team-entry-header">
+        <div class="emoji-trigger" id="emoji-trigger-${id}"
+          style="background:${_tempColors[id]}33;border-color:${_tempColors[id]}"
+          onclick="openEmojiPicker('${id}',this)">
+          <span class="trigger-emoji">${_tempEmojis[id]}</span>
+          <span class="change-hint">✎</span>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="team-entry-label" style="color:${_tempColors[id]}">
+            Đội ${id} <span style="font-size:.6rem;color:var(--text-muted);font-weight:400;margin-left:4px;">#${idx + 1}</span>
+          </div>
+          <div style="font-size:.65rem;color:var(--text-muted);margin-top:1px;">⠿ kéo để sắp xếp</div>
+        </div>
+        ${_tempTeamIds.length > MIN_TEAMS
+          ? `<button onclick="removeTeamById('${id}')"
+              style="width:22px;height:22px;border-radius:5px;border:1px solid rgba(235,69,96,.3);
+              background:rgba(235,69,96,.08);color:var(--red);cursor:pointer;font-size:11px;
+              display:flex;align-items:center;justify-content:center;flex-shrink:0;
+              transition:all .15s;-webkit-tap-highlight-color:transparent;">✕</button>`
+          : ''}
+      </div>
+      <div class="form-group" style="margin-bottom:7px">
+        <input class="form-input" id="tname_${id}" value="${_tempTeams[id] || ''}" placeholder="Tên đội">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <input class="form-input" style="font-size:.76rem;padding:6px 8px" id="tmem1_${id}"
+          value="${(_tempMembers[id] || ['',''])[0]}" placeholder="Thành viên 1">
+        <input class="form-input" style="font-size:.76rem;padding:6px 8px" id="tmem2_${id}"
+          value="${(_tempMembers[id] || ['',''])[1]}" placeholder="Thành viên 2">
+      </div>
+    </div>`).join('');
+  updateTeamCountLabel();
+  document.getElementById('btnRemoveTeam').style.opacity = _tempTeamIds.length <= MIN_TEAMS ? '.4' : '1';
+  document.getElementById('btnAddTeam').style.opacity = _tempTeamIds.length >= MAX_TEAMS ? '.4' : '1';
+  document.getElementById('teamChangeWarning').style.display = 'none';
+};
+
+function updateTeamCountLabel() {
+  const el = document.getElementById('teamCountLabel'); if (!el) return;
+  const newTotal = generateRoundRobin(_tempTeamIds, leagueConfig.format).length;
+  const changed = _tempTeamIds.length !== teamIds.length;
+  el.innerHTML = `<span style="color:${changed ? 'var(--red)' : 'var(--accent)'};font-weight:600;">${_tempTeamIds.length}</span> đội 
+    • <span style="color:var(--accent);font-weight:600;">${newTotal}</span> trận
+    ${changed ? '<span style="color:var(--red);font-size:.7rem;">⚠️ Chưa lưu</span>' : ''}
+    • Min ${MIN_TEAMS} / Max ${MAX_TEAMS}`;
+}
+
+window.saveTeamsModal = () => {
+  // Lưu tên + thành viên từ input vào _temp
+  _tempTeamIds.forEach(id => {
+    _tempTeams[id] = document.getElementById(`tname_${id}`)?.value || _tempTeams[id];
+    _tempMembers[id] = [
+      document.getElementById(`tmem1_${id}`)?.value || '',
+      document.getElementById(`tmem2_${id}`)?.value || ''
+    ];
+  });
+  // Kiểm tra có thay đổi số đội hoặc thứ tự không
+  const teamCountChanged = _tempTeamIds.length !== teamIds.length;
+  const teamOrderChanged = _tempTeamIds.some((id, i) => id !== teamIds[i]);
+  const doSave = () => {
+    closeEmojiPicker();
+    applyTempToReal();
+    rebuildSchedule(true);
+    persist();
+    closeModal('teamModal');
+    showToast('✅ Đã lưu đội & tái tạo lịch!');
+  };
+  if (teamCountChanged || teamOrderChanged) {
+    const newTotal = generateRoundRobin(_tempTeamIds, leagueConfig.format).length;
+    requireConfirmCode(
+      '💾 Xác nhận lưu thay đổi đội',
+      `Sẽ áp dụng thay đổi: <strong style="color:var(--accent)">${teamIds.length} → ${_tempTeamIds.length} đội</strong><br>
+       Lịch thi đấu sẽ được tái tạo: <strong style="color:var(--accent)">${BASE_SCHEDULE.length} → ${newTotal} trận</strong><br>
+       <span style="opacity:.75">Kết quả các trận đã đấu sẽ được giữ lại nếu cặp đấu vẫn tồn tại.</span>`,
+      doSave
+    );
+  } else {
+    doSave();
+  }
+};
+
+window.openTeamModal = () => {
+  if (!isAdmin) { requireAdmin(() => openTeamModal()); return; }
+  cloneTeamState(); // Tạo bản sao làm việc
+  switchTeamTab('teams');
+  renderTeamModalInputs();
+  openModal('teamModal');
+};
+window.cancelTeamModal = () => { closeModal('teamModal'); closeEmojiPicker(); };
+
+/* Drag Teams - hoạt động trên _temp */
 let _dragTeamId = null;
 window.teamDragStart = (e, id) => { _dragTeamId = id; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => { const el = document.getElementById(`team-entry-${id}`); if (el) el.style.opacity = '.35'; }, 0); };
 window.teamDragOver = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
-window.teamDrop = (e, targetId) => { e.preventDefault(); if (!_dragTeamId || _dragTeamId === targetId) return; const from = teamIds.indexOf(_dragTeamId), to = teamIds.indexOf(targetId); teamIds.splice(from, 1); teamIds.splice(to, 0, _dragTeamId); renderTeamModalInputs(); };
+window.teamDrop = (e, targetId) => { e.preventDefault(); if (!_dragTeamId || _dragTeamId === targetId) return; const from = _tempTeamIds.indexOf(_dragTeamId), to = _tempTeamIds.indexOf(targetId); _tempTeamIds.splice(from, 1); _tempTeamIds.splice(to, 0, _dragTeamId); renderTeamModalInputs(); };
 window.teamDragEnd = () => { _dragTeamId = null; document.querySelectorAll('.team-entry').forEach(el => el.style.opacity = '1'); };
 
 window.switchTeamTab = (tab) => {
@@ -1121,34 +1336,73 @@ window.switchTeamTab = (tab) => {
 };
 
 function renderLeagueConfigTab() {
-  const fields = { 'cfg-leagueName': leagueConfig.leagueName || '', 'cfg-season': leagueConfig.season || '2026', 'cfg-matchesPerDay': leagueConfig.matchesPerDay || 3, 'cfg-format': leagueConfig.format || 'single', 'cfg-winPts': leagueConfig.winPts || 3, 'cfg-drawPts': leagueConfig.drawPts || 1, 'cfg-desc': leagueConfig.desc || '' };
+  const fields = {
+    'cfg-leagueName': leagueConfig.leagueName || '',
+    'cfg-season': leagueConfig.season || '2026',
+    'cfg-matchesPerDay': leagueConfig.matchesPerDay || 3,
+    'cfg-format': leagueConfig.format || 'single',
+    'cfg-winPts': leagueConfig.winPts || 3,
+    'cfg-drawPts': leagueConfig.drawPts || 1,
+    'cfg-desc': leagueConfig.desc || ''
+  };
   Object.entries(fields).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
-  const newTotal = generateRoundRobin(teamIds, leagueConfig.format).length, played = Object.values(results).filter(r => r && r.score1 !== undefined).length, grid = document.getElementById('leagueInfoGrid');
+  const newTotal = generateRoundRobin(teamIds, leagueConfig.format).length;
+  const played = Object.values(results).filter(r => r && r.score1 !== undefined).length;
+  const grid = document.getElementById('leagueInfoGrid');
   if (grid) grid.innerHTML = [
-    { label: 'Số đội', val: teamIds.length, color: 'var(--accent)' }, { label: 'Tổng trận', val: newTotal, color: 'var(--accent)' }, { label: 'Đã đấu', val: played, color: 'var(--green)' },
-    { label: 'Còn lại', val: newTotal - played, color: 'var(--gold)' }, { label: 'Điểm thắng', val: leagueConfig.winPts, color: 'var(--text)' }, { label: 'Điểm hòa', val: leagueConfig.drawPts, color: 'var(--text)' }
-  ].map(item => `<div style="text-align:center;padding:8px 4px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);"><div style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:${item.color};">${item.val}</div><div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">${item.label}</div></div>`).join('');
+    { label: 'Số đội', val: teamIds.length, color: 'var(--accent)' },
+    { label: 'Tổng trận', val: newTotal, color: 'var(--accent)' },
+    { label: 'Đã đấu', val: played, color: 'var(--green)' },
+    { label: 'Còn lại', val: newTotal - played, color: 'var(--gold)' },
+    { label: 'Điểm thắng', val: leagueConfig.winPts, color: 'var(--text)' },
+    { label: 'Điểm hòa', val: leagueConfig.drawPts, color: 'var(--text)' }
+  ].map(item => `<div style="text-align:center;padding:8px 4px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:${item.color};">${item.val}</div>
+    <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">${item.label}</div>
+  </div>`).join('');
 }
+
 window.saveLeagueConfig = () => {
-  const prev = leagueConfig.format;
-  leagueConfig = { leagueName: document.getElementById('cfg-leagueName')?.value || leagueConfig.leagueName, season: document.getElementById('cfg-season')?.value || leagueConfig.season, matchesPerDay: Number(document.getElementById('cfg-matchesPerDay')?.value) || 3, format: document.getElementById('cfg-format')?.value || 'single', winPts: Number(document.getElementById('cfg-winPts')?.value) || 3, drawPts: Number(document.getElementById('cfg-drawPts')?.value) || 1, desc: document.getElementById('cfg-desc')?.value || '' };
-  if (prev !== leagueConfig.format) { if (!confirm(`Đổi thể thức từ "${prev === 'single' ? 'Lượt đi' : 'Lượt đi + về'}" → "${leagueConfig.format === 'single' ? 'Lượt đi' : 'Lượt đi + về'}".\nLịch thi đấu sẽ được tái tạo. Tiếp tục?`)) { leagueConfig.format = prev; return; } rebuildSchedule(true); }
-  updateHeaderTitle(); persist(); closeModal('teamModal'); showToast('✅ Đã lưu cài đặt giải đấu!');
+  const newFormat = document.getElementById('cfg-format')?.value || 'single';
+  const newMpd = Number(document.getElementById('cfg-matchesPerDay')?.value) || 3;
+  const formatChanged = newFormat !== leagueConfig.format;
+  const mpdChanged = newMpd !== leagueConfig.matchesPerDay;
+  const doSave = () => {
+    const prev = leagueConfig.format;
+    leagueConfig = {
+      leagueName: document.getElementById('cfg-leagueName')?.value || leagueConfig.leagueName,
+      season: document.getElementById('cfg-season')?.value || leagueConfig.season,
+      matchesPerDay: newMpd,
+      format: newFormat,
+      winPts: Number(document.getElementById('cfg-winPts')?.value) || 3,
+      drawPts: Number(document.getElementById('cfg-drawPts')?.value) || 1,
+      desc: document.getElementById('cfg-desc')?.value || ''
+    };
+    if (formatChanged) rebuildSchedule(true);
+    updateHeaderTitle(); persist(); closeModal('teamModal');
+    showToast('✅ Đã lưu cài đặt giải đấu!');
+  };
+  if (formatChanged || mpdChanged) {
+    const newTotal = generateRoundRobin(teamIds, newFormat).length;
+    const changeDesc = [
+      formatChanged ? `Thể thức: <strong style="color:var(--accent)">${leagueConfig.format === 'single' ? 'Lượt đi' : 'Lượt đi+về'} → ${newFormat === 'single' ? 'Lượt đi' : 'Lượt đi+về'}</strong>` : '',
+      mpdChanged ? `Số trận/ngày: <strong style="color:var(--accent)">${leagueConfig.matchesPerDay} → ${newMpd}</strong>` : ''
+    ].filter(Boolean).join('<br>');
+    requireConfirmCode(
+      '⚙️ Xác nhận thay đổi cài đặt',
+      `${changeDesc}<br>${formatChanged ? `Lịch sẽ được tái tạo: <strong style="color:var(--accent)">${BASE_SCHEDULE.length} → ${newTotal} trận</strong><br>` : ''}<span style="opacity:.75">Auto Schedule sẽ dùng cài đặt mới.</span>`,
+      doSave
+    );
+  } else {
+    doSave();
+  }
 };
-window.saveTeamsModal = () => {
-  teamIds.forEach(id => {
-    teams[id] = document.getElementById(`tname_${id}`)?.value || teams[id];
-    members[id] = [document.getElementById(`tmem1_${id}`)?.value || '', document.getElementById(`tmem2_${id}`)?.value || ''];
-  });
-  closeEmojiPicker(); rebuildSchedule(true); persist(); closeModal('teamModal'); showToast('✅ Đã lưu đội & tái tạo lịch!');
-};
-window.openTeamModal = () => { if (!isAdmin) { requireAdmin(() => openTeamModal()); return; } switchTeamTab('teams'); renderTeamModalInputs(); document.getElementById('teamChangeWarning').style.display = 'none'; openModal('teamModal'); };
-window.cancelTeamModal = () => { closeModal('teamModal'); closeEmojiPicker(); };
 
 /* ═══════════════════ EMOJI PICKER ═══════════════════ */
 let _currentEmojiTeam = null, _currentEmojiBtn = null;
 window.openEmojiPicker = function(id, btnEl) {
-  _currentEmojiTeam = id; _currentEmojiBtn = btnEl; const p = document.getElementById('emojiPicker');
+  _currentEmojiTeam = id; _currentEmojiBtn = btnEl;
+  const p = document.getElementById('emojiPicker');
   const r = btnEl.getBoundingClientRect(); let t = r.bottom + window.scrollY + 8, l = r.left + window.scrollX;
   if (l + 290 > window.innerWidth) l = window.innerWidth - 300;
   p.style.top = t + 'px'; p.style.left = l + 'px'; p.style.display = 'block'; renderEmojiCats();
@@ -1156,16 +1410,36 @@ window.openEmojiPicker = function(id, btnEl) {
 window.closeEmojiPicker = function() { document.getElementById('emojiPicker').style.display = 'none'; };
 function renderEmojiCats() {
   const c = document.getElementById('emojiCats'); c.innerHTML = '';
-  Object.keys(EMOJI_CATS).forEach((cat, idx) => { const b = document.createElement('button'); b.className = 'emoji-cat-btn' + (idx === 0 ? ' active' : ''); b.textContent = cat; b.onclick = () => { document.querySelectorAll('.emoji-cat-btn').forEach(el => el.classList.remove('active')); b.classList.add('active'); renderEmojiGrid(cat); }; c.appendChild(b); });
+  Object.keys(EMOJI_CATS).forEach((cat, idx) => {
+    const b = document.createElement('button'); b.className = 'emoji-cat-btn' + (idx === 0 ? ' active' : '');
+    b.textContent = cat; b.onclick = () => { document.querySelectorAll('.emoji-cat-btn').forEach(el => el.classList.remove('active')); b.classList.add('active'); renderEmojiGrid(cat); };
+    c.appendChild(b);
+  });
   renderEmojiGrid(Object.keys(EMOJI_CATS)[0]); renderColorSwatches();
 }
 function renderEmojiGrid(cat) {
   const g = document.getElementById('emojiGrid'); g.innerHTML = '';
-  EMOJI_CATS[cat].forEach(e => { const b = document.createElement('button'); b.className = 'emoji-btn' + (e === teamEmojis[_currentEmojiTeam] ? ' selected' : ''); b.textContent = e; b.onclick = () => { teamEmojis[_currentEmojiTeam] = e; document.querySelectorAll('.emoji-btn').forEach(el => el.classList.remove('selected')); b.classList.add('selected'); if (_currentEmojiBtn) _currentEmojiBtn.querySelector('.trigger-emoji').textContent = e; }; g.appendChild(b); });
+  EMOJI_CATS[cat].forEach(e => {
+    const b = document.createElement('button'); b.className = 'emoji-btn' + (e === _tempEmojis[_currentEmojiTeam] ? ' selected' : '');
+    b.textContent = e; b.onclick = () => {
+      _tempEmojis[_currentEmojiTeam] = e;
+      document.querySelectorAll('.emoji-btn').forEach(el => el.classList.remove('selected')); b.classList.add('selected');
+      if (_currentEmojiBtn) _currentEmojiBtn.querySelector('.trigger-emoji').textContent = e;
+    }; g.appendChild(b);
+  });
 }
 function renderColorSwatches() {
   const c = document.getElementById('colorSwatches'); c.innerHTML = '';
-  COLOR_PALETTE.forEach(clr => { const w = document.createElement('div'); w.className = 'color-swatch' + (clr === teamColors[_currentEmojiTeam] ? ' selected' : ''); w.style.background = clr; w.onclick = () => { teamColors[_currentEmojiTeam] = clr; document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('selected')); w.classList.add('selected'); if (_currentEmojiBtn) { _currentEmojiBtn.style.background = clr + '33'; _currentEmojiBtn.style.borderColor = clr; } const lbl = document.querySelector(`#team-entry-${_currentEmojiTeam} .team-entry-label`); if (lbl) lbl.style.color = clr; }; c.appendChild(w); });
+  COLOR_PALETTE.forEach(clr => {
+    const w = document.createElement('div'); w.className = 'color-swatch' + (clr === _tempColors[_currentEmojiTeam] ? ' selected' : '');
+    w.style.background = clr; w.onclick = () => {
+      _tempColors[_currentEmojiTeam] = clr;
+      document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('selected')); w.classList.add('selected');
+      if (_currentEmojiBtn) { _currentEmojiBtn.style.background = clr + '33'; _currentEmojiBtn.style.borderColor = clr; }
+      const lbl = document.querySelector(`#team-entry-${_currentEmojiTeam} .team-entry-label`);
+      if (lbl) lbl.style.color = clr;
+    }; c.appendChild(w);
+  });
 }
 
 /* ═══════════════════ MODAL: RESET ═══════════════════ */
@@ -1207,5 +1481,36 @@ updateAuthUI();
 subscribeFirebase();
 
 </script>
+
+<!-- CONFIRM CODE MODAL -->
+<div class="modal-overlay" id="confirmCodeModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title" id="confirmCodeTitle" style="color:var(--red);">⚠️ Xác nhận thay đổi</div>
+      <button class="modal-close" onclick="cancelConfirmCode()">✕</button>
+    </div>
+    <div id="confirmCodeDesc" style="color:var(--text-muted);font-size:.83rem;margin-bottom:14px;line-height:1.6;"></div>
+    <div class="confirm-code-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span class="form-label" style="margin:0;">Nhập mã xác nhận</span>
+        <div class="confirm-code-display" id="confirmCodeDisplay" onclick="refreshConfirmCode()" title="Click để tạo mã mới"> -  -  -  -  -  - </div>
+      </div>
+      <div style="position:relative;">
+        <input class="form-input confirm-code-input" id="confirmCodeInput"
+          placeholder="Nhập 6 chữ số..."
+          maxlength="6" inputmode="numeric" pattern="[0-9]*"
+          autocomplete="off"
+          style="padding-right:40px;"
+          oninput="onConfirmCodeInput()">
+        <div id="confirmCodeCheck" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;"></div>
+      </div>
+      <div id="confirmCodeHint" style="font-size:.72rem;color:var(--text-muted);margin-top:5px;text-align:center;min-height:16px;">Click vào mã để tạo mã mới</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn-flat" onclick="cancelConfirmCode()">Hủy</button>
+      <button class="btn-flat btn-flat-danger" id="confirmCodeBtn" onclick="executeConfirmCode()" disabled style="opacity:.38;cursor:not-allowed;">✅ Xác nhận</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

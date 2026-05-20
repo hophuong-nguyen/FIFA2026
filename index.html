@@ -602,6 +602,140 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   color: #00adef;
 }
 
+/* Rank movement indicator */
+.movement-col{
+  width:64px;
+}
+
+.movement-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-width:44px;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:.68rem;
+  font-weight:700;
+  line-height:1;
+  letter-spacing:.2px;
+  white-space:nowrap;
+  border:1px solid transparent;
+  background:rgba(255,255,255,.05);
+  will-change:transform,opacity;
+}
+
+.movement-badge .movement-arrow{
+  font-size:.78rem;
+  line-height:1;
+}
+
+.movement-badge .movement-count{
+  font-family:'Rajdhani',sans-serif;
+  font-size:.88rem;
+  font-weight:700;
+  line-height:1;
+}
+
+.movement-badge.move-up{
+  color:var(--green);
+  background:rgba(0,214,143,.10);
+  border-color:rgba(0,214,143,.25);
+  box-shadow:0 0 12px rgba(0,214,143,.10);
+}
+
+.movement-badge.move-down{
+  color:var(--red);
+  background:rgba(235,69,96,.10);
+  border-color:rgba(235,69,96,.25);
+  box-shadow:0 0 12px rgba(235,69,96,.10);
+}
+
+.movement-badge.move-same{
+  color:#8fa3b8;
+  background:rgba(143,163,184,.08);
+  border-color:rgba(143,163,184,.18);
+}
+
+.movement-badge.is-live{
+  animation:movementBadgeFadeOut 5s ease forwards;
+  animation-delay:var(--movement-delay, 0ms);
+}
+
+@keyframes movementBadgeFadeOut{
+  0%,68%{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+  82%{
+    opacity:.92;
+  }
+  100%{
+    opacity:0;
+    transform:translateY(-2px) scale(.96);
+  }
+}
+
+.standings-table tr.row-rank-up td{
+  animation:rowRankUpGlow 1.5s ease both;
+  animation-delay:var(--row-glow-delay, 0ms);
+}
+
+.standings-table tr.row-rank-down td{
+  animation:rowRankDownGlow 1.5s ease both;
+  animation-delay:var(--row-glow-delay, 0ms);
+}
+
+@keyframes rowRankUpGlow{
+  0%{
+    background:rgba(0,214,143,.18);
+    box-shadow:inset 0 0 0 1px rgba(0,214,143,0);
+  }
+  45%{
+    background:rgba(0,214,143,.10);
+    box-shadow:inset 0 0 0 1px rgba(0,214,143,.22);
+  }
+  100%{
+    background:transparent;
+    box-shadow:inset 0 0 0 1px rgba(0,214,143,0);
+  }
+}
+
+@keyframes rowRankDownGlow{
+  0%{
+    background:rgba(235,69,96,.18);
+    box-shadow:inset 0 0 0 1px rgba(235,69,96,0);
+  }
+  45%{
+    background:rgba(235,69,96,.10);
+    box-shadow:inset 0 0 0 1px rgba(235,69,96,.20);
+  }
+  100%{
+    background:transparent;
+    box-shadow:inset 0 0 0 1px rgba(235,69,96,0);
+  }
+}
+
+@media(max-width:640px){
+  .movement-col{width:52px;}
+  .movement-badge{
+    min-width:38px;
+    padding:2px 6px;
+    font-size:.62rem;
+  }
+  .movement-badge .movement-count{
+    font-size:.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .movement-badge.is-live,
+  .standings-table tr.row-rank-up td,
+  .standings-table tr.row-rank-down td{
+    animation:none !important;
+  }
+}
+
 @keyframes shimmer-ltr {
   0%   { background-position: 150% center; }
   100% { background-position: -50% center; }
@@ -1629,68 +1763,268 @@ function renderStats() {
   box.innerHTML = `<div class="sc-item"><div class="sc-icon">🏟️</div><div class="sc-val">${played}</div><div class="sc-label">Đã đấu</div></div><div class="sc-item"><div class="sc-icon">⚽</div><div class="sc-val">${goals}</div><div class="sc-label">Bàn thắng</div></div><div class="sc-item"><div class="sc-icon">🟨</div><div class="sc-val">${yellow}</div><div class="sc-label">Thẻ vàng</div></div><div class="sc-item"><div class="sc-icon">🟥</div><div class="sc-val">${red}</div><div class="sc-label">Thẻ đỏ</div></div><div class="sc-item fairplay"><div class="sc-icon">🕊️</div><div class="sc-val">${fpHTML}</div><div class="sc-label">Fair Play</div></div>`;
 }
 function renderStandings() {
-  const rows = calcStandings(); 
-  const pa = document.getElementById('podiumArea'); 
-  const top3 = rows.slice(0, 3); 
+  const rows = calcStandings();
+  computeRankMovement(rows);
+
+  const pa = document.getElementById('podiumArea');
+  const top3 = rows.slice(0, 3);
   const anyPts = top3.some(([, v]) => v.p > 0);
-  
+
   if (anyPts) {
-    const ordered = [top3[1], top3[0], top3[2]].filter(Boolean); 
-    const pC = ['p2', 'p1', 'p3'], medals = ['🥇', '🥈', '🥉']; 
-    const pw = document.createElement('div'); pw.className = 'podium-wrap';
+    const ordered = [top3[1], top3[0], top3[2]].filter(Boolean);
+    const pC = ['p2', 'p1', 'p3'], medals = ['🥇', '🥈', '🥉'];
+    const pw = document.createElement('div');
+    pw.className = 'podium-wrap';
+
     ordered.forEach((entry, idx) => {
-      if (!entry) return; 
-      const [id, v] = entry; const pClass = pC[idx];
-      const item = document.createElement('div'); item.className = `podium-item ${pClass}`;
-      if (pClass === 'p1') { const cr = document.createElement('div'); cr.className = 'podium-crown'; cr.textContent = '👑'; item.appendChild(cr); }
-      const av = document.createElement('div'); av.className = 'podium-avatar'; av.style.background = teamColors[id]; av.textContent = teamEmojis[id]; item.appendChild(av);
-      const nm = document.createElement('div'); nm.className = 'podium-name'; const tnn = teams[id] || id; const ni = document.createElement('div'); ni.className = 'podium-name-inner'; ni.textContent = tnn; nm.appendChild(ni); item.appendChild(nm);
-      requestAnimationFrame(() => { if (ni.scrollWidth > nm.clientWidth) ni.classList.add('marquee'); });
-      const pt = document.createElement('div'); pt.className = 'podium-pts'; pt.textContent = `${v.p} pts`; item.appendChild(pt);
-      const st = document.createElement('div'); st.className = 'podium-stand'; st.textContent = medals[pClass === 'p1' ? 0 : pClass === 'p2' ? 1 : 2]; item.appendChild(st);
+      if (!entry) return;
+      const [id, v] = entry;
+      const pClass = pC[idx];
+
+      const item = document.createElement('div');
+      item.className = `podium-item ${pClass}`;
+
+      if (pClass === 'p1') {
+        const cr = document.createElement('div');
+        cr.className = 'podium-crown';
+        cr.textContent = '👑';
+        item.appendChild(cr);
+      }
+
+      const av = document.createElement('div');
+      av.className = 'podium-avatar';
+      av.style.background = teamColors[id];
+      av.textContent = teamEmojis[id];
+      item.appendChild(av);
+
+      const nm = document.createElement('div');
+      nm.className = 'podium-name';
+      const tnn = teams[id] || id;
+      const ni = document.createElement('div');
+      ni.className = 'podium-name-inner';
+      ni.textContent = tnn;
+      nm.appendChild(ni);
+      item.appendChild(nm);
+
+      requestAnimationFrame(() => {
+        if (ni.scrollWidth > nm.clientWidth) ni.classList.add('marquee');
+      });
+
+      const pt = document.createElement('div');
+      pt.className = 'podium-pts';
+      pt.textContent = `${v.p} pts`;
+      item.appendChild(pt);
+
+      const st = document.createElement('div');
+      st.className = 'podium-stand';
+      st.textContent = medals[pClass === 'p1' ? 0 : pClass === 'p2' ? 1 : 2];
+      item.appendChild(st);
+
       pw.appendChild(item);
     });
-    pa.innerHTML = ''; pa.appendChild(pw);
-  } else { pa.innerHTML = ''; }
-  
+
+    pa.innerHTML = '';
+    pa.appendChild(pw);
+  } else {
+    pa.innerHTML = '';
+  }
+
   const tb = document.getElementById('standingsTable');
-    tb.innerHTML = `<tr>
-    <th>XH</th>
-    <th class="team-name-cell">Đội</th>
-    <th>Trận</th>
-    <th>Điểm</th>
-    <th>T</th>
-    <th>H</th>
-    <th>B</th>
-    <th>BT</th>
-    <th>HS</th>
-    <th>🟨</th>
-    <th>🟥</th>
-  </tr>` + rows.map((r, idx) => {
+
+  tb.innerHTML = `
+    <tr>
+      <th>XH</th>
+      <th class="movement-col">Δ</th>
+      <th class="team-name-cell">Đội</th>
+      <th>Trận</th>
+      <th>Điểm</th>
+      <th>T</th>
+      <th>H</th>
+      <th>B</th>
+      <th>BT</th>
+      <th>HS</th>
+      <th>🟨</th>
+      <th>🟥</th>
+    </tr>
+  ` + rows.map((r, idx) => {
     const [id, v] = r;
     const gd = v.gf - v.ga;
+
     let gdCls = '';
     if (gd > 0) gdCls = 'c-win';
     else if (gd < 0) gdCls = 'c-lose';
     else gdCls = 'c-draw';
-    const gdSign = gd > 0 ? '+' : '';
-    let rbCls = 'rank-other';
-    if (idx === 0) rbCls = 'rank-1'; else if (idx === 1) rbCls = 'rank-2'; else if (idx === 2) rbCls = 'rank-3';
 
-    return `<tr class="${idx === 0 ? 'tr-rank1' : ''}">
-      <td><span class="rank-badge ${rbCls}">${idx + 1}</span></td>
-      <td class="team-name-cell"><div class="team-avatar" style="background:${teamColors[id]}">${teamEmojis[id]}</div><div style="font-weight:600">${teams[id] || id}</div></td>
-      <td>${v.played}</td>
-      <td><span class="points-badge">${v.p}</span></td>
-      <td class="c-win">${v.w}</td>
-      <td class="c-draw">${v.d}</td>
-      <td class="c-lose">${v.l}</td>
-      <td>${v.gf}</td>
-      <td class="${gdCls}" style="font-weight:700">${gdSign}${gd}</td>
-      <td class="yellow-card">${v.y}</td>
-      <td class="red-card">${v.r}</td>
-    </tr>`;
+    const gdSign = gd > 0 ? '+' : '';
+
+    let rbCls = 'rank-other';
+    if (idx === 0) rbCls = 'rank-1';
+    else if (idx === 1) rbCls = 'rank-2';
+    else if (idx === 2) rbCls = 'rank-3';
+
+    const mv = getRankMovementMeta(id);
+    const rowClasses = [
+      idx === 0 ? 'tr-rank1' : '',
+      mv.shouldGlow ? `row-rank-${mv.dir}` : ''
+    ].filter(Boolean).join(' ');
+
+    const rowStyle = mv.shouldGlow
+      ? `style="--row-glow-delay:-${mv.glowElapsed}ms;"`
+      : '';
+
+    return `
+      <tr class="${rowClasses}" ${rowStyle}>
+        <td><span class="rank-badge ${rbCls}">${idx + 1}</span></td>
+        <td class="movement-col">${renderRankMovementBadge(id)}</td>
+        <td class="team-name-cell">
+          <div class="team-avatar" style="background:${teamColors[id]}">${teamEmojis[id]}</div>
+          <div style="font-weight:600">${teams[id] || id}</div>
+        </td>
+        <td>${v.played}</td>
+        <td><span class="points-badge">${v.p}</span></td>
+        <td class="c-win">${v.w}</td>
+        <td class="c-draw">${v.d}</td>
+        <td class="c-lose">${v.l}</td>
+        <td>${v.gf}</td>
+        <td class="${gdCls}" style="font-weight:700">${gdSign}${gd}</td>
+        <td class="yellow-card">${v.y}</td>
+        <td class="red-card">${v.r}</td>
+      </tr>
+    `;
   }).join('');
+}
+
+/* ═══════════════════ RANK MOVEMENT ═══════════════════ */
+let previousRanks = null;
+let rankMovementState = {};
+let rankMovementTimer = null;
+const RANK_MOVEMENT_VISIBLE_MS = 5000;
+const RANK_GLOW_MS = 1500;
+
+function clearRankMovementTimer() {
+  if (rankMovementTimer) {
+    clearTimeout(rankMovementTimer);
+    rankMovementTimer = null;
+  }
+}
+
+function scheduleRankMovementCleanup() {
+  clearRankMovementTimer();
+  rankMovementTimer = setTimeout(() => {
+    if (Object.keys(rankMovementState).length) {
+      rankMovementState = {};
+      if (document.getElementById('standingsTable')) renderStandings();
+    }
+  }, RANK_MOVEMENT_VISIBLE_MS + 80);
+}
+
+function computeRankMovement(rows) {
+  const currentRanks = {};
+  rows.forEach(([id], idx) => {
+    currentRanks[id] = idx + 1;
+  });
+
+  /* Lần render đầu tiên: set baseline, không show movement */
+  if (!previousRanks) {
+    previousRanks = currentRanks;
+    return;
+  }
+
+  /* Nếu số đội thay đổi / cấu trúc thay đổi → bỏ movement để tránh báo sai */
+  const prevIds = Object.keys(previousRanks);
+  const structureChanged =
+    prevIds.length !== rows.length ||
+    rows.some(([id]) => previousRanks[id] == null);
+
+  if (structureChanged) {
+    previousRanks = currentRanks;
+    rankMovementState = {};
+    clearRankMovementTimer();
+    return;
+  }
+
+  const hasRankChange = rows.some(([id], idx) => previousRanks[id] !== idx + 1);
+
+  if (hasRankChange) {
+    const now = Date.now();
+    const nextState = {};
+
+    rows.forEach(([id], idx) => {
+      const prev = previousRanks[id] ?? (idx + 1);
+      const curr = idx + 1;
+      const delta = prev - curr;
+
+      nextState[id] = {
+        delta,
+        dir: delta > 0 ? 'up' : delta < 0 ? 'down' : 'same',
+        changedAt: now,
+        visibleUntil: now + RANK_MOVEMENT_VISIBLE_MS,
+        glowUntil: now + RANK_GLOW_MS
+      };
+    });
+
+    rankMovementState = nextState;
+    scheduleRankMovementCleanup();
+  }
+
+  previousRanks = currentRanks;
+}
+
+function getRankMovementMeta(id) {
+  const item = rankMovementState[id];
+
+  if (!item) {
+    return {
+      dir: 'same',
+      delta: 0,
+      isLive: false,
+      shouldGlow: false,
+      liveElapsed: 0,
+      glowElapsed: 0
+    };
+  }
+
+  const now = Date.now();
+  const isLive = item.dir !== 'same' && now < item.visibleUntil;
+  const shouldGlow = isLive && now < item.glowUntil;
+
+  return {
+    ...item,
+    isLive,
+    shouldGlow,
+    liveElapsed: Math.max(0, Math.min(now - item.changedAt, RANK_MOVEMENT_VISIBLE_MS)),
+    glowElapsed: Math.max(0, Math.min(now - item.changedAt, RANK_GLOW_MS))
+  };
+}
+
+function renderRankMovementBadge(id) {
+  const mv = getRankMovementMeta(id);
+
+  if (!mv.isLive) {
+    return `
+      <span class="movement-badge move-same" title="Giữ nguyên thứ hạng">
+        <span class="movement-arrow">–</span>
+      </span>
+    `;
+  }
+
+  const style = `style="--movement-delay:-${mv.liveElapsed}ms;"`;
+
+  if (mv.dir === 'up') {
+    return `
+      <span class="movement-badge move-up is-live" ${style} title="Tăng ${mv.delta} bậc">
+        <span class="movement-arrow">▲</span>
+        <span class="movement-count">${mv.delta}</span>
+      </span>
+    `;
+  }
+
+  return `
+    <span class="movement-badge move-down is-live" ${style} title="Giảm ${Math.abs(mv.delta)} bậc">
+      <span class="movement-arrow">▼</span>
+      <span class="movement-count">${Math.abs(mv.delta)}</span>
+    </span>
+  `;
 }
 
 /* ═══════════════════ MODALS GENERAL ═══════════════════ */

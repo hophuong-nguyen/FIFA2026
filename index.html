@@ -750,25 +750,142 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 .podium-move-badge{
   position:absolute;
-  right:-8px;
-  bottom:-6px;
+  right:-10px;
+  bottom:-5px;
   z-index:2;
-  min-width:28px;
-  padding:2px 6px;
-  font-size:.56rem;
-  box-shadow:0 6px 18px rgba(0,0,0,.34);
+  display:inline-flex;
+  align-items:center;
+  gap:2px;
+  padding:2px 5px;
+  border-radius:999px;
+  font-size:.54rem;
+  font-weight:700;
   backdrop-filter:blur(6px);
+  background:rgba(13,26,10,.72);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 3px 10px rgba(0,0,0,.4);
 }
 .podium-move-badge .movement-count{
-  font-size:.74rem;
+  font-family:'Rajdhani',sans-serif;
+  font-size:.72rem;
+  font-weight:700;
+  line-height:1;
 }
-.podium-item.p1 .podium-move-badge{
-  right:-10px;
-  bottom:-4px;
+.podium-move-badge.move-up  { color:var(--green); }
+.podium-move-badge.move-down{ color:var(--red);   }
+.podium-item.p1 .podium-move-badge{ right:-12px; bottom:-3px; }
+
+/* ── Cột Δ - gọn, không viền, chỉ màu ký tự ── */
+.movement-col{
+  width:32px;
+  padding-left:4px!important;
+  padding-right:4px!important;
 }
-.podium-item.p2 .podium-move-badge,
-.podium-item.p3 .podium-move-badge{
-  bottom:-7px;
+.movement-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  font-size:.72rem;
+  font-weight:700;
+  line-height:1;
+  white-space:nowrap;
+  background:none!important;
+  border:none!important;
+  box-shadow:none!important;
+  padding:0!important;
+  min-width:0!important;
+}
+.movement-badge .movement-arrow{
+  font-size:.75rem;
+  line-height:1;
+}
+.movement-badge .movement-count{
+  font-family:'Rajdhani',sans-serif;
+  font-size:.85rem;
+  font-weight:700;
+  line-height:1;
+}
+.movement-badge.move-up   { color:var(--green); }
+.movement-badge.move-down { color:var(--red);   }
+.movement-badge.move-same { color:#4f6080;      }
+
+/* Fade-in khi vừa thay đổi */
+.movement-badge.is-fresh{
+  animation:moveBadgeFresh .5s ease both;
+}
+@keyframes moveBadgeFresh{
+  from{ opacity:0; transform:translateY(-4px) scale(.8); }
+  to  { opacity:1; transform:translateY(0)    scale(1);  }
+}
+
+/* Row glow - chỉ khi save result */
+.standings-table tr.row-rank-up td{
+  animation:rowRankUpGlow 1.5s ease both;
+  animation-delay:var(--row-glow-delay,0ms);
+}
+.standings-table tr.row-rank-down td{
+  animation:rowRankDownGlow 1.5s ease both;
+  animation-delay:var(--row-glow-delay,0ms);
+}
+@keyframes rowRankUpGlow{
+  0%  { background:rgba(0,214,143,.18); }
+  45% { background:rgba(0,214,143,.10); }
+  100%{ background:transparent;        }
+}
+@keyframes rowRankDownGlow{
+  0%  { background:rgba(235,69,96,.18); }
+  45% { background:rgba(235,69,96,.10); }
+  100%{ background:transparent;         }
+}
+
+/* ── Impact note toast ── */
+.impact-note{
+  position:fixed;
+  bottom:58px;
+  right:18px;
+  z-index:9999;
+  padding:9px 14px;
+  border-radius:9px;
+  font-size:.80rem;
+  font-weight:500;
+  line-height:1.5;
+  color:var(--text);
+  background:rgba(28,32,48,.94);
+  border:1px solid var(--border);
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
+  backdrop-filter:blur(10px);
+  max-width:calc(100vw - 36px);
+  transform:translateY(20px);
+  opacity:0;
+  transition:all .28s ease;
+  pointer-events:none;
+}
+.impact-note.show{
+  transform:translateY(0);
+  opacity:1;
+}
+.impact-note-line{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:2px 0;
+}
+.impact-note-line + .impact-note-line{
+  border-top:1px solid rgba(46,53,80,.6);
+  margin-top:4px;
+  padding-top:5px;
+}
+
+@media(max-width:640px){
+  .movement-col{ width:26px; }
+  .movement-badge .movement-count{ font-size:.78rem; }
+}
+@media(prefers-reduced-motion:reduce){
+  .movement-badge.is-fresh,
+  .standings-table tr.row-rank-up td,
+  .standings-table tr.row-rank-down td,
+  .podium-move-badge{ animation:none!important; }
 }
 
 /* ── Realistic referee cards (nhẹ hơn canvas, khác hẳn icon trạng thái) ── */
@@ -949,6 +1066,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   <div class="loading-text-fx" id="loadingText">=[ Cập nhật dữ liệu ]=</div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="impact-note" id="impactNote"></div>
 
 <!-- EMOJI PICKER -->
 <div class="emoji-picker" id="emojiPicker" style="display:none;">
@@ -2093,44 +2211,75 @@ function renderStandings() {
 }
 
 /* ═══════════════════ RANK MOVEMENT ═══════════════════ */
-let previousRanks = null;
-let rankMovementState = {};
-let rankMovementTimer = null;
-let rankMovementTrigger = null;
+let previousRanks        = null;
+let rankMovementState    = {};
+let rankMovementTrigger  = null;
 
-const RANK_MOVEMENT_VISIBLE_MS = 5000;
 const RANK_GLOW_MS = 1500;
 
+/* Gọi trước persist() khi saveResultModal */
 function armRankMovement(source = 'result-save') {
   rankMovementTrigger = { source, at: Date.now() };
 }
-
 function clearRankMovementTrigger() {
   rankMovementTrigger = null;
 }
 
-function clearRankMovementTimer() {
-  if (rankMovementTimer) {
-    clearTimeout(rankMovementTimer);
-    rankMovementTimer = null;
+/* ── Lý do xếp trên khi đồng điểm ── */
+function buildTiebreakReason(rows, idx) {
+  if (idx === 0) return null;
+  const [idA, vA] = rows[idx];
+  const [idB, vB] = rows[idx - 1];
+  if (vA.p !== vB.p) return null;           // không đồng điểm
+  const gdA = vA.gf - vA.ga, gdB = vB.gf - vB.ga;
+  if (gdA !== gdB) return null;             // đã khác hiệu số
+  if (vA.gf !== vB.gf) return null;        // đã khác bàn thắng
+  return null;
+}
+
+function buildRankMovementTooltip(delta, source, rows, idx) {
+  let base = '';
+  if (delta > 0)      base = `Tăng ${delta} bậc sau trận gần nhất`;
+  else if (delta < 0) base = `Giảm ${Math.abs(delta)} bậc sau trận gần nhất`;
+  else                base = source ? 'Giữ nguyên thứ hạng sau trận gần nhất' : 'Giữ nguyên thứ hạng';
+
+  if (!rows || idx == null) return base;
+
+  /* Kiểm tra tiebreak với đội ngay trên (idx - 1) */
+  const [idA, vA] = rows[idx];
+  if (idx > 0) {
+    const [, vB] = rows[idx - 1];
+    if (vA.p === vB.p) {
+      const gdA = vA.gf - vA.ga, gdB = vB.gf - vB.ga;
+      if (gdA === gdB && vA.gf === vB.gf) {
+        base += '\nXếp dưới vì thứ tự bảng chữ cái';
+      } else if (gdA === gdB) {
+        base += '\nXếp dưới nhờ bàn thắng';
+      } else {
+        base += '\nXếp dưới nhờ hiệu số';
+      }
+    }
   }
+
+  /* Kiểm tra tiebreak với đội ngay dưới (idx + 1) */
+  if (idx < rows.length - 1) {
+    const [, vC] = rows[idx + 1];
+    if (vA.p === vC.p) {
+      const gdA = vA.gf - vA.ga, gdC = vC.gf - vC.ga;
+      if (gdA === gdC && vA.gf === vC.gf) {
+        base += '\nXếp trên đội dưới vì thứ tự bảng chữ cái';
+      } else if (gdA === gdC) {
+        base += '\nXếp trên đội dưới nhờ bàn thắng';
+      } else {
+        base += '\nXếp trên đội dưới nhờ hiệu số';
+      }
+    }
+  }
+
+  return base;
 }
 
-function scheduleRankMovementCleanup() {
-  clearRankMovementTimer();
-  rankMovementTimer = setTimeout(() => {
-    if (!Object.keys(rankMovementState).length) return;
-    rankMovementState = {};
-    if (document.getElementById('standingsTable')) renderStandings();
-  }, RANK_MOVEMENT_VISIBLE_MS + 80);
-}
-
-function buildRankMovementTooltip(delta, recent = false) {
-  if (delta > 0) return `Tăng ${delta} bậc sau trận gần nhất`;
-  if (delta < 0) return `Giảm ${Math.abs(delta)} bậc sau trận gần nhất`;
-  return recent ? 'Giữ nguyên thứ hạng sau trận gần nhất' : 'Giữ nguyên thứ hạng';
-}
-
+/* ── Tính movement khi render ── */
 function computeRankMovement(rows) {
   const currentRanks = {};
   rows.forEach(([id], idx) => { currentRanks[id] = idx + 1; });
@@ -2140,15 +2289,13 @@ function computeRankMovement(rows) {
     return;
   }
 
-  const prevIds = Object.keys(previousRanks);
   const structureChanged =
-    prevIds.length !== rows.length ||
+    Object.keys(previousRanks).length !== rows.length ||
     rows.some(([id]) => previousRanks[id] == null);
 
   if (structureChanged) {
     previousRanks = currentRanks;
     rankMovementState = {};
-    clearRankMovementTimer();
     clearRankMovementTrigger();
     return;
   }
@@ -2160,31 +2307,42 @@ function computeRankMovement(rows) {
     const nextState = {};
 
     rows.forEach(([id], idx) => {
-      const prev = previousRanks[id] ?? (idx + 1);
-      const curr = idx + 1;
+      const prev  = previousRanks[id] ?? (idx + 1);
+      const curr  = idx + 1;
       const delta = prev - curr;
 
       nextState[id] = {
         delta,
-        dir: delta > 0 ? 'up' : delta < 0 ? 'down' : 'same',
-        changedAt: now,
-        visibleUntil: now + RANK_MOVEMENT_VISIBLE_MS,
-        glowUntil: rankMovementTrigger.source === 'result-save' ? now + RANK_GLOW_MS : now,
-        source: rankMovementTrigger.source,
-        tooltip: buildRankMovementTooltip(delta, true)
+        dir       : delta > 0 ? 'up' : delta < 0 ? 'down' : 'same',
+        isFresh   : true,
+        changedAt : now,
+        glowUntil : rankMovementTrigger.source === 'result-save' ? now + RANK_GLOW_MS : now,
+        source    : rankMovementTrigger.source,
+        tooltip   : buildRankMovementTooltip(delta, true, rows, idx)
       };
     });
 
     rankMovementState = nextState;
-    scheduleRankMovementCleanup();
     clearRankMovementTrigger();
-  } else if (hasRankChange) {
-    /* BXH đổi nhưng không phải do saveResultModal() → silent reset */
+
+    /* Sau 600ms tắt is-fresh để không re-animate khi re-render */
+    setTimeout(() => {
+      Object.values(rankMovementState).forEach(s => { s.isFresh = false; });
+    }, 600);
+
+  } else if (hasRankChange && !rankMovementTrigger) {
+    /* BXH đổi không phải do save result → silent reset state */
     rankMovementState = {};
-    clearRankMovementTimer();
     clearRankMovementTrigger();
-  } else if (rankMovementTrigger) {
-    /* Có saveResultModal nhưng BXH không đổi */
+  } else {
+    /* Không đổi BXH → cập nhật tooltip tiebreak mà giữ delta cũ */
+    rows.forEach(([id], idx) => {
+      if (rankMovementState[id]) {
+        rankMovementState[id].tooltip =
+          buildRankMovementTooltip(rankMovementState[id].delta, true, rows, idx);
+        rankMovementState[id].isFresh = false;
+      }
+    });
     clearRankMovementTrigger();
   }
 
@@ -2193,85 +2351,155 @@ function computeRankMovement(rows) {
 
 function getRankMovementMeta(id) {
   const item = rankMovementState[id];
-
   if (!item) {
-    return {
-      dir: 'same',
-      delta: 0,
-      isLive: false,
-      shouldGlow: false,
-      liveElapsed: 0,
-      glowElapsed: 0,
-      tooltip: buildRankMovementTooltip(0, false)
-    };
+    return { dir:'same', delta:0, isLive:false,
+             shouldGlow:false, isFresh:false,
+             glowElapsed:0, tooltip:'Giữ nguyên thứ hạng' };
   }
-
-  const now = Date.now();
-  const isLive = item.dir !== 'same' && now < item.visibleUntil;
+  const now        = Date.now();
   const shouldGlow = item.source === 'result-save' && now < item.glowUntil;
-
   return {
     ...item,
-    isLive,
+    isLive     : item.dir !== 'same',
     shouldGlow,
-    liveElapsed: Math.max(0, Math.min(now - item.changedAt, RANK_MOVEMENT_VISIBLE_MS)),
-    glowElapsed: Math.max(0, Math.min(now - item.changedAt, RANK_GLOW_MS)),
-    tooltip: item.tooltip || buildRankMovementTooltip(item.delta, true)
+    glowElapsed: Math.max(0, Math.min(now - item.changedAt, RANK_GLOW_MS))
   };
 }
 
 function renderRankMovementBadge(id) {
   const mv = getRankMovementMeta(id);
+  const freshCls = mv.isFresh ? ' is-fresh' : '';
 
   if (mv.isLive && mv.dir === 'up') {
-    return `
-      <span class="movement-badge move-up is-live"
-            style="--movement-delay:-${mv.liveElapsed}ms;"
-            title="${mv.tooltip}">
-        <span class="movement-arrow">▲</span>
-        <span class="movement-count">${mv.delta}</span>
-      </span>
-    `;
+    return `<span class="movement-badge move-up${freshCls}" title="${mv.tooltip}">
+      <span class="movement-arrow">▲</span>
+      <span class="movement-count">${mv.delta}</span>
+    </span>`;
   }
-
   if (mv.isLive && mv.dir === 'down') {
-    return `
-      <span class="movement-badge move-down is-live"
-            style="--movement-delay:-${mv.liveElapsed}ms;"
-            title="${mv.tooltip}">
-        <span class="movement-arrow">▼</span>
-        <span class="movement-count">${Math.abs(mv.delta)}</span>
-      </span>
-    `;
+    return `<span class="movement-badge move-down${freshCls}" title="${mv.tooltip}">
+      <span class="movement-arrow">▼</span>
+      <span class="movement-count">${Math.abs(mv.delta)}</span>
+    </span>`;
   }
-
-  return `
-    <span class="movement-badge move-same" title="${mv.tooltip}">
-      <span class="movement-arrow">–</span>
-    </span>
-  `;
+  return `<span class="movement-badge move-same" title="${mv.tooltip}">
+    <span class="movement-arrow">–</span>
+  </span>`;
 }
 
 function renderPodiumMovementBadge(id) {
   const mv = getRankMovementMeta(id);
   if (!mv.isLive || mv.dir === 'same') return '';
-
   const arrow = mv.dir === 'up' ? '▲' : '▼';
-  const cls = mv.dir === 'up' ? 'move-up' : 'move-down';
-  const count = Math.abs(mv.delta);
-
-  return `
-    <span class="movement-badge podium-move-badge ${cls} is-live"
-          style="--movement-delay:-${mv.liveElapsed}ms;"
-          title="${mv.tooltip}">
-      <span class="movement-arrow">${arrow}</span>
-      <span class="movement-count">${count}</span>
-    </span>
-  `;
+  const cls   = mv.dir === 'up' ? 'move-up' : 'move-down';
+  return `<span class="podium-move-badge ${cls}" title="${mv.tooltip}">
+    <span class="movement-arrow">${arrow}</span>
+    <span class="movement-count">${Math.abs(mv.delta)}</span>
+  </span>`;
 }
 
 /* ═══════════════════ MODALS GENERAL ═══════════════════ */
 function showToast(msg, type = 'success') { const t = document.getElementById('toast'); t.textContent = msg; t.style.background = type === 'success' ? 'rgba(0,214,143,.9)' : 'rgba(235,69,96,.9)'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+let _impactTimer = null;
+function showImpactNote(matchIdx) {
+  const note = document.getElementById('impactNote');
+  if (!note) return;
+
+  const m = BASE_SCHEDULE[matchIdx];
+  if (!m) return;
+
+  const r = getResult(matchIdx);
+  if (!r || r.score1 === undefined) return;
+
+  const rows = calcStandings();
+
+  /* Map id → rank hiện tại */
+  const currRankMap = {};
+  rows.forEach(([id], idx) => { currRankMap[id] = idx + 1; });
+
+  /* Map id → rank trước đó (từ previousRanks đã được update trước) */
+  const prevRankMap = {};
+  rows.forEach(([id]) => {
+    const s = rankMovementState[id];
+    if (s) prevRankMap[id] = currRankMap[id] + s.delta;
+    else   prevRankMap[id] = currRankMap[id];
+  });
+
+  const [hId, aId] = m;
+  const s1 = r.score1, s2 = r.score2;
+
+  let winnerLine = '';
+  let loserLine  = '';
+
+  const scoreStr = `${s1}–${s2}`;
+
+  function rankChangeLine(id, opponentId) {
+    const mv = rankMovementState[id];
+    if (!mv || mv.dir === 'same') return '';
+    const name  = teams[id] || id;
+    const emoji = teamEmojis[id] || '⚽';
+    const color = teamColors[id] || 'var(--accent)';
+    const dir   = mv.dir === 'up' ? 'tăng' : 'giảm';
+    const bkgCls = mv.dir === 'up' ? 'var(--green)' : 'var(--red)';
+    const arrow  = mv.dir === 'up' ? '▲' : '▼';
+    return `<div class="impact-note-line">
+      <span style="color:${bkgCls};font-size:.82rem;">${arrow}</span>
+      <span style="color:${color}">${emoji}</span>
+      <span><strong style="color:var(--text)">${name}</strong>
+        ${dir} <strong style="color:${bkgCls}">${Math.abs(mv.delta)} bậc</strong>
+      </span>
+    </div>`;
+  }
+
+  /* Dòng kết quả trận */
+  const hName  = teams[hId] || hId;
+  const aName  = teams[aId] || aId;
+  const hColor = teamColors[hId] || 'var(--accent)';
+  const aColor = teamColors[aId] || 'var(--accent)';
+  const hEmoji = teamEmojis[hId] || '⚽';
+  const aEmoji = teamEmojis[aId] || '⚽';
+
+  let resultLabel = '';
+  if (s1 > s2) {
+    resultLabel = `<span style="color:${hColor}">${hEmoji} ${hName}</span>
+      <span style="color:var(--green);font-weight:700;margin:0 4px;">thắng</span>
+      <span style="color:${aColor}">${aEmoji} ${aName}</span>
+      <span style="color:var(--text-muted);margin-left:4px;">${scoreStr}</span>`;
+  } else if (s2 > s1) {
+    resultLabel = `<span style="color:${aColor}">${aEmoji} ${aName}</span>
+      <span style="color:var(--green);font-weight:700;margin:0 4px;">thắng</span>
+      <span style="color:${hColor}">${hEmoji} ${hName}</span>
+      <span style="color:var(--text-muted);margin-left:4px;">${scoreStr}</span>`;
+  } else {
+    resultLabel = `<span style="color:${hColor}">${hEmoji} ${hName}</span>
+      <span style="color:#00adef;font-weight:700;margin:0 4px;">hòa</span>
+      <span style="color:${aColor}">${aEmoji} ${aName}</span>
+      <span style="color:var(--text-muted);margin-left:4px;">${scoreStr}</span>`;
+  }
+
+  const moveLine1 = rankChangeLine(hId, aId);
+  const moveLine2 = rankChangeLine(aId, hId);
+  const hasMove   = moveLine1 || moveLine2;
+
+  note.innerHTML = `
+    <div class="impact-note-line" style="font-size:.76rem;">
+      <span style="font-size:.85rem;">⚡</span>
+      ${resultLabel}
+    </div>
+    ${hasMove ? moveLine1 + moveLine2 : `
+      <div class="impact-note-line" style="color:var(--text-muted);font-size:.75rem;">
+        Thứ hạng không thay đổi
+      </div>`}
+  `;
+
+  note.classList.add('show');
+
+  if (_impactTimer) clearTimeout(_impactTimer);
+  _impactTimer = setTimeout(() => {
+    note.classList.remove('show');
+  }, 6000);
+}
 window.openModal = id => { const m = document.getElementById(id); if (m) m.classList.add('open'); };
 window.closeModal = id => { const m = document.getElementById(id); if (m) m.classList.remove('open'); };
 window.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
@@ -2323,10 +2551,15 @@ window.saveResultModal = function() {
       }
     }
   }
-  armRankMovement('result-save');
-  closeModal('resultModal');
-  persist();
-  showToast('✅ Lưu kết quả thành công!');
+  const _savedIdx = _editMatchIdx;
+armRankMovement('result-save');
+closeModal('resultModal');
+persist();
+showToast('✅ Lưu kết quả thành công!');
+/* Impact note cần đợi render xong */
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => showImpactNote(_savedIdx));
+});
   // Burst animation ở giữa màn hình
   if (window.triggerEmojiBurst) {
     const m = BASE_SCHEDULE[_editMatchIdx];

@@ -310,6 +310,104 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   margin-top: 8px;
 }
 
+/* ── Fixture list scroll optimization ── */
+.matchday-block.is-past-collapsed .fixture-row,
+.matchday-block.is-past-collapsed .matchday-drop-zone,
+.matchday-block.is-past-collapsed .empty-day {
+  display: none;
+}
+.matchday-block.is-past-collapsed .matchday-header {
+  opacity: .55;
+  cursor: pointer;
+}
+.matchday-block.is-past-collapsed .matchday-header:hover {
+  opacity: .85;
+}
+.past-collapse-toggle {
+  font-size: .65rem;
+  color: var(--text-muted);
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.past-collapse-toggle:hover {
+  border-color: rgba(197,248,81,.3);
+  color: var(--accent);
+}
+
+/* Highlight ngày vừa qua (có kết quả) */
+.matchday-block.is-last-played {
+  border: 1px solid rgba(197,248,81,.22);
+  border-radius: 11px;
+  padding: 8px 8px 4px;
+  background: rgba(197,248,81,.03);
+  box-shadow: 0 0 16px rgba(197,248,81,.06);
+  margin-bottom: 14px;
+}
+.matchday-block.is-last-played .matchday-label::after {
+  content: '✓ Kết quả';
+  font-size: .62rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(197,248,81,.12);
+  color: var(--accent);
+  border: 1px solid rgba(197,248,81,.25);
+  margin-left: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* Today anchor */
+.matchday-block.is-today {
+  border: 1px solid rgba(0,173,239,.28);
+  border-radius: 11px;
+  padding: 8px 8px 4px;
+  background: rgba(0,173,239,.03);
+  box-shadow: 0 0 18px rgba(0,173,239,.08);
+  margin-bottom: 14px;
+}
+
+/* Collapsed summary bar */
+.past-summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px dashed rgba(79,96,128,.3);
+  background: rgba(255,255,255,.02);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all .18s;
+  font-size: .74rem;
+  color: var(--text-muted);
+}
+.past-summary-bar:hover {
+  border-color: rgba(197,248,81,.28);
+  color: var(--accent);
+  background: rgba(197,248,81,.03);
+}
+.past-summary-bar .psb-count {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: .92rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Drag-locked indicator */
+.fixture-row.drag-locked {
+  cursor: default !important;
+}
+.fixture-row.drag-locked:active {
+  cursor: default !important;
+}
+
 /* ── Icon animations on screen ── */
 @keyframes icon-pulse {
   0%,100% { transform: scale(1);   filter: drop-shadow(0 0 0px currentColor); }
@@ -945,7 +1043,26 @@ function onFixtureDragStart(e, origIdx) { dragData = { origIdx: Number(origIdx) 
 function onFixtureDragEnd() { document.querySelectorAll('.fixture-row').forEach(el => el.classList.remove('dragging', 'drag-over-row')); document.querySelectorAll('.matchday-drop-zone,.empty-day').forEach(el => el.classList.remove('drag-over-zone')); dragData = null; }
 function onZoneDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; this.classList.add('drag-over-zone'); }
 function onZoneDragLeave() { this.classList.remove('drag-over-zone'); }
-function onZoneDrop(e, targetDate) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-zone'); if (!dragData) return; const src = dragData.origIdx; matchDates[String(src)] = targetDate; scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src); let ins = scheduleOrder.length; for (let k = scheduleOrder.length - 1; k >= 0; k--) { if (matchDates[String(scheduleOrder[k])] === targetDate) { ins = k + 1; break; } } scheduleOrder.splice(ins, 0, src); persist(); }
+function onZoneDrop(e, targetDate) {
+  e.preventDefault(); e.stopPropagation();
+  this.classList.remove('drag-over-zone');
+  if (!dragData) return;
+  const today = todayISO();
+  const src = dragData.origIdx;
+  const hasResult = (() => { const r = getResult(src); return r && r.score1 !== undefined; })();
+  // Không cho kéo trận đã có kết quả
+  if (hasResult) { showToast('⚠️ Trận đã có kết quả, không thể di chuyển!', 'warn'); return; }
+  // Không cho kéo trận tương lai về ngày đã qua
+  if (targetDate < today) { showToast('⚠️ Không thể xếp trận chưa đấu vào ngày đã qua!', 'warn'); return; }
+  matchDates[String(src)] = targetDate;
+  scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src);
+  let ins = scheduleOrder.length;
+  for (let k = scheduleOrder.length - 1; k >= 0; k--) {
+    if (matchDates[String(scheduleOrder[k])] === targetDate) { ins = k + 1; break; }
+  }
+  scheduleOrder.splice(ins, 0, src);
+  persist();
+}
 function onRowDragOver(e) { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
 function onRowDragLeave() { this.classList.remove('drag-over-row'); }
 function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if (!dragData || dragData.origIdx === Number(targetOrigIdx)) return; const src = dragData.origIdx; matchDates[String(src)] = matchDates[String(targetOrigIdx)]; scheduleOrder = scheduleOrder.map(Number); const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); const di = scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di, 0, src); persist(); }
@@ -959,19 +1076,177 @@ function makeDropZone(targetDate) { const z = document.createElement('div'); z.c
 function makeEmptyZone(targetDate, isReserve = false) { const emp = document.createElement('div'); emp.className = 'empty-day'; emp.dataset.date = targetDate; if (isReserve) emp.style.opacity = '.52'; emp.textContent = isReserve ? '＋ Kéo trận vào' : 'Kéo trận vào đây'; emp.addEventListener('dragover', onZoneDragOver); emp.addEventListener('dragleave', onZoneDragLeave); emp.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return emp; }
 
 function renderFixtures() {
-  const wrap = document.getElementById('fixturesList'); wrap.innerHTML = ''; const today = todayISO(); const matchdays = buildFullDayMap(); let gpos = 0;
-  matchdays.forEach((arr, date) => {
-    const block = makeDateBlock(date, arr, today); block.appendChild(makeDropZone(date)); if (arr.length === 0) block.appendChild(makeEmptyZone(date));
-    arr.forEach(origIdx => {
-      gpos++; if (!BASE_SCHEDULE[origIdx]) return; const m = BASE_SCHEDULE[origIdx]; const r = getResult(origIdx) || {}; const hasResult = r.score1 !== undefined && r.score2 !== undefined; const row = document.createElement('div'); row.className = 'fixture-row' + (hasResult ? ' completed' : ''); row.draggable = true; row.dataset.orig = origIdx;
-      const editBtn = isAdmin ? `<button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>` : `<button class="btn-icon" style="opacity:.38;cursor:not-allowed;background:rgba(232,0,77,.07);border-color:rgba(232,0,77,.18);color:var(--red);" onclick="requireAdmin(()=>openResultModal(${origIdx}))">🔒</button>`;
-      row.innerHTML = `<div class="fixture-num">${gpos}</div><div class="fixture-team home"><span class="tname">${teams[m[0]] || m[0]}</span><span style="color:${teamColors[m[0]] || '#fff'};flex-shrink:0">${teamEmojis[m[0]] || '⚽'}</span></div><div class="fixture-vs">VS</div><div class="fixture-team away"><span style="color:${teamColors[m[1]] || '#fff'};flex-shrink:0">${teamEmojis[m[1]] || '⚽'}</span><span class="tname">${teams[m[1]] || m[1]}</span></div><div class="fixture-score">${hasResult ? `<span style="color:var(--green);font-weight:700">${r.score1}:${r.score2}</span>` : '<span class="result-pending">TBD</span>'}</div>${editBtn}`;
-      row.addEventListener('dragstart', e => onFixtureDragStart(e, origIdx)); row.addEventListener('dragend', onFixtureDragEnd); row.addEventListener('dragover', onRowDragOver); row.addEventListener('dragleave', onRowDragLeave); row.addEventListener('drop', function(e) { onRowDrop.call(this, e, origIdx); }); row.querySelector('.btn-icon').addEventListener('mousedown', e => e.stopPropagation()); initTouchDrag(row, origIdx); block.appendChild(row); block.appendChild(makeDropZone(date));
-    });
+  const wrap = document.getElementById('fixturesList');
+  wrap.innerHTML = '';
+  const today = todayISO();
+  const matchdays = buildFullDayMap();
+
+  // Phân loại ngày
+  const allDates = [...matchdays.keys()].filter(d => d < '9999').sort();
+  const pastDates = allDates.filter(d => d < today);
+  const presentFutureDates = allDates.filter(d => d >= today);
+  const lastPlayedDate = [...pastDates].reverse().find(d => {
+    const arr = matchdays.get(d) || [];
+    return arr.some(i => { const r = getResult(i); return r && r.score1 !== undefined; });
+  });
+  // Ngày ngay trước today có kết quả
+  const highlightPastDate = lastPlayedDate || (pastDates.length > 0 ? pastDates[pastDates.length - 1] : null);
+
+  // ── Nhóm các ngày đã qua (trừ highlight) vào 1 summary bar có thể mở rộng ──
+  const collapsedPastDates = pastDates.filter(d => d !== highlightPastDate);
+  let pastExpanded = false;
+
+  function renderPastSection() {
+    // Xóa past section cũ nếu có
+    const old = wrap.querySelector('.past-section-wrap');
+    if (old) old.remove();
+
+    const section = document.createElement('div');
+    section.className = 'past-section-wrap';
+
+    if (collapsedPastDates.length > 0) {
+      // Summary bar
+      const totalPastMatches = collapsedPastDates.reduce((s, d) => s + (matchdays.get(d) || []).length, 0);
+      const playedPastMatches = collapsedPastDates.reduce((s, d) => {
+        return s + (matchdays.get(d) || []).filter(i => { const r = getResult(i); return r && r.score1 !== undefined; }).length;
+      }, 0);
+
+      const bar = document.createElement('div');
+      bar.className = 'past-summary-bar';
+      bar.innerHTML = `<span style="font-size:.85rem;">📁</span>
+        <span><span class="psb-count">${collapsedPastDates.length}</span> ngày trước</span>
+        <span style="color:var(--border)">·</span>
+        <span><span class="psb-count">${playedPastMatches}/${totalPastMatches}</span> trận</span>
+        <span style="margin-left:auto;font-size:.7rem;">${pastExpanded ? '▲ Thu gọn' : '▼ Xem lại'}</span>`;
+      bar.onclick = () => { pastExpanded = !pastExpanded; renderPastSection(); };
+      section.appendChild(bar);
+
+      if (pastExpanded) {
+        collapsedPastDates.forEach(date => {
+          const arr = matchdays.get(date) || [];
+          const block = makeDateBlock(date, arr, today);
+          appendMatchRows(block, arr, date, today, true);
+          section.appendChild(block);
+        });
+      }
+    }
+
+    // Chèn vào đầu wrap
+    wrap.insertBefore(section, wrap.firstChild);
+  }
+
+  // ── Render ngày highlight (ngày cuối có kết quả) ──
+  if (highlightPastDate) {
+    const arr = matchdays.get(highlightPastDate) || [];
+    const block = makeDateBlock(highlightPastDate, arr, today);
+    block.classList.add('is-last-played');
+    appendMatchRows(block, arr, highlightPastDate, today, true);
+    wrap.appendChild(block);
+  }
+
+  // ── Render ngày hiện tại & tương lai ──
+  let gpos = (collapsedPastDates.reduce((s, d) => s + (matchdays.get(d) || []).length, 0))
+           + (highlightPastDate ? (matchdays.get(highlightPastDate) || []).length : 0);
+
+  presentFutureDates.forEach(date => {
+    const arr = matchdays.get(date) || [];
+    const block = makeDateBlock(date, arr, today);
+    if (date === today) block.classList.add('is-today');
+    appendMatchRows(block, arr, date, today, false);
     wrap.appendChild(block);
   });
+
+  // Reserve day
   const last = getLastScheduledDate();
-  if (last) { const rd = nextWorkday(last); if (![...matchdays.keys()].includes(rd)) { const rb = makeDateBlock(rd, null, today); rb.appendChild(makeEmptyZone(rd, true)); wrap.appendChild(rb); } }
+  if (last) {
+    const rd = nextWorkday(last);
+    if (![...matchdays.keys()].includes(rd)) {
+      const rb = makeDateBlock(rd, null, today);
+      rb.appendChild(makeEmptyZone(rd, true));
+      wrap.appendChild(rb);
+    }
+  }
+
+  // Render past section ở đầu
+  renderPastSection();
+
+  // Auto scroll đến today hoặc ngày gần nhất
+  requestAnimationFrame(() => {
+    const todayBlock = wrap.querySelector('.is-today') || wrap.querySelector('.is-last-played');
+    if (todayBlock) {
+      todayBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+}
+
+// ── Helper: gắn rows vào block ──
+function appendMatchRows(block, arr, date, today, isPast) {
+  block.appendChild(makeDropZone(date));
+  if (arr.length === 0) { block.appendChild(makeEmptyZone(date)); return; }
+
+  arr.forEach(origIdx => {
+    if (!BASE_SCHEDULE[origIdx]) return;
+    const m = BASE_SCHEDULE[origIdx];
+    const r = getResult(origIdx) || {};
+    const hasResult = r.score1 !== undefined && r.score2 !== undefined;
+
+    // Lock drag: trận đã có kết quả KHÔNG được kéo về ngày khác
+    // Trận tương lai KHÔNG được kéo về ngày đã qua
+    const isLocked = hasResult;
+
+    const row = document.createElement('div');
+    row.className = 'fixture-row' + (hasResult ? ' completed' : '') + (isLocked ? ' drag-locked' : '');
+    row.draggable = !isLocked;
+    row.dataset.orig = origIdx;
+    row.dataset.locked = isLocked ? '1' : '0';
+
+    const editBtn = isAdmin
+      ? `<button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>`
+      : `<button class="btn-icon" style="opacity:.38;cursor:not-allowed;background:rgba(232,0,77,.07);border-color:rgba(232,0,77,.18);color:var(--red);" onclick="requireAdmin(()=>openResultModal(${origIdx}))">🔒</button>`;
+
+    row.innerHTML = `
+      <div class="fixture-num" style="${isLocked ? 'color:var(--green);' : ''}">${isLocked ? '✓' : ''}</div>
+      <div class="fixture-team home">
+        <span class="tname">${teams[m[0]] || m[0]}</span>
+        <span style="color:${teamColors[m[0]] || '#fff'};flex-shrink:0">${teamEmojis[m[0]] || '⚽'}</span>
+      </div>
+      <div class="fixture-vs">VS</div>
+      <div class="fixture-team away">
+        <span style="color:${teamColors[m[1]] || '#fff'};flex-shrink:0">${teamEmojis[m[1]] || '⚽'}</span>
+        <span class="tname">${teams[m[1]] || m[1]}</span>
+      </div>
+      <div class="fixture-score">
+        ${hasResult
+          ? `<span style="color:var(--green);font-weight:700">${r.score1}:${r.score2}</span>`
+          : '<span class="result-pending">TBD</span>'}
+      </div>
+      ${editBtn}`;
+
+    if (!isLocked) {
+      row.addEventListener('dragstart', e => {
+        // Chặn kéo trận tương lai về ngày đã qua
+        onFixtureDragStart(e, origIdx);
+        window._dragFromPast = isPast;
+      });
+      row.addEventListener('dragend', onFixtureDragEnd);
+      row.addEventListener('dragover', onRowDragOver);
+      row.addEventListener('dragleave', onRowDragLeave);
+      row.addEventListener('drop', function(e) {
+        // Chặn drop vào ngày đã qua nếu kéo từ tương lai
+        const targetDate = matchDates[String(origIdx)];
+        if (!window._dragFromPast && targetDate < today) {
+          showToast('⚠️ Không thể kéo trận chưa đấu về ngày đã qua!', 'warn');
+          return;
+        }
+        onRowDrop.call(this, e, origIdx);
+      });
+    }
+
+    row.querySelector('.btn-icon').addEventListener('mousedown', e => e.stopPropagation());
+    if (!isLocked) initTouchDrag(row, origIdx);
+    block.appendChild(row);
+    block.appendChild(makeDropZone(date));
+  });
 }
 
 /* ═══════════════════ STATS & STANDINGS ═══════════════════ */

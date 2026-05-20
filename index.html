@@ -28,12 +28,33 @@
 html,body{height:100%;-webkit-text-size-adjust:100%;}
 body{font-family:'Inter',sans-serif;background:var(--bg-deep);color:var(--text);
   min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  /* Sân cỏ: dải sáng tối xen kẽ */
   background:
-    radial-gradient(ellipse 70% 45% at 15% 8%, rgba(49,69,235,.1) 0%,transparent 65%),
-    radial-gradient(ellipse 55% 40% at 85% 85%,rgba(197,248,81,.06) 0%,transparent 60%),
-    radial-gradient(ellipse 40% 55% at 50% 50%,rgba(37,42,73,.4) 0%,transparent 70%),
-    linear-gradient(180deg,#20242d 0%,#1c2030 100%);}
+    repeating-linear-gradient(
+      180deg,
+      rgba(28,38,20,.0)  0px,
+      rgba(28,38,20,.0)  48px,
+      rgba(10,20,8,.25)  48px,
+      rgba(10,20,8,.25)  96px
+    ),
+    /* Nền xanh cỏ đậm */
+    linear-gradient(180deg,#0d1a0a 0%,#0f2010 40%,#0a1808 100%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    /* Overlay màu theme đè lên sân cỏ */
+    radial-gradient(ellipse 80% 55% at 50% 0%,   rgba(49,69,235,.28) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 40% at 0%  100%,  rgba(37,42,73,.55)  0%,transparent 60%),
+    radial-gradient(ellipse 55% 45% at 100% 60%,  rgba(197,248,81,.06) 0%,transparent 55%),
+    /* Tối 4 góc vignette */
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,.65) 100%),
+    /* Màu nền theme */
+    linear-gradient(160deg,#1c2030 0%,#20242d 50%,#1a1e2a 100%);
+  opacity:.92;
+}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px;}
@@ -48,10 +69,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 ══════════════════════════════════ */
 .header{display:flex;justify-content:space-between;align-items:flex-start;
   margin-bottom:16px;padding:14px 20px;
-  background:linear-gradient(135deg,#0f1524 0%,#141b2e 60%,#0f1524 100%);
+  background:rgba(28,32,48,.9);
   border-radius:16px;border:1px solid var(--border);
   box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,.04);
-  position:relative;overflow:hidden;gap:12px;flex-wrap:wrap;}
+  position:relative;overflow:hidden;gap:12px;flex-wrap:wrap;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,#3145eb,#c5f851,#252a49,#c5f851);opacity:.95;}
 .header::after{content:'';position:absolute;inset:0;pointer-events:none;
@@ -114,8 +136,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* ══════════════════════════════════
    CARDS
 ══════════════════════════════════ */
-.card{background:var(--bg-card);border-radius:16px;padding:16px;margin-bottom:16px;
-  border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.45);position:relative;overflow:hidden;}
+.card{background:rgba(37,42,56,.88);border-radius:16px;padding:16px;margin-bottom:16px;
+  border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.55);
+  position:relative;overflow:hidden;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;
@@ -292,10 +315,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:rgba(0,0,0,.8);backdrop-filter:blur(8px);
   align-items:center;justify-content:center;padding:12px;overflow-y:auto;}
 .modal-overlay.open{display:flex;}
-.modal-box{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;
+.modal-box{background:rgba(37,42,56,.96);border:1px solid var(--border);border-radius:18px;
   padding:22px;width:100%;max-width:640px;
-  box-shadow:0 24px 80px rgba(0,0,0,.65),var(--glow);
-  animation:slideUp .22s ease;position:relative;margin:auto;}
+  box-shadow:0 24px 80px rgba(0,0,0,.7),var(--glow);
+  animation:slideUp .22s ease;position:relative;margin:auto;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 .modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   border-radius:18px 18px 0 0;
@@ -499,7 +523,64 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 </style>
 </head>
 <body>
+<!-- PITCH BACKGROUND -->
+<svg id="pitchSvg" xmlns="http://www.w3.org/2000/svg"
+  style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.13;"
+  preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 900">
 
+  <!-- Dải cỏ sáng/tối -->
+  <defs>
+    <pattern id="stripes" x="0" y="0" width="1600" height="96" patternUnits="userSpaceOnUse">
+      <rect width="1600" height="48" fill="rgba(197,248,81,.07)"/>
+      <rect y="48" width="1600" height="48" fill="rgba(0,0,0,0)"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#stripes)"/>
+
+  <!-- Đường biên ngoài -->
+  <rect x="60" y="50" width="1480" height="800"
+    fill="none" stroke="rgba(197,248,81,.55)" stroke-width="2.5" rx="4"/>
+
+  <!-- Vạch giữa sân -->
+  <line x1="800" y1="50" x2="800" y2="850"
+    stroke="rgba(197,248,81,.55)" stroke-width="2"/>
+
+  <!-- Vòng tròn giữa sân -->
+  <circle cx="800" cy="450" r="110"
+    fill="none" stroke="rgba(197,248,81,.5)" stroke-width="2"/>
+  <!-- Chấm giữa -->
+  <circle cx="800" cy="450" r="5" fill="rgba(197,248,81,.6)"/>
+
+  <!-- Khung thành trái -->
+  <rect x="60"  y="300" width="140" height="300"
+    fill="none" stroke="rgba(197,248,81,.45)" stroke-width="2"/>
+  <!-- Vùng cấm địa trái -->
+  <rect x="60"  y="175" width="270" height="550"
+    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
+  <!-- Vòng cung penalty trái -->
+  <path d="M 330 355 A 110 110 0 0 1 330 545"
+    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
+  <!-- Chấm penalty trái -->
+  <circle cx="270" cy="450" r="4" fill="rgba(197,248,81,.5)"/>
+
+  <!-- Khung thành phải -->
+  <rect x="1400" y="300" width="140" height="300"
+    fill="none" stroke="rgba(197,248,81,.45)" stroke-width="2"/>
+  <!-- Vùng cấm địa phải -->
+  <rect x="1270" y="175" width="270" height="550"
+    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
+  <!-- Vòng cung penalty phải -->
+  <path d="M 1270 355 A 110 110 0 0 0 1270 545"
+    fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
+  <!-- Chấm penalty phải -->
+  <circle cx="1330" cy="450" r="4" fill="rgba(197,248,81,.5)"/>
+
+  <!-- 4 góc sân -->
+  <path d="M 60  50  A 22 22 0 0 1 82  50"  fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
+  <path d="M 60  850 A 22 22 0 0 0 82  850" fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
+  <path d="M 1540 50  A 22 22 0 0 0 1518 50"  fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
+  <path d="M 1540 850 A 22 22 0 0 1 1518 850" fill="none" stroke="rgba(197,248,81,.4)" stroke-width="1.5"/>
+</svg>
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">Đang kết nối Firebase...</div>

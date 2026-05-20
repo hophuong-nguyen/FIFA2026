@@ -1527,9 +1527,27 @@ window.saveResultModal = function() {
 };
 
 window.resetResultModal = function() {
-  if (confirm('Khôi phục trận này về trạng thái TBD?')) {
-    delete results[String(_editMatchIdx)]; document.getElementById('score1Modal').value = ''; document.getElementById('score2Modal').value = ''; document.getElementById('yellow1Modal').value = ''; document.getElementById('yellow2Modal').value = ''; document.getElementById('red1Modal').value = ''; document.getElementById('red2Modal').value = ''; persist(); closeModal('resultModal'); showToast('🔄 Đã reset TBD!');
-  }
+  const m = BASE_SCHEDULE[_editMatchIdx];
+  const t1 = teams[m[0]] || m[0];
+  const t2 = teams[m[1]] || m[1];
+
+  requireConfirmCode(
+    '🔄 Xác nhận Reset TBD',
+    `Bạn có chắc chắn muốn khôi phục trận <strong style="color:var(--accent)">${t1} vs ${t2}</strong> về trạng thái chưa đấu (TBD)?<br>
+     <span style="opacity:.75;color:var(--red)">Kết quả và các thẻ phạt của trận này sẽ bị xóa.</span>`,
+    () => {
+      delete results[String(_editMatchIdx)]; 
+      document.getElementById('score1Modal').value = ''; 
+      document.getElementById('score2Modal').value = ''; 
+      document.getElementById('yellow1Modal').value = ''; 
+      document.getElementById('yellow2Modal').value = ''; 
+      document.getElementById('red1Modal').value = ''; 
+      document.getElementById('red2Modal').value = ''; 
+      persist(); 
+      closeModal('resultModal'); 
+      showToast('🔄 Đã reset TBD!');
+    }
+  );
 };
 
 /* ═══════════════════ CONFIRM CODE HELPER ═══════════════════ */

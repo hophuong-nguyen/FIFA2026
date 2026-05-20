@@ -798,19 +798,63 @@ body::after {
 </div>
 
 <!-- RESET MODAL -->
+<!-- RESET MODAL -->
 <div class="modal-overlay" id="resetModal">
   <div class="modal-box" style="max-width:440px;">
     <div class="modal-header">
       <div class="modal-title" style="color:var(--red);">⚠️ Reset mùa giải</div>
-      <button class="modal-close" onclick="closeModal('resetModal');resetConfirmStep=0;">✕</button>
+      <button class="modal-close" onclick="closeModal('resetModal');resetConfirmStep=0;renderResetSteps()">✕</button>
     </div>
-    <p style="color:var(--text-muted);font-size:.84rem;">
+    <p style="color:var(--text-muted);font-size:.84rem;margin-bottom:14px;">
       Xác nhận <strong style="color:white">3 lần</strong> để xóa toàn bộ dữ liệu.
+      Mỗi bước yêu cầu nhập đúng mã xác nhận.
     </p>
     <div class="reset-steps" id="resetSteps"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button class="btn-flat" onclick="closeModal('resetModal');resetConfirmStep=0;renderResetSteps()">Hủy bỏ</button>
-      <button class="btn-flat btn-flat-danger" id="resetConfirmBtn" onclick="handleResetConfirm()">Xác nhận lần 1</button>
+
+    <!-- Ô nhập mã xác nhận -->
+    <div id="resetCodeWrap" style="margin:14px 0 4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <label class="form-label" style="margin:0;">
+          Nhập mã xác nhận để tiếp tục
+        </label>
+        <div id="resetCodeDisplay"
+          style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;
+            letter-spacing:6px;color:var(--red);background:rgba(235,69,96,.08);
+            border:1.5px dashed rgba(235,69,96,.4);border-radius:9px;
+            padding:5px 16px;cursor:pointer;user-select:none;transition:all .2s;"
+          title="Click để tạo mã mới"
+          onclick="generateResetCode()"> -  -  -  -  -  - </div>
+      </div>
+      <div style="position:relative;">
+        <input class="form-input" id="resetCodeInput"
+          placeholder="Nhập 6 chữ số ở trên..."
+          maxlength="6"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          autocomplete="off"
+          style="letter-spacing:4px;font-size:1.1rem;font-family:'Rajdhani',sans-serif;
+            font-weight:600;text-align:center;padding-right:40px;"
+          oninput="onResetCodeInput()">
+        <div id="resetCodeCheck"
+          style="position:absolute;right:11px;top:50%;transform:translateY(-50%);
+            font-size:1.1rem;pointer-events:none;transition:all .2s;">
+        </div>
+      </div>
+      <div id="resetCodeHint"
+        style="font-size:.72rem;color:var(--text-muted);margin-top:5px;min-height:16px;text-align:center;">
+        Click vào mã để tạo mã mới
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn-flat" onclick="closeModal('resetModal');resetConfirmStep=0;renderResetSteps()">
+        Hủy bỏ
+      </button>
+      <button class="btn-flat btn-flat-danger" id="resetConfirmBtn"
+        onclick="handleResetConfirm()" disabled
+        style="opacity:.38;cursor:not-allowed;">
+        Xác nhận lần 1
+      </button>
     </div>
   </div>
 </div>
@@ -1989,27 +2033,145 @@ window.saveResultModal=()=>{
 };
 
 /* ── Reset ── */
-let resetConfirmStep=0;
-const RESET_MSGS=['Bước 1: Xác nhận xóa toàn bộ kết quả','Bước 2: Xác nhận xóa thông tin đội','Bước 3: Xác nhận lần cuối - không thể hoàn tác'];
-window.openResetModal=()=>{
-  if(!isAdmin){requireAdmin(()=>openResetModal());return;}
-  resetConfirmStep=0;renderResetSteps();window.openModal('resetModal');
-};
-function renderResetSteps(){
-  document.getElementById('resetSteps').innerHTML=RESET_MSGS.map((msg,i)=>
-    `<div class="reset-step ${i<resetConfirmStep?'active':''}">
-      <div class="reset-step-num">${i<resetConfirmStep?'✓':i+1}</div><span>${msg}</span>
-    </div>`).join('');
-  const btn=document.getElementById('resetConfirmBtn');if(btn)btn.textContent=`Xác nhận lần ${resetConfirmStep+1}`;
+/* ── Reset ── */
+let resetConfirmStep = 0;
+let _resetCode = '';
+
+const RESET_MSGS = [
+  'Bước 1: Xác nhận xóa toàn bộ kết quả thi đấu',
+  'Bước 2: Xác nhận xóa thông tin lịch & cài đặt',
+  'Bước 3: Xác nhận lần cuối - không thể hoàn tác!'
+];
+
+function generateResetCode() {
+  // Random 6 chữ số, không bắt đầu bằng 0
+  _resetCode = String(Math.floor(100000 + Math.random() * 900000));
+  const display = document.getElementById('resetCodeDisplay');
+  const input   = document.getElementById('resetCodeInput');
+  const hint    = document.getElementById('resetCodeHint');
+  const check   = document.getElementById('resetCodeCheck');
+  const btn     = document.getElementById('resetConfirmBtn');
+
+  if (display) display.textContent = _resetCode;
+  if (input)   { input.value = ''; input.focus(); }
+  if (hint)    hint.textContent = 'Nhập chính xác 6 chữ số ở trên để mở khóa';
+  if (check)   check.textContent = '';
+  if (btn)     { btn.disabled = true; btn.style.opacity = '.38'; btn.style.cursor = 'not-allowed'; }
+
+  // Animate mã mới
+  if (display) {
+    display.style.transform = 'scale(1.12)';
+    display.style.color = '#ff6b6b';
+    setTimeout(() => {
+      display.style.transform = 'scale(1)';
+      display.style.color = 'var(--red)';
+    }, 200);
+  }
 }
-window.renderResetSteps=renderResetSteps;
-window.handleResetConfirm=()=>{
-  resetConfirmStep++;
-  if(resetConfirmStep>=3){
-    window.closeModal('resetModal');resetConfirmStep=0;
-    set(dbRef('state'),null).then(()=>location.reload());
-  } else {renderResetSteps();showToast(`⚠️ Còn ${3-resetConfirmStep} lần xác nhận nữa`,'warn');}
+
+function onResetCodeInput() {
+  const input = document.getElementById('resetCodeInput');
+  const check = document.getElementById('resetCodeCheck');
+  const hint  = document.getElementById('resetCodeHint');
+  const btn   = document.getElementById('resetConfirmBtn');
+  if (!input) return;
+
+  // Chỉ cho phép số
+  input.value = input.value.replace(/\D/g, '').slice(0, 6);
+
+  const val     = input.value;
+  const correct = val === _resetCode;
+  const partial = _resetCode.startsWith(val) && val.length < 6;
+
+  if (val.length === 0) {
+    check.textContent = '';
+    hint.textContent  = 'Nhập chính xác 6 chữ số ở trên để mở khóa';
+    hint.style.color  = 'var(--text-muted)';
+    input.style.borderColor = 'var(--border)';
+    input.style.boxShadow   = 'none';
+  } else if (correct) {
+    check.textContent = '✅';
+    hint.textContent  = '✓ Mã chính xác - bạn có thể xác nhận';
+    hint.style.color  = 'var(--green)';
+    input.style.borderColor = 'var(--green)';
+    input.style.boxShadow   = '0 0 0 3px rgba(197,248,81,.15)';
+  } else if (val.length === 6 && !correct) {
+    check.textContent = '❌';
+    hint.textContent  = '✗ Mã không khớp - kiểm tra lại hoặc click mã để tạo mới';
+    hint.style.color  = 'var(--red)';
+    input.style.borderColor = 'var(--red)';
+    input.style.boxShadow   = '0 0 0 3px rgba(235,69,96,.15)';
+  } else {
+    check.textContent = partial ? '…' : '❌';
+    hint.textContent  = `Đã nhập ${val.length}/6 ký tự`;
+    hint.style.color  = 'var(--text-muted)';
+    input.style.borderColor = 'var(--border)';
+    input.style.boxShadow   = 'none';
+  }
+
+  // Mở/khóa nút xác nhận
+  if (btn) {
+    btn.disabled        = !correct;
+    btn.style.opacity   = correct ? '1' : '.38';
+    btn.style.cursor    = correct ? 'pointer' : 'not-allowed';
+  }
+}
+
+window.openResetModal = () => {
+  if (!isAdmin) { requireAdmin(() => openResetModal()); return; }
+  resetConfirmStep = 0;
+  _resetCode = '';
+  renderResetSteps();
+  openModal('resetModal');
+  // Tạo mã ngay khi mở modal
+  setTimeout(generateResetCode, 120);
 };
+
+function renderResetSteps() {
+  document.getElementById('resetSteps').innerHTML = RESET_MSGS.map((msg, i) => `
+    <div class="reset-step ${i < resetConfirmStep ? 'active' : ''}">
+      <div class="reset-step-num">${i < resetConfirmStep ? '✓' : i + 1}</div>
+      <span>${msg}</span>
+    </div>`).join('');
+
+  const btn = document.getElementById('resetConfirmBtn');
+  if (btn) {
+    btn.textContent  = `Xác nhận lần ${resetConfirmStep + 1}`;
+    btn.disabled     = true;
+    btn.style.opacity = '.38';
+    btn.style.cursor  = 'not-allowed';
+  }
+}
+window.renderResetSteps = renderResetSteps;
+
+window.handleResetConfirm = () => {
+  const input = document.getElementById('resetCodeInput');
+  // Double-check phòng trường hợp click nhanh
+  if (!input || input.value !== _resetCode) {
+    showToast('❌ Mã xác nhận không khớp!', 'warn');
+    return;
+  }
+
+  resetConfirmStep++;
+  renderResetSteps();
+
+  if (resetConfirmStep >= 3) {
+    // Hoàn tất - thực hiện reset
+    setTimeout(() => {
+      closeModal('resetModal');
+      resetConfirmStep = 0;
+      set(dbRef('state'), null).then(() => location.reload());
+    }, 320);
+    return;
+  }
+
+  // Chuyển bước tiếp theo: tạo mã mới
+  showToast(`⚠️ Còn ${3 - resetConfirmStep} lần xác nhận nữa`, 'warn');
+  setTimeout(generateResetCode, 180);
+};
+
+window.generateResetCode = generateResetCode;
+window.onResetCodeInput  = onResetCodeInput;
 
 /* ── Toast ── */
 function showToast(msg,type='success'){

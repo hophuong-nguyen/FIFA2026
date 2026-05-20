@@ -437,7 +437,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   <div class="modal-box" style="max-width:460px;">
     <div class="modal-header">
       <div class="modal-title" style="color:#ef4444;">⚠️ Reset mùa giải</div>
-      <button class="modal-close" onclick="closeModal('resetModal');resetConfirmStep=0;">✕</button>
+      <button class="btn btn-danger btn-sm" id="btnReset" onclick="requireAdmin(()=>openResetModal())">
+        🔄 Reset <span class="admin-lock" id="lockReset">🔒</span>
+      </button>
     </div>
     <p style="color:var(--text-muted);font-size:.88rem;">Xác nhận <strong style="color:white">3 lần</strong> để xóa toàn bộ dữ liệu.</p>
     <div class="reset-steps" id="resetSteps"></div>
@@ -456,7 +458,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
       <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
     </div>
     <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:18px;">
-      Chỉ Admin mới có thể nhập kết quả và xếp lịch Auto.
+      Chỉ Admin mới có thể nhập kết quả, xếp lịch Auto và Reset mùa giải.
     </p>
     <div class="form-group">
       <label class="form-label">Tên đăng nhập</label>
@@ -559,17 +561,23 @@ function updateAuthUI(){
   const label = document.getElementById('authLabel');
   const lockR = document.getElementById('lockResult');
   const lockA = document.getElementById('lockAuto');
+  const lockX = document.getElementById('lockReset');
+
   if(isAdmin){
     badge.classList.add('logged-in');
     label.textContent = '👤 Admin';
-    if(lockR) lockR.style.display='none';
-    if(lockA) lockA.style.display='none';
+    if(lockR) lockR.style.display = 'none';
+    if(lockA) lockA.style.display = 'none';
+    if(lockX) lockX.style.display = 'none';
   } else {
     badge.classList.remove('logged-in');
     label.textContent = 'Đăng nhập';
-    if(lockR) lockR.style.display='';
-    if(lockA) lockA.style.display='';
+    if(lockR) lockR.style.display = '';
+    if(lockA) lockA.style.display = '';
+    if(lockX) lockX.style.display = '';
   }
+  // ★ Re-render fixtures để cập nhật icon ✏️ / 🔒
+  if(fbReady) render();
 }
 window.handleAuthClick = ()=>{
   if(isAdmin){ isAdmin=false; updateAuthUI(); showToast('👋 Đã đăng xuất'); }
@@ -1141,7 +1149,7 @@ function makeEmptyZone(targetDate,isReserve=false){
 function renderFixtures(){
   const wrap=document.getElementById('fixturesList'); wrap.innerHTML='';
   const today=todayISO();
-  const matchdays=buildFullDayMap(); // ← fills workday gaps
+  const matchdays=buildFullDayMap();
   let gpos=0;
 
   matchdays.forEach((arr,date)=>{
@@ -1156,20 +1164,38 @@ function renderFixtures(){
       const row=document.createElement('div');
       row.className='fixture-row'+(hasResult?' completed':'');
       row.draggable=true; row.dataset.orig=origIdx;
+
+      // ★ Nút ✏️ chỉ hiện với admin, user thường thấy 🔒
+      const editBtn = isAdmin
+        ? `<button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>`
+        : `<button class="btn-icon" title="Chỉ Admin mới có thể nhập kết quả"
+              style="opacity:.4;cursor:not-allowed;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:#ef4444;"
+              onclick="requireAdmin(()=>openResultModal(${origIdx}))">🔒</button>`;
+
       row.innerHTML=`
         <div class="fixture-num">${gpos}</div>
-        <div class="fixture-team home"><span style="margin-left:3px">${teams[m[0]]}</span><span style="color:${teamColors[m[0]]}">${teamEmojis[m[0]]}</span></div>
+        <div class="fixture-team home">
+          <span style="margin-left:3px">${teams[m[0]]}</span>
+          <span style="color:${teamColors[m[0]]}">${teamEmojis[m[0]]}</span>
+        </div>
         <div class="fixture-vs">VS</div>
-        <div class="fixture-team away"><span style="color:${teamColors[m[1]]}">${teamEmojis[m[1]]}</span><span>${teams[m[1]]}</span></div>
-        <div class="fixture-score">${hasResult?`<span style="color:var(--green);font-weight:700">${r.score1}:${r.score2}</span>`:'<span class="result-pending">TBD</span>'}</div>
-        <button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>`;
+        <div class="fixture-team away">
+          <span style="color:${teamColors[m[1]]}">${teamEmojis[m[1]]}</span>
+          <span>${teams[m[1]]}</span>
+        </div>
+        <div class="fixture-score">${hasResult
+          ?`<span style="color:var(--green);font-weight:700">${r.score1}:${r.score2}</span>`
+          :'<span class="result-pending">TBD</span>'}</div>
+        ${editBtn}`;
+
       row.addEventListener('dragstart',e=>onFixtureDragStart(e,origIdx));
       row.addEventListener('dragend',onFixtureDragEnd);
       row.addEventListener('dragover',onRowDragOver);
       row.addEventListener('dragleave',onRowDragLeave);
       row.addEventListener('drop',function(e){ onRowDrop.call(this,e,origIdx); });
       row.querySelector('.btn-icon').addEventListener('mousedown',e=>e.stopPropagation());
-      block.appendChild(row); block.appendChild(makeDropZone(date));
+      block.appendChild(row);
+      block.appendChild(makeDropZone(date));
     });
     wrap.appendChild(block);
   });
@@ -1441,7 +1467,15 @@ window.saveResultModal = ()=>{
 /* ── Reset modal ── */
 let resetConfirmStep=0;
 const RESET_MSGS=['Bước 1: Xác nhận xóa toàn bộ kết quả','Bước 2: Xác nhận xóa thông tin đội','Bước 3: Xác nhận lần cuối - không thể hoàn tác'];
-window.openResetModal = ()=>{ resetConfirmStep=0; renderResetSteps(); window.openModal('resetModal'); };
+window.openResetModal = ()=>{
+  if(!isAdmin){
+    requireAdmin(()=>openResetModal());
+    return;
+  }
+  resetConfirmStep = 0;
+  renderResetSteps();
+  window.openModal('resetModal');
+};
 function renderResetSteps(){
   document.getElementById('resetSteps').innerHTML=RESET_MSGS.map((msg,i)=>
     `<div class="reset-step ${i<resetConfirmStep?'active':''}">

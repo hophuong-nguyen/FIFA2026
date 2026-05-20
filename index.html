@@ -510,7 +510,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div class="header-right">
       <div class="header-actions">
         <div class="auth-badge" id="authBadge" onclick="handleAuthClick()"><div class="auth-dot"></div><span id="authLabel">Đăng nhập</span></div>
-        <button class="btn-flat" onclick="openTeamModal()">🛡️ Đội <span class="admin-lock" id="lockTeam">🔒</span></button>
+        <button class="btn-flat" onclick="openTeamModal()">🛡️ Đội</button>
         <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span></button>
         <button class="btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">🔄 Reset <span class="admin-lock" id="lockReset">🔒</span></button>
       </div>
@@ -1282,18 +1282,26 @@ window.saveTeamsModal = () => {
       document.getElementById(`tmem2_${id}`)?.value || ''
     ];
   });
-  // Kiểm tra có thay đổi số đội hoặc thứ tự không
+
   const teamCountChanged = _tempTeamIds.length !== teamIds.length;
   const teamOrderChanged = _tempTeamIds.some((id, i) => id !== teamIds[i]);
+
   const doSave = () => {
     closeEmojiPicker();
     applyTempToReal();
     rebuildSchedule(true);
     persist();
     closeModal('teamModal');
-    showToast('✅ Đã lưu đội & tái tạo lịch!');
+    showToast('✅ Đã lưu thông tin đội!');
   };
+
+  // Chỉ yêu cầu xác nhận nếu có thay đổi số đội hoặc thứ tự
   if (teamCountChanged || teamOrderChanged) {
+    if (!isAdmin) {
+      showToast('🔒 Thay đổi số đội cần đăng nhập Admin', 'warn');
+      openModal('loginModal');
+      return;
+    }
     const newTotal = generateRoundRobin(_tempTeamIds, leagueConfig.format).length;
     requireConfirmCode(
       '💾 Xác nhận lưu thay đổi đội',
@@ -1303,13 +1311,13 @@ window.saveTeamsModal = () => {
       doSave
     );
   } else {
+    // Chỉ đổi tên / emoji / màu / thành viên → lưu thẳng, không cần admin
     doSave();
   }
 };
 
 window.openTeamModal = () => {
-  if (!isAdmin) { requireAdmin(() => openTeamModal()); return; }
-  cloneTeamState(); // Tạo bản sao làm việc
+  cloneTeamState();
   switchTeamTab('teams');
   renderTeamModalInputs();
   openModal('teamModal');

@@ -977,143 +977,100 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   transform:rotate(-8deg);
 }
 
-/* ── Match story (impact note inline) ── */
-.fixture-story{
-  display:grid;
-  grid-template-columns:minmax(0,1.35fr) 1fr minmax(0,1.35fr);
-  gap:4px;
-  padding:5px 9px 7px;
-  margin-top:-4px;
-  margin-bottom:3px;
-  border-radius:0 0 9px 9px;
-  background:rgba(13,26,10,.45);
-  border:1px solid rgba(46,53,80,.45);
-  border-top:none;
-  backdrop-filter:blur(4px);
-  position:relative;
-  overflow:hidden;
-}
-.fixture-story::before{
-  content:'';
-  position:absolute;
-  top:0;left:9px;right:9px;
-  height:1px;
-  background:linear-gradient(
-    90deg,
-    transparent,
-    rgba(197,248,81,.12) 30%,
-    rgba(197,248,81,.18) 50%,
-    rgba(197,248,81,.12) 70%,
-    transparent
-  );
-}
-.fixture-row.completed + .fixture-story{
-  border-left:3px solid var(--green);
+/* ── Match story v2 - inline trong fixture row ── */
+
+/* Row khi có story: thêm padding bottom cho dòng sub */
+.fixture-row.has-story{
+  grid-template-rows: auto auto;
+  padding-bottom: 6px;
+  row-gap: 3px;
 }
 
-.story-side{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-  min-width:0;
+/* Dòng 1: giữ nguyên layout grid hiện tại - chỉ override badge ngoài cùng */
+.story-rank-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: .60rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.story-side.home{ align-items:flex-end; text-align:right; }
-.story-side.away{ align-items:flex-start; text-align:left; }
-
-.story-mid{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:2px;
-  padding-top:1px;
-}
-
-.story-rank-chip{
-  display:inline-flex;
-  align-items:center;
-  gap:3px;
-  font-size:.60rem;
-  font-weight:600;
-  line-height:1;
-  padding:2px 5px;
-  border-radius:5px;
-  white-space:nowrap;
-  max-width:100%;
-  overflow:hidden;
-}
-.story-rank-chip.up{
-  color:#4ade80;
-  background:rgba(0,214,143,.10);
-}
-.story-rank-chip.down{
-  color:#f87171;
-  background:rgba(235,69,96,.10);
-}
-.story-rank-chip.same{
-  color:#4f6080;
-  background:rgba(79,96,128,.08);
-}
-.story-rank-chip.new-entry{
-  color:#c5f851;
-  background:rgba(197,248,81,.08);
-}
-.story-rank-chip .chip-arrow{
-  font-size:.62rem;
-  flex-shrink:0;
-}
-.story-rank-chip .chip-text{
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.story-pts-chip{
-  display:inline-flex;
-  align-items:center;
-  gap:3px;
-  font-size:.58rem;
-  font-weight:500;
-  color:var(--text-muted);
-  white-space:nowrap;
-}
-.story-pts-chip .pts-gained{
+.story-rank-badge .srb-arrow{ font-size:.62rem; }
+.story-rank-badge .srb-delta{
   font-family:'Rajdhani',sans-serif;
-  font-size:.72rem;
+  font-size:.70rem;
   font-weight:700;
 }
-.story-pts-chip .pts-gained.win { color:var(--green); }
-.story-pts-chip .pts-gained.draw{ color:#00adef;      }
-.story-pts-chip .pts-gained.lose{ color:#4f6080;      }
+.story-rank-badge .srb-range{
+  font-size:.55rem;
+  font-weight:500;
+  opacity:.75;
+  margin-left:1px;
+}
+.story-rank-badge.up   { color:#4ade80; }
+.story-rank-badge.down { color:#f87171; }
+.story-rank-badge.same { color:#4f6080; }
+.story-rank-badge.new  { color:#c5f851; }
 
-.story-divider{
-  font-size:.56rem;
-  color:#2e3550;
-  text-align:center;
-  letter-spacing:.5px;
-  margin-top:1px;
+/* Dòng sub - span toàn bộ 7 cột */
+.fixture-sub{
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
 }
 
-.story-tiebreak{
-  font-size:.56rem;
-  color:#4f6080;
-  text-align:center;
-  font-style:italic;
-  line-height:1.4;
-  padding:0 2px;
+.sub-line{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: .60rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+  text-align: center;
+  flex-wrap: wrap;
+}
+.sub-line .sub-icon{ font-size:.64rem; opacity:.8; }
+.sub-line .sub-hl{
+  font-weight: 600;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: .68rem;
+}
+.sub-line.tiebreak  { color:#4f6080; font-style:italic; }
+.sub-line.gap-top   { color:#8fa3b8; }
+.sub-line.gap-top .sub-hl    { color:#c5f851; }
+.sub-line.draw-ctx  { color:#00adef; }
+.sub-line.draw-ctx .sub-hl   { color:#38bdf8; }
+.sub-line.pts-gained{ color:#4f6080; }
+.sub-line.pts-gained .sub-hl { color:var(--green); }
+
+/* Separator dot */
+.sub-dot{
+  width:3px; height:3px;
+  border-radius:50%;
+  background:currentColor;
+  opacity:.35;
+  flex-shrink:0;
+  display:inline-block;
 }
 
 @media(max-width:640px){
-  .fixture-story{
-    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
-    padding:4px 6px 6px;
-  }
-  .story-rank-chip{ font-size:.56rem; padding:2px 4px; }
-  .story-pts-chip { font-size:.54rem; }
+  .story-rank-badge .srb-range{ display:none; }
+  .story-rank-badge .srb-delta{ font-size:.64rem; }
+  .sub-line{ font-size:.57rem; }
+  .sub-line .sub-hl{ font-size:.63rem; }
 }
 @media(max-width:400px){
-  .fixture-story{ grid-template-columns:1fr auto 1fr; gap:2px; }
-  .story-rank-chip .chip-text{ max-width:72px; }
+  .story-rank-badge{ font-size:.55rem; gap:1px; }
+  .sub-line{ font-size:.54rem; }
+}
+@media(prefers-reduced-motion:reduce){
+  .story-rank-badge{ transition:none; }
 }
 
 /* ── Icon animations on screen ── */
@@ -1823,88 +1780,35 @@ window.confirmAutoSchedule = function() {
   scheduleOrder = [...completed, ...groups.flat()]; closeModal('autoModal'); persist(); showToast(`⚡ Đã xếp ${pending.length} trận từ ${formatDateShort(startISO)}!`);
 };
 
-/* ═══════════════════ MATCH STORY ═══════════════════ */
+/* ═══════════════════ MATCH STORY v2 ═══════════════════ */
 
-/**
- * Tính BXH tại thời điểm sau trận matchIdx
- * (dùng kết quả của tất cả trận có date <= date của matchIdx
- *  và index <= matchIdx nếu cùng ngày)
- */
-function calcStandingsAtMatch(upToMatchIdx) {
+function calcStandingsSnapshot(excludeIdx = -1, upToIdx = -1, upToDate = '') {
   const s = {};
   teamIds.forEach(id => {
     s[id] = { p:0, w:0, d:0, l:0, gf:0, ga:0, played:0 };
   });
 
-  const targetDate = matchDates[String(upToMatchIdx)] || '9999-12-31';
-
   for (let i = 0; i < TOTAL; i++) {
+    if (i === excludeIdx) continue;
     const r = getResult(i);
     if (!r || r.score1 === undefined) continue;
     const d = matchDates[String(i)] || '9999-12-31';
-    if (d > targetDate) continue;
-    if (d === targetDate && i > upToMatchIdx) continue;
+    if (upToDate && d > upToDate) continue;
+    if (upToDate && d === upToDate && upToIdx >= 0 && i > upToIdx) continue;
 
     const [a, b] = BASE_SCHEDULE[i];
     if (!s[a] || !s[b]) continue;
+
+    const wp = leagueConfig.winPts || 3;
+    const dp = leagueConfig.drawPts || 1;
 
     s[a].played++; s[b].played++;
     s[a].gf += r.score1; s[a].ga += r.score2;
     s[b].gf += r.score2; s[b].ga += r.score1;
 
-    const wp = leagueConfig.winPts || 3;
-    const dp = leagueConfig.drawPts || 1;
-
-    if (r.score1 > r.score2) {
-      s[a].p += wp; s[a].w++; s[b].l++;
-    } else if (r.score2 > r.score1) {
-      s[b].p += wp; s[b].w++; s[a].l++;
-    } else {
-      s[a].p += dp; s[b].p += dp; s[a].d++; s[b].d++;
-    }
-  }
-
-  /* Sắp xếp theo tiêu chí chuẩn */
-  return Object.entries(s).sort((x, y) =>
-    y[1].p - x[1].p ||
-    (y[1].gf - y[1].ga) - (x[1].gf - x[1].ga) ||
-    y[1].gf - x[1].gf
-  );
-}
-
-function calcStandingsBeforeMatch(matchIdx) {
-  const s = {};
-  teamIds.forEach(id => {
-    s[id] = { p:0, w:0, d:0, l:0, gf:0, ga:0, played:0 };
-  });
-
-  const targetDate = matchDates[String(matchIdx)] || '9999-12-31';
-
-  for (let i = 0; i < TOTAL; i++) {
-    if (i === matchIdx) continue;
-    const r = getResult(i);
-    if (!r || r.score1 === undefined) continue;
-    const d = matchDates[String(i)] || '9999-12-31';
-    if (d > targetDate) continue;
-    if (d === targetDate && i >= matchIdx) continue;
-
-    const [a, b] = BASE_SCHEDULE[i];
-    if (!s[a] || !s[b]) continue;
-
-    s[a].played++; s[b].played++;
-    s[a].gf += r.score1; s[a].ga += r.score2;
-    s[b].gf += r.score2; s[b].ga += r.score1;
-
-    const wp = leagueConfig.winPts || 3;
-    const dp = leagueConfig.drawPts || 1;
-
-    if (r.score1 > r.score2) {
-      s[a].p += wp; s[a].w++; s[b].l++;
-    } else if (r.score2 > r.score1) {
-      s[b].p += wp; s[b].w++; s[a].l++;
-    } else {
-      s[a].p += dp; s[b].p += dp; s[a].d++; s[b].d++;
-    }
+    if (r.score1 > r.score2)      { s[a].p += wp; s[a].w++; s[b].l++; }
+    else if (r.score2 > r.score1) { s[b].p += wp; s[b].w++; s[a].l++; }
+    else                          { s[a].p += dp; s[b].p += dp; s[a].d++; s[b].d++; }
   }
 
   return Object.entries(s).sort((x, y) =>
@@ -1914,97 +1818,195 @@ function calcStandingsBeforeMatch(matchIdx) {
   );
 }
 
-function getTiebreakReason(rowsAfter, idA, idB) {
-  const a = Object.fromEntries(rowsAfter)[idA];
-  const b = Object.fromEntries(rowsAfter)[idB];
+function snapshotRankMap(rows) {
+  const m = {};
+  rows.forEach(([id], i) => { m[id] = i + 1; });
+  return m;
+}
+
+function tiebreakReason(rowsAfter, idA, idB) {
+  const map  = Object.fromEntries(rowsAfter);
+  const a = map[idA], b = map[idB];
   if (!a || !b || a.p !== b.p) return '';
   const gdA = a.gf - a.ga, gdB = b.gf - b.ga;
-  if (gdA !== gdB) return 'nhờ hiệu số';
-  if (a.gf !== b.gf) return 'nhờ bàn thắng';
-  return 'thứ tự bảng chữ cái';
+  if (gdA !== gdB) return 'nhờ hiệu số bàn thắng';
+  if (a.gf !== b.gf) return 'nhờ tổng bàn thắng';
+  return 'theo thứ tự bảng chữ cái';
 }
 
-function buildMatchStoryHTML(origIdx) {
+/**
+ * Trả về object:
+ * {
+ *   homeBadge : HTML string - badge rank home (trái ngoài cùng)
+ *   awayBadge : HTML string - badge rank away (phải ngoài cùng)
+ *   subLines  : HTML string - các dòng sub (tiebreak, gap, context)
+ * }
+ */
+function buildMatchStoryParts(origIdx) {
   const r = getResult(origIdx);
-  if (!r || r.score1 === undefined) return '';
+  if (!r || r.score1 === undefined) return null;
 
-  const [hId, aId]  = BASE_SCHEDULE[origIdx];
+  const [hId, aId] = BASE_SCHEDULE[origIdx];
   const s1 = r.score1, s2 = r.score2;
   const wp = leagueConfig.winPts || 3;
   const dp = leagueConfig.drawPts || 1;
 
-  /* Điểm nhận được */
-  let hPts = 0, aPts = 0, matchOutcome = 'draw';
-  if (s1 > s2) { hPts = wp; matchOutcome = 'home'; }
-  else if (s2 > s1) { aPts = wp; matchOutcome = 'away'; }
-  else { hPts = dp; aPts = dp; }
+  let hPts = 0, aPts = 0;
+  if (s1 > s2)      hPts = wp;
+  else if (s2 > s1) aPts = wp;
+  else              { hPts = dp; aPts = dp; }
 
-  /* BXH trước và sau trận */
-  const rowsBefore = calcStandingsBeforeMatch(origIdx);
-  const rowsAfter  = calcStandingsAtMatch(origIdx);
+  const matchDate = matchDates[String(origIdx)] || '9999-12-31';
 
-  const rankBefore = Object.fromEntries(rowsBefore.map(([id], i) => [id, i + 1]));
-  const rankAfter  = Object.fromEntries(rowsAfter.map(([id],  i) => [id, i + 1]));
+  /* Snapshot BXH trước trận (loại trừ trận này) */
+  const rowsBefore = calcStandingsSnapshot(origIdx, -1, matchDate);
 
-  /* Hàm tạo story cho 1 đội */
-  function sideStoryHTML(id, ptsGained, side) {
-    const before  = rankBefore[id];
-    const after   = rankAfter[id];
-    const delta   = before != null ? before - after : 0;
-    const isFirst = before == null; /* đội chưa từng đá trước trận này */
+  /* Snapshot BXH sau trận (bao gồm trận này) */
+  const rowsAfter  = calcStandingsSnapshot(-1, origIdx, matchDate);
 
-    const color = teamColors[id] || 'var(--accent)';
-    const outcome = id === hId
-      ? (matchOutcome === 'home' ? 'win' : matchOutcome === 'away' ? 'lose' : 'draw')
-      : (matchOutcome === 'away' ? 'win' : matchOutcome === 'home' ? 'lose' : 'draw');
+  const rankBefore = snapshotRankMap(rowsBefore);
+  const rankAfter  = snapshotRankMap(rowsAfter);
+  const statsAfter = Object.fromEntries(rowsAfter);
+  const n          = teamIds.length;
 
-    /* Dòng điểm */
-    const ptsLabel = ptsGained > 0
-      ? `<span class="pts-gained ${outcome}">+${ptsGained}đ</span>`
-      : `<span class="pts-gained lose">+0đ</span>`;
-    const ptsLine = `<span class="story-pts-chip">${ptsLabel} → ${rankAfter[id] != null ? rankAfter[id] + ' / ' + teamIds.length : '?'}</span>`;
+  /* ── Badge rank cho 1 đội ── */
+  function rankBadge(id) {
+    const bef = rankBefore[id];
+    const aft = rankAfter[id];
 
-    /* Dòng thứ hạng */
-    let rankChipHTML = '';
-    if (isFirst) {
-      rankChipHTML = `<span class="story-rank-chip new-entry">
-        <span class="chip-arrow">🆕</span>
-        <span class="chip-text">Lần đầu lên BXH: #${after}</span>
-      </span>`;
-    } else if (delta > 0) {
-      rankChipHTML = `<span class="story-rank-chip up">
-        <span class="chip-arrow">▲${delta}</span>
-        <span class="chip-text">${before} → ${after}</span>
-      </span>`;
-    } else if (delta < 0) {
-      rankChipHTML = `<span class="story-rank-chip down">
-        <span class="chip-arrow">▼${Math.abs(delta)}</span>
-        <span class="chip-text">${before} → ${after}</span>
-      </span>`;
-    } else {
-      rankChipHTML = `<span class="story-rank-chip same">
-        <span class="chip-arrow">–</span>
-        <span class="chip-text">Giữ hạng ${after}</span>
+    if (bef == null) {
+      /* Lần đầu xuất hiện trên BXH */
+      return `<span class="story-rank-badge new" title="Lần đầu lên BXH: #${aft}">
+        <span class="srb-arrow">🆕</span>
+        <span class="srb-delta">#${aft}</span>
       </span>`;
     }
 
-    return `<div class="story-side ${side}">${rankChipHTML}${ptsLine}</div>`;
+    const delta = bef - aft;
+
+    if (delta > 0) {
+      return `<span class="story-rank-badge up" title="Tăng ${delta} bậc: ${bef} → ${aft}">
+        <span class="srb-arrow">▲</span>
+        <span class="srb-delta">${delta}</span>
+        <span class="srb-range">${bef}→${aft}</span>
+      </span>`;
+    }
+    if (delta < 0) {
+      return `<span class="story-rank-badge down" title="Giảm ${Math.abs(delta)} bậc: ${bef} → ${aft}">
+        <span class="srb-arrow">▼</span>
+        <span class="srb-delta">${Math.abs(delta)}</span>
+        <span class="srb-range">${bef}→${aft}</span>
+      </span>`;
+    }
+
+    return `<span class="story-rank-badge same" title="Giữ nguyên hạng ${aft}">
+      <span class="srb-arrow">–</span>
+      <span class="srb-range">hạng ${aft}</span>
+    </span>`;
   }
 
-  const homeHTML = sideStoryHTML(hId, hPts, 'home');
-  const awayHTML = sideStoryHTML(aId, aPts, 'away');
+  const homeBadge = rankBadge(hId);
+  const awayBadge = rankBadge(aId);
 
-  /* Tiebreak giữa 2 đội này nếu đồng điểm */
-  const tbReason = getTiebreakReason(rowsAfter, hId, aId);
-  const midHTML = tbReason
-    ? `<div class="story-mid">
-        <div class="story-tiebreak" title="Tiêu chí phân định">⚖️ ${tbReason}</div>
-       </div>`
-    : `<div class="story-mid">
-        <div class="story-divider">·</div>
-       </div>`;
+  /* ── Sub lines ── */
+  const lines = [];
 
-  return `<div class="fixture-story">${homeHTML}${midHTML}${awayHTML}</div>`;
+  /* 1. Tiebreak nếu 2 đội đồng điểm sau trận */
+  const tb = tiebreakReason(rowsAfter, hId, aId);
+  if (tb) {
+    lines.push(`<div class="sub-line tiebreak">
+      <span class="sub-icon">⚖️</span>
+      <span>Đồng điểm - phân định <span class="sub-hl">${tb}</span></span>
+    </div>`);
+  }
+
+  /* 2. Context hòa */
+  if (s1 === s2) {
+    const hPAfter = statsAfter[hId]?.p ?? 0;
+    const aPAfter = statsAfter[aId]?.p ?? 0;
+    const gap = Math.abs(hPAfter - aPAfter);
+    if (gap === 0) {
+      lines.push(`<div class="sub-line draw-ctx">
+        <span class="sub-icon">🤝</span>
+        <span>Hai đội <span class="sub-hl">vẫn ngang điểm nhau</span> trên BXH</span>
+      </div>`);
+    } else {
+      const higher = hPAfter >= aPAfter ? hId : aId;
+      const lower  = higher === hId ? aId : hId;
+      const hName  = teams[higher] || higher;
+      const lName  = teams[lower]  || lower;
+      lines.push(`<div class="sub-line draw-ctx">
+        <span class="sub-icon">🤝</span>
+        <span>
+          <span class="sub-hl">${hName}</span>
+          vẫn hơn
+          <span class="sub-hl">${lName}</span>
+          <span class="sub-dot"></span>
+          cách nhau <span class="sub-hl">${gap} điểm</span>
+        </span>
+      </div>`);
+    }
+  }
+
+  /* 3. Cuộc đua top - gap tới #1 sau trận */
+  function gapToTopLine(id, pts) {
+    const rank     = rankAfter[id];
+    const top1Pts  = statsAfter[rowsAfter[0][0]]?.p ?? 0;
+    const gap      = top1Pts - (statsAfter[id]?.p ?? 0);
+
+    if (rank === 1) {
+      /* Đang dẫn đầu - cách đội nhì bao nhiêu */
+      const second = rowsAfter[1];
+      if (!second) return '';
+      const gap2 = (statsAfter[id]?.p ?? 0) - (statsAfter[second[0]]?.p ?? 0);
+      if (gap2 === 0) {
+        return `<div class="sub-line gap-top">
+          <span class="sub-icon">🥇</span>
+          <span>Đang <span class="sub-hl">dẫn đầu</span> - đồng điểm đội nhì</span>
+        </div>`;
+      }
+      return `<div class="sub-line gap-top">
+        <span class="sub-icon">🥇</span>
+        <span>Đang <span class="sub-hl">dẫn đầu</span>
+          <span class="sub-dot"></span>
+          hơn đội nhì <span class="sub-hl">${gap2} điểm</span>
+        </span>
+      </div>`;
+    }
+
+    if (gap === 0) {
+      return `<div class="sub-line gap-top">
+        <span class="sub-icon">🔥</span>
+        <span>Đồng điểm top 1 - <span class="sub-hl">cuộc đua căng thẳng!</span></span>
+      </div>`;
+    }
+
+    if (gap <= 3) {
+      return `<div class="sub-line gap-top">
+        <span class="sub-icon">🔥</span>
+        <span>Cách top 1 chỉ <span class="sub-hl">${gap} điểm</span></span>
+      </div>`;
+    }
+
+    return `<div class="sub-line gap-top">
+      <span class="sub-icon">📊</span>
+      <span>Cách top 1 <span class="sub-hl">${gap} điểm</span></span>
+    </div>`;
+  }
+
+  /* Chỉ hiện gap-to-top cho đội có điểm thay đổi hoặc rank thay đổi */
+  const hBef = rankBefore[hId], hAft = rankAfter[hId];
+  const aBef = rankBefore[aId], aAft = rankAfter[aId];
+  const hMoved = hBef !== hAft || hPts > 0;
+  const aMoved = aBef !== aAft || aPts > 0;
+
+  if (hMoved) lines.push(gapToTopLine(hId, hPts));
+  if (aMoved && (aBef !== hBef || aAft !== hAft)) lines.push(gapToTopLine(aId, aPts));
+
+  /* Lọc empty */
+  const subLines = lines.filter(Boolean).join('');
+
+  return { homeBadge, awayBadge, subLines };
 }
 
 /* ═══════════════════ RENDER FIXTURES ═══════════════════ */
@@ -2230,52 +2232,84 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
     const m = BASE_SCHEDULE[origIdx];
     const r = getResult(origIdx) || {};
     const hasResult = r.score1 !== undefined && r.score2 !== undefined;
-    const isLocked = hasResult;
-    const num = matchNumMap[origIdx];
+    const isLocked  = hasResult;
+    const num       = matchNumMap[origIdx];
 
-    // Xác định thắng / thua / hòa
+    /* ── Thắng / thua / hòa ── */
     let homeState = '', awayState = '', homeScoreState = '', awayScoreState = '';
     if (hasResult) {
       if (r.score1 > r.score2) {
-        homeState = 'is-winner'; awayState = 'is-loser';
+        homeState = 'is-winner'; awayState  = 'is-loser';
         homeScoreState = 'is-winner'; awayScoreState = 'is-loser';
       } else if (r.score1 < r.score2) {
-        homeState = 'is-loser'; awayState = 'is-winner';
-        homeScoreState = 'is-loser'; awayScoreState = 'is-winner';
+        homeState = 'is-loser';  awayState  = 'is-winner';
+        homeScoreState = 'is-loser';  awayScoreState = 'is-winner';
       } else {
-        homeState = 'is-draw'; awayState = 'is-draw';
-        homeScoreState = 'is-draw'; awayScoreState = 'is-draw';
+        homeState = 'is-draw';   awayState  = 'is-draw';
+        homeScoreState = 'is-draw';   awayScoreState = 'is-draw';
       }
     }
 
     const homeCards = hasResult
       ? `${renderCardStack('yellow', r.y1)}${renderCardStack('red', r.r1)}`
       : '';
-
     const awayCards = hasResult
       ? `${renderCardStack('yellow', r.y2)}${renderCardStack('red', r.r2)}`
       : '';
 
+    /* ── Match story ── */
+    const story = hasResult ? buildMatchStoryParts(origIdx) : null;
+
+    /* ── Tạo row ── */
     const row = document.createElement('div');
-    row.className = 'fixture-row' + (hasResult ? ' completed' : '') + (isLocked ? ' drag-locked' : '');
-    row.draggable = !isLocked;
+    row.className = [
+      'fixture-row',
+      hasResult ? 'completed'   : '',
+      isLocked  ? 'drag-locked' : '',
+      story     ? 'has-story'   : ''
+    ].filter(Boolean).join(' ');
+
+    row.draggable    = !isLocked;
     row.dataset.orig = origIdx;
 
+    /* ── Edit button ── */
     const editBtn = isAdmin
-      ? `<button class="btn-icon" title="Nhập kết quả" onclick="openResultModal(${origIdx})">✏️</button>`
-      : `<button class="btn-icon" style="opacity:.38;cursor:not-allowed;background:rgba(232,0,77,.07);border-color:rgba(232,0,77,.18);color:var(--red);" onclick="requireAdmin(()=>openResultModal(${origIdx}))">🔒</button>`;
+      ? `<button class="btn-icon" title="Nhập kết quả"
+                 onclick="openResultModal(${origIdx})">✏️</button>`
+      : `<button class="btn-icon"
+                 style="opacity:.38;cursor:not-allowed;
+                        background:rgba(232,0,77,.07);
+                        border-color:rgba(232,0,77,.18);
+                        color:var(--red);"
+                 onclick="requireAdmin(()=>openResultModal(${origIdx}))">🔒</button>`;
 
+    /* ── Số thứ tự / badge rank trái ── */
     const numStyle = isLocked
-      ? 'color:var(--green); background:rgba(197,248,81,.1); border:1px solid rgba(197,248,81,.25);'
+      ? 'color:var(--green);background:rgba(197,248,81,.1);border:1px solid rgba(197,248,81,.25);'
+      : '';
+
+    const leftSlot = story?.homeBadge
+      ?? `<div class="fixture-num" style="${numStyle}">${num}</div>`;
+
+    /* ── Slot phải: badge rank away hoặc edit button ── */
+    const rightSlot = story
+      ? (story.awayBadge ?? '')
+      : editBtn;
+
+    /* ── Sub lines (tiebreak / gap / context) ── */
+    const subLineHTML = story?.subLines
+      ? `<div class="fixture-sub">${story.subLines}</div>`
       : '';
 
     row.innerHTML = `
-      <div class="fixture-num" style="${numStyle}">${num}</div>
+      ${leftSlot}
 
       <div class="fixture-team home ${homeState}">
         ${homeCards ? `<span class="team-cards">${homeCards}</span>` : ''}
         <span class="tname">${teams[m[0]] || m[0]}</span>
-        <span class="team-emoji" style="color:${teamColors[m[0]] || '#fff'}">${teamEmojis[m[0]] || '⚽'}</span>
+        <span class="team-emoji"
+              style="color:${teamColors[m[0]] || '#fff'}"
+        >${teamEmojis[m[0]] || '⚽'}</span>
       </div>
 
       <div class="fixture-score-box ${hasResult ? homeScoreState : 'pending'}">
@@ -2289,20 +2323,33 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
       </div>
 
       <div class="fixture-team away ${awayState}">
-        <span class="team-emoji" style="color:${teamColors[m[1]] || '#fff'}">${teamEmojis[m[1]] || '⚽'}</span>
+        <span class="team-emoji"
+              style="color:${teamColors[m[1]] || '#fff'}"
+        >${teamEmojis[m[1]] || '⚽'}</span>
         <span class="tname">${teams[m[1]] || m[1]}</span>
         ${awayCards ? `<span class="team-cards">${awayCards}</span>` : ''}
       </div>
 
-      ${editBtn}
+      ${rightSlot}
+
+      ${subLineHTML}
     `;
 
+    /* ── Khi có story: edit button ra ngoài grid, append riêng ── */
+    if (story) {
+      const editWrap = document.createElement('div');
+      editWrap.className = 'fixture-edit-wrap';
+      editWrap.innerHTML = editBtn;
+      row.appendChild(editWrap);
+    }
+
+    /* ── Drag & drop (chỉ trận chưa có kết quả) ── */
     if (!isLocked) {
       row.addEventListener('dragstart', e => {
         onFixtureDragStart(e, origIdx);
         window._dragFromPast = isPast;
       });
-      row.addEventListener('dragend', onFixtureDragEnd);
+      row.addEventListener('dragend',  onFixtureDragEnd);
       row.addEventListener('dragover', onRowDragOver);
       row.addEventListener('dragleave', onRowDragLeave);
       row.addEventListener('drop', function(e) {
@@ -2315,19 +2362,14 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
       });
     }
 
-    row.querySelector('.btn-icon').addEventListener('mousedown', e => e.stopPropagation());
+    /* ── stopPropagation cho tất cả btn-icon trong row ── */
+    row.querySelectorAll('.btn-icon').forEach(btn => {
+      btn.addEventListener('mousedown', e => e.stopPropagation());
+    });
+
     if (!isLocked) initTouchDrag(row, origIdx);
 
-        block.appendChild(row);
-
-    /* Match story - chỉ render khi đã có kết quả */
-    const storyHTML = buildMatchStoryHTML(origIdx);
-    if (storyHTML) {
-      const storyEl = document.createElement('div');
-      storyEl.innerHTML = storyHTML;
-      block.appendChild(storyEl.firstElementChild);
-    }
-
+    block.appendChild(row);
     block.appendChild(makeDropZone(date));
   });
 }

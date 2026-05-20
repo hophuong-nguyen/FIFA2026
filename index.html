@@ -503,6 +503,25 @@ body::after{
 .fixtures-wrap{max-height:65vh;}
 .standings-table tr:last-child td{border-bottom:none;padding-bottom:6px;}
 
+/* FIX khoảng hở dưới của khung Lịch thi đấu */
+#fixturesList{
+  margin-bottom:0;
+}
+#fixturesList > .matchday-block:last-child{
+  margin-bottom:0;
+}
+#fixturesList > .matchday-block:last-child > .empty-day:last-child{
+  margin-bottom:0;
+}
+#fixturesList > .matchday-block:last-child > .matchday-drop-zone:last-child{
+  min-height:4px;
+  margin:0;
+}
+#fixturesList > .matchday-block:last-child > .matchday-drop-zone:last-child.drag-over-zone{
+  min-height:36px;
+  margin-top:4px;
+}
+
 /* ══════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════ */

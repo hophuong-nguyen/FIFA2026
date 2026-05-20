@@ -890,19 +890,131 @@ body::after {
 
 <!-- TEAM MODAL -->
 <div class="modal-overlay" id="teamModal">
-  <div class="modal-box" style="max-width:740px;">
+  <div class="modal-box" style="max-width:820px;">
     <div class="modal-header">
       <div class="modal-title">🛡️ Quản lý đội tham dự</div>
       <button class="modal-close" onclick="closeModal('teamModal')">✕</button>
     </div>
-    <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:16px;">
-      Click vào icon để thay đổi emoji và màu sắc cho đội của bạn
-    </p>
-    <div class="team-inputs-grid" id="teamInputsGrid"></div>
-    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end;">
-      <button class="btn-flat" onclick="closeModal('teamModal')">Hủy</button>
-      <button class="btn-flat" style="border-color:rgba(0,173,239,.4);color:var(--accent);"
-        onclick="saveTeamsModal()">💾 Lưu đội</button>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg-deep);
+      border-radius:10px;padding:4px;border:1px solid var(--border);">
+      <button id="tab-teams" onclick="switchTeamTab('teams')"
+        style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;
+          font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;
+          background:rgba(197,248,81,.12);color:var(--accent);">
+        🛡️ Danh sách đội
+      </button>
+      <button id="tab-settings" onclick="switchTeamTab('settings')"
+        style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;
+          font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;
+          background:transparent;color:var(--text-muted);">
+        ⚙️ Cài đặt giải đấu
+      </button>
+    </div>
+
+    <!-- Tab: Danh sách đội -->
+    <div id="tab-content-teams">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:.78rem;color:var(--text-muted);">
+          Click icon để đổi emoji & màu • Kéo để sắp xếp
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-flat" id="btnRemoveTeam"
+            onclick="requireAdmin(removeLastTeam)"
+            style="color:var(--red);border-color:rgba(235,69,96,.3);">
+            ➖ Bớt đội
+          </button>
+          <button class="btn-flat" id="btnAddTeam"
+            onclick="requireAdmin(addNewTeam)"
+            style="color:var(--accent);border-color:rgba(197,248,81,.3);">
+            ➕ Thêm đội
+          </button>
+        </div>
+      </div>
+
+      <!-- Cảnh báo khi thay đổi số đội -->
+      <div id="teamChangeWarning" style="display:none;padding:10px 13px;border-radius:9px;
+        background:rgba(235,69,96,.08);border:1px solid rgba(235,69,96,.3);
+        color:#f87171;font-size:.78rem;margin-bottom:12px;line-height:1.6;">
+      </div>
+
+      <div class="team-inputs-grid" id="teamInputsGrid"
+        style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));">
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:18px;justify-content:space-between;
+        align-items:center;flex-wrap:wrap;">
+        <div style="font-size:.75rem;color:var(--text-muted);" id="teamCountLabel"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-flat" onclick="closeModal('teamModal')">Hủy</button>
+          <button class="btn-flat"
+            style="border-color:rgba(197,248,81,.4);color:var(--accent);"
+            onclick="saveTeamsModal()">💾 Lưu đội</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Cài đặt giải đấu -->
+    <div id="tab-content-settings" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group">
+          <label class="form-label">Tên giải đấu</label>
+          <input class="form-input" id="cfg-leagueName" placeholder="FIFA League 2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mùa giải / Năm</label>
+          <input class="form-input" id="cfg-season" placeholder="2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số trận / ngày</label>
+          <select class="form-select" id="cfg-matchesPerDay">
+            <option value="1">1 trận / ngày</option>
+            <option value="2">2 trận / ngày</option>
+            <option value="3" selected>3 trận / ngày</option>
+            <option value="4">4 trận / ngày</option>
+            <option value="5">5 trận / ngày</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Thể thức thi đấu</label>
+          <select class="form-select" id="cfg-format">
+            <option value="single">Lượt đi (1 lượt)</option>
+            <option value="double">Lượt đi + về (2 lượt)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Điểm thắng</label>
+          <input class="form-input" id="cfg-winPts" type="number" min="1" value="3">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Điểm hòa</label>
+          <input class="form-input" id="cfg-drawPts" type="number" min="0" value="1">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:4px;">
+        <label class="form-label">Mô tả giải đấu</label>
+        <textarea class="form-input" id="cfg-desc" rows="2"
+          style="resize:vertical;min-height:56px;"
+          placeholder="Giải bóng đá nội bộ công ty..."></textarea>
+      </div>
+
+      <!-- Thông tin tổng quan -->
+      <div style="background:var(--bg-deep);border:1px solid var(--border);
+        border-radius:9px;padding:12px 14px;margin-top:4px;">
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;
+          letter-spacing:.5px;margin-bottom:9px;">Thông tin tổng quan</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="leagueInfoGrid">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
+        <button class="btn-flat" onclick="closeModal('teamModal')">Hủy</button>
+        <button class="btn-flat"
+          style="border-color:rgba(197,248,81,.4);color:var(--accent);"
+          onclick="saveLeagueConfig()">💾 Lưu cài đặt</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1129,7 +1241,9 @@ body::after {
           <div class="auth-dot"></div>
           <span id="authLabel">Đăng nhập</span>
         </div>
-        <button class="btn-flat" onclick="openModal('teamModal');renderTeamModalInputs()">🛡️ Đội</button>
+        <button class="btn-flat" onclick="openTeamModal()">
+  🛡️ Đội <span class="admin-lock" id="lockTeam">🔒</span>
+</button>
         <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
           ⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span>
         </button>
@@ -1191,19 +1305,20 @@ const ROOT= 'league2026';
 const ADMIN_USER='admin', ADMIN_PASS='admin@123';
 let isAdmin=false;
 
-function updateAuthUI(){
-  const badge=document.getElementById('authBadge');
-  const label=document.getElementById('authLabel');
-  ['lockResult','lockAuto','lockReset'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.display=isAdmin?'none':'';
+function updateAuthUI() {
+  const badge = document.getElementById('authBadge');
+  const label = document.getElementById('authLabel');
+  // thêm 'lockTeam' vào danh sách
+  ['lockResult','lockAuto','lockReset','lockTeam'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isAdmin ? 'none' : '';
   });
-  if(isAdmin){
-    badge.classList.add('logged-in'); label.textContent='👤 Admin';
+  if (isAdmin) {
+    badge.classList.add('logged-in'); label.textContent = '👤 Admin';
   } else {
-    badge.classList.remove('logged-in'); label.textContent='Đăng nhập';
+    badge.classList.remove('logged-in'); label.textContent = 'Đăng nhập';
   }
-  if(fbReady) render();
+  if (fbReady) render();
 }
 window.handleAuthClick=()=>{
   if(isAdmin){ isAdmin=false; updateAuthUI(); showToast('👋 Đã đăng xuất'); }
@@ -1228,9 +1343,9 @@ window.requireAdmin=fn=>{
 };
 
 /* ═══════════════════════
-   CONSTANTS
+   CONSTANTS & HELPERS
 ═══════════════════════ */
-const EMOJI_CATS={
+const EMOJI_CATS = {
   '⚽ Bóng đá':    ['⚽','🥅','🏆','🥇','🎯','🏅','🎖️','🥈'],
   '🐾 Thú vật':   ['🦅','🐉','🦁','🐯','🦊','🐺','🦋','🦈','🐻','🦂','🦉','🦏'],
   '⚡ Huyền thoại':['⚡','🔥','🌊','🌙','💫','❄️','🌪️','☄️'],
@@ -1239,25 +1354,482 @@ const EMOJI_CATS={
   '😈 Mạnh mẽ':   ['😈','💀','🎃','👹','🤺','🥊','💪','🦾'],
   '🌿 Tự nhiên':  ['🌿','🍀','🌸','🌻','🍁','🌴','🦚','🐬'],
 };
-const COLOR_PALETTE=[
+const COLOR_PALETTE = [
   '#00adef','#e8004d','#f5a623','#00d68f','#7c3aed',
   '#f97316','#ec4899','#06b6d4','#8b5cf6','#10b981',
   '#f43f5e','#84cc16','#6366f1','#14b8a6','#fb923c',
+  '#c5f851','#3145eb','#ef4444','#22d3ee','#a855f7',
 ];
-const IDS           =['A','B','C','D','E','F','G'];
-const DEFAULT_EMOJIS=['🦅','🐉','🦁','⚡','🔥','🌊','🌙'];
-const DEFAULT_COLORS=['#00adef','#e8004d','#f5a623','#00d68f','#7c3aed','#f97316','#ec4899'];
-const BASE_SCHEDULE=[
-  ['B','G'],['C','F'],['D','E'],['A','G'],['B','E'],['C','D'],['A','F'],
-  ['G','E'],['B','C'],['A','E'],['F','D'],['G','C'],['A','D'],['E','C'],
-  ['F','B'],['A','C'],['D','B'],['F','G'],['A','B'],['D','G'],['E','F']
+const DEFAULT_EMOJIS = ['🦅','🐉','🦁','⚡','🔥','🌊','🌙','🏆','💎','🦊','🔱','☄️'];
+const DEFAULT_COLORS = [
+  '#00adef','#e8004d','#f5a623','#00d68f','#7c3aed',
+  '#f97316','#ec4899','#06b6d4','#8b5cf6','#10b981',
+  '#f43f5e','#84cc16',
 ];
-const TOTAL        =BASE_SCHEDULE.length;
-const SEASON_START ='2026-05-18';
-const MONTHS_VI    =['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-const MONTHS_SHORT =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const DOWS_VI      =['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
-const DOWS_SHORT   =['CN','T2','T3','T4','T5','T6','T7'];
+const MIN_TEAMS = 3;
+const MAX_TEAMS = 12;
+
+const MONTHS_VI    = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOWS_VI      = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const DOWS_SHORT   = ['CN','T2','T3','T4','T5','T6','T7'];
+
+/* ═══════════════════════
+   SCHEDULE GENERATOR
+   Tạo lịch round-robin động theo số đội
+═══════════════════════ */
+function generateRoundRobin(teamIds, format = 'single') {
+  // Thuật toán round-robin chuẩn
+  const ids = [...teamIds];
+  if (ids.length % 2 !== 0) ids.push('__bye__'); // đội ảo nếu lẻ
+  const n = ids.length;
+  const rounds = n - 1;
+  const matchesPerRound = n / 2;
+  const schedule = [];
+
+  for (let r = 0; r < rounds; r++) {
+    for (let m = 0; m < matchesPerRound; m++) {
+      const home = ids[m === 0 ? 0 : (1 + (r + m - 1) % (n - 1))];
+      const away = ids[m === 0 ? (1 + r % (n - 1)) : (1 + (r + n - m - 2) % (n - 1))];
+      if (home !== '__bye__' && away !== '__bye__') {
+        schedule.push([home, away]);
+      }
+    }
+  }
+
+  // Lượt về: đảo home/away
+  if (format === 'double') {
+    const returnLegs = schedule.map(([h, a]) => [a, h]);
+    return [...schedule, ...returnLegs];
+  }
+  return schedule;
+}
+
+/* ═══════════════════════
+   STATE
+═══════════════════════ */
+// teamIds: mảng ID động thay vì cố định A-G
+let teamIds   = ['A','B','C','D','E','F','G'];
+let teams     = {A:'Team Alpha',B:'Team Beta',C:'Team Cobra',D:'Team Delta',E:'Team Eagle',F:'Team Fenix',G:'Team Ghost'};
+let members   = {A:['P1','P2'],B:['P3','P4'],C:['P5','P6'],D:['P7','P8'],E:['P9','P10'],F:['P11','P12'],G:['P13','P14']};
+let teamEmojis= Object.fromEntries(teamIds.map((id,i)=>[id,DEFAULT_EMOJIS[i]]));
+let teamColors= Object.fromEntries(teamIds.map((id,i)=>[id,DEFAULT_COLORS[i]]));
+let results   = {};
+let matchDates= {};
+let scheduleOrder = [];
+let leagueConfig  = {
+  leagueName: 'FIFA League Manager',
+  season: '2026',
+  matchesPerDay: 3,
+  format: 'single',
+  winPts: 3,
+  drawPts: 1,
+  desc: '',
+};
+// BASE_SCHEDULE tính động
+let BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+let TOTAL = BASE_SCHEDULE.length;
+let fbReady = false;
+
+/* ═══════════════════════
+   REBUILD SCHEDULE
+   Gọi lại khi teamIds hoặc format thay đổi
+═══════════════════════ */
+function rebuildSchedule(keepResults = false) {
+  BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+  TOTAL = BASE_SCHEDULE.length;
+  if (!keepResults) {
+    results = {};
+    matchDates = buildSeasonDates();
+    scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
+  } else {
+    // Giữ lại kết quả của các cặp đấu vẫn còn tồn tại
+    const newResults = {};
+    const newDates = buildSeasonDates();
+    const newOrder = BASE_SCHEDULE.map((_, i) => i);
+    BASE_SCHEDULE.forEach(([a, b], i) => {
+      // Tìm kết quả cũ theo cặp đấu
+      const oldIdx = scheduleOrder.find(oi => {
+        const old = BASE_SCHEDULE[oi];
+        return old && old[0] === a && old[1] === b;
+      });
+      if (oldIdx !== undefined && results[String(oldIdx)]) {
+        newResults[String(i)] = results[String(oldIdx)];
+        newDates[String(i)] = matchDates[String(oldIdx)] || newDates[String(i)];
+      }
+    });
+    results = newResults;
+    matchDates = newDates;
+    scheduleOrder = newOrder;
+  }
+}
+
+/* ═══════════════════════
+   FIREBASE - cập nhật normalize
+═══════════════════════ */
+function normalizeState(data) {
+  if (!data) return;
+  teamIds      = data.teamIds      || teamIds;
+  teams        = data.teams        || teams;
+  members      = data.members      || members;
+  teamEmojis   = data.teamEmojis   || teamEmojis;
+  teamColors   = data.teamColors   || teamColors;
+  results      = data.results      || {};
+  leagueConfig = { ...leagueConfig, ...(data.leagueConfig || {}) };
+  BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+  TOTAL         = BASE_SCHEDULE.length;
+  matchDates    = normalizeMatchDates(data.matchDates);
+  scheduleOrder = normalizeScheduleOrder(data.scheduleOrder);
+}
+
+async function pushToFirebase() {
+  setSyncState('syncing');
+  try {
+    await set(dbRef('state'), {
+      teamIds, teams, members, teamEmojis, teamColors,
+      results, matchDates, scheduleOrder, leagueConfig,
+    });
+    setSyncState('connected');
+  } catch(e) {
+    setSyncState('offline');
+    showToast('⚠️ Lỗi lưu: ' + e.message, 'warn');
+  }
+}
+
+function subscribeFirebase() {
+  onValue(dbRef('state'), snap => {
+    const data = snap.val();
+    if (data) {
+      normalizeState(data);
+    } else {
+      BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+      TOTAL = BASE_SCHEDULE.length;
+      matchDates = buildSeasonDates();
+      scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
+      pushToFirebase();
+    }
+    if (!fbReady) {
+      fbReady = true;
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+    setSyncState('connected');
+    updateHeaderTitle();
+    render();
+  }, err => {
+    document.getElementById('loadingText').textContent = '❌ ' + err.message;
+    document.querySelector('.loading-spinner').style.borderTopColor = '#e8004d';
+    setSyncState('offline');
+    setTimeout(() => document.getElementById('loadingOverlay').classList.add('hidden'), 3000);
+  });
+}
+
+/* ── Cập nhật tiêu đề header theo leagueConfig ── */
+function updateHeaderTitle() {
+  const h1 = document.querySelector('.header-title h1');
+  const p  = document.querySelector('.header-title p');
+  if (h1) h1.textContent = (leagueConfig.leagueName || 'FIFA LEAGUE MANAGER').toUpperCase();
+  if (p)  p.textContent  = `⚡ Pro Edition · Season ${leagueConfig.season || '2026'} · Real-time Sync`;
+}
+
+/* ═══════════════════════
+   TEAM MODAL - TABS
+═══════════════════════ */
+window.switchTeamTab = (tab) => {
+  const tabs = ['teams', 'settings'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`tab-${t}`);
+    const content = document.getElementById(`tab-content-${t}`);
+    const active = t === tab;
+    if (btn) {
+      btn.style.background = active ? 'rgba(197,248,81,.12)' : 'transparent';
+      btn.style.color = active ? 'var(--accent)' : 'var(--text-muted)';
+    }
+    if (content) content.style.display = active ? 'block' : 'none';
+  });
+  if (tab === 'settings') renderLeagueConfigTab();
+};
+
+/* ═══════════════════════
+   TEAM MODAL - DANH SÁCH ĐỘI
+═══════════════════════ */
+
+// Sinh ID mới chưa dùng
+function genTeamId() {
+  const used = new Set(teamIds);
+  // Thử A-Z trước
+  for (let c = 65; c <= 90; c++) {
+    const id = String.fromCharCode(c);
+    if (!used.has(id)) return id;
+  }
+  // Fallback: T1, T2, ...
+  let n = 1;
+  while (used.has('T' + n)) n++;
+  return 'T' + n;
+}
+
+window.addNewTeam = () => {
+  if (teamIds.length >= MAX_TEAMS) {
+    showToast(`⚠️ Tối đa ${MAX_TEAMS} đội`, 'warn'); return;
+  }
+  const id = genTeamId();
+  const idx = teamIds.length;
+  teamIds.push(id);
+  teams[id]      = `Team ${id}`;
+  members[id]    = ['', ''];
+  teamEmojis[id] = DEFAULT_EMOJIS[idx % DEFAULT_EMOJIS.length];
+  teamColors[id] = DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
+  renderTeamModalInputs();
+  showWarning();
+  showToast(`➕ Đã thêm Đội ${id}`);
+};
+
+window.removeLastTeam = () => {
+  if (teamIds.length <= MIN_TEAMS) {
+    showToast(`⚠️ Tối thiểu ${MIN_TEAMS} đội`, 'warn'); return;
+  }
+  const id = teamIds[teamIds.length - 1];
+  // Kiểm tra nếu đội này đã có kết quả
+  const hasResult = BASE_SCHEDULE.some(([a, b], i) =>
+    (a === id || b === id) && results[String(i)] !== undefined
+  );
+  if (hasResult) {
+    if (!confirm(`Đội ${teams[id]} đã có kết quả thi đấu. Xóa sẽ mất dữ liệu này. Tiếp tục?`)) return;
+  }
+  teamIds.pop();
+  delete teams[id]; delete members[id];
+  delete teamEmojis[id]; delete teamColors[id];
+  renderTeamModalInputs();
+  showWarning();
+  showToast(`➖ Đã xóa Đội ${id}`, 'warn');
+};
+
+// Xóa đội bất kỳ theo id
+window.removeTeamById = (id) => {
+  if (!isAdmin) { requireAdmin(() => {}); return; }
+  if (teamIds.length <= MIN_TEAMS) {
+    showToast(`⚠️ Tối thiểu ${MIN_TEAMS} đội`, 'warn'); return;
+  }
+  const hasResult = BASE_SCHEDULE.some(([a, b], i) =>
+    (a === id || b === id) && results[String(i)] !== undefined
+  );
+  if (hasResult) {
+    if (!confirm(`Đội ${teams[id]} đã có kết quả. Xóa sẽ mất dữ liệu. Tiếp tục?`)) return;
+  }
+  teamIds = teamIds.filter(t => t !== id);
+  delete teams[id]; delete members[id];
+  delete teamEmojis[id]; delete teamColors[id];
+  renderTeamModalInputs();
+  showWarning();
+  showToast(`➖ Đã xóa ${id}`, 'warn');
+};
+
+function showWarning() {
+  const warn = document.getElementById('teamChangeWarning');
+  const orig = BASE_SCHEDULE.length;
+  const newSchedule = generateRoundRobin(teamIds, leagueConfig.format);
+  const diff = newSchedule.length - orig;
+  const diffText = diff > 0 ? `tăng thêm ${diff}` : diff < 0 ? `giảm ${Math.abs(diff)}` : 'không thay đổi';
+  warn.style.display = 'block';
+  warn.innerHTML = `
+    ⚠️ <strong>Thay đổi số đội sẽ tái tạo toàn bộ lịch thi đấu!</strong><br>
+    ${teamIds.length} đội → <strong>${newSchedule.length} trận</strong>
+    (${diffText} so với hiện tại ${orig} trận)<br>
+    <span style="opacity:.8">Kết quả các trận đã đấu sẽ được giữ lại nếu cặp đấu vẫn còn tồn tại.</span>`;
+  updateTeamCountLabel();
+}
+
+function updateTeamCountLabel() {
+  const el = document.getElementById('teamCountLabel');
+  if (!el) return;
+  const newTotal = generateRoundRobin(teamIds, leagueConfig.format).length;
+  el.innerHTML = `
+    <span style="color:var(--accent);font-weight:600;">${teamIds.length}</span> đội •
+    <span style="color:var(--accent);font-weight:600;">${newTotal}</span> trận •
+    Min ${MIN_TEAMS} / Max ${MAX_TEAMS}`;
+}
+
+window.renderTeamModalInputs = () => {
+  const grid = document.getElementById('teamInputsGrid');
+  grid.innerHTML = teamIds.map((id, idx) => `
+    <div class="team-entry" id="team-entry-${id}" draggable="true"
+      ondragstart="teamDragStart(event,'${id}')"
+      ondragover="teamDragOver(event)"
+      ondrop="teamDrop(event,'${id}')"
+      ondragend="teamDragEnd()">
+      <div class="team-entry-header">
+        <div class="emoji-trigger" id="emoji-trigger-${id}"
+          style="background:${teamColors[id]}33;border-color:${teamColors[id]}"
+          onclick="openEmojiPicker('${id}',this)">
+          <span class="trigger-emoji">${teamEmojis[id]}</span>
+          <span class="change-hint">✎</span>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="team-entry-label" style="color:${teamColors[id]}">
+            Đội ${id}
+            <span style="font-size:.6rem;color:var(--text-muted);font-weight:400;
+              margin-left:4px;">#${idx + 1}</span>
+          </div>
+          <div style="font-size:.65rem;color:var(--text-muted);margin-top:1px;">
+            ⠿ kéo để sắp xếp
+          </div>
+        </div>
+        ${teamIds.length > MIN_TEAMS ? `
+        <button onclick="removeTeamById('${id}')"
+          style="width:22px;height:22px;border-radius:5px;border:1px solid rgba(235,69,96,.3);
+            background:rgba(235,69,96,.08);color:var(--red);cursor:pointer;font-size:11px;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+            transition:all .15s;-webkit-tap-highlight-color:transparent;"
+          title="Xóa đội này">✕</button>` : ''}
+      </div>
+      <div class="form-group" style="margin-bottom:7px">
+        <input class="form-input" id="tname_${id}"
+          value="${teams[id] || ''}" placeholder="Tên đội">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <input class="form-input" style="font-size:.76rem;padding:6px 8px"
+          id="tmem1_${id}" value="${(members[id] || ['',''])[0]}" placeholder="Thành viên 1">
+        <input class="form-input" style="font-size:.76rem;padding:6px 8px"
+          id="tmem2_${id}" value="${(members[id] || ['',''])[1]}" placeholder="Thành viên 2">
+      </div>
+    </div>`).join('');
+
+  updateTeamCountLabel();
+
+  // Ẩn/hiện nút bớt đội
+  const btnRemove = document.getElementById('btnRemoveTeam');
+  const btnAdd    = document.getElementById('btnAddTeam');
+  if (btnRemove) btnRemove.style.opacity = teamIds.length <= MIN_TEAMS ? '.4' : '1';
+  if (btnAdd)    btnAdd.style.opacity    = teamIds.length >= MAX_TEAMS ? '.4' : '1';
+};
+
+/* ── Drag & drop sắp xếp thứ tự đội ── */
+let _dragTeamId = null;
+window.teamDragStart = (e, id) => {
+  _dragTeamId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    const el = document.getElementById(`team-entry-${id}`);
+    if (el) el.style.opacity = '.35';
+  }, 0);
+};
+window.teamDragOver = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
+window.teamDrop = (e, targetId) => {
+  e.preventDefault();
+  if (!_dragTeamId || _dragTeamId === targetId) return;
+  const from = teamIds.indexOf(_dragTeamId);
+  const to   = teamIds.indexOf(targetId);
+  teamIds.splice(from, 1);
+  teamIds.splice(to, 0, _dragTeamId);
+  renderTeamModalInputs();
+};
+window.teamDragEnd = () => {
+  _dragTeamId = null;
+  document.querySelectorAll('.team-entry').forEach(el => el.style.opacity = '1');
+};
+
+/* ── Lưu đội ── */
+window.saveTeamsModal = () => {
+  // Đọc giá trị từ input
+  teamIds.forEach(id => {
+    teams[id]   = document.getElementById(`tname_${id}`)?.value || teams[id];
+    members[id] = [
+      document.getElementById(`tmem1_${id}`)?.value || '',
+      document.getElementById(`tmem2_${id}`)?.value || '',
+    ];
+  });
+  closeEmojiPicker();
+
+  // Rebuild lịch
+  rebuildSchedule(true);
+
+  persist();
+  closeModal('teamModal');
+  showToast('✅ Đã lưu & tái tạo lịch thi đấu!');
+};
+
+/* ═══════════════════════
+   LEAGUE CONFIG TAB
+═══════════════════════ */
+function renderLeagueConfigTab() {
+  // Điền giá trị hiện tại
+  const fields = {
+    'cfg-leagueName' : leagueConfig.leagueName  || '',
+    'cfg-season'     : leagueConfig.season       || '2026',
+    'cfg-matchesPerDay': leagueConfig.matchesPerDay || 3,
+    'cfg-format'     : leagueConfig.format       || 'single',
+    'cfg-winPts'     : leagueConfig.winPts       || 3,
+    'cfg-drawPts'    : leagueConfig.drawPts      || 1,
+    'cfg-desc'       : leagueConfig.desc         || '',
+  };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+
+  // Thông tin tổng quan
+  const newTotal = generateRoundRobin(teamIds, leagueConfig.format).length;
+  const played   = Object.values(results).filter(r => r && r.score1 !== undefined).length;
+  const grid     = document.getElementById('leagueInfoGrid');
+  if (grid) grid.innerHTML = [
+    { label: 'Số đội',     val: teamIds.length,          color: 'var(--accent)' },
+    { label: 'Tổng trận',  val: newTotal,                color: 'var(--accent)' },
+    { label: 'Đã đấu',     val: played,                  color: 'var(--green)'  },
+    { label: 'Còn lại',    val: newTotal - played,       color: 'var(--gold)'   },
+    { label: 'Điểm thắng', val: leagueConfig.winPts,    color: 'var(--text)'   },
+    { label: 'Điểm hòa',   val: leagueConfig.drawPts,   color: 'var(--text)'   },
+  ].map(item => `
+    <div style="text-align:center;padding:8px 4px;background:var(--bg-card);
+      border-radius:8px;border:1px solid var(--border);">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;
+        font-weight:700;color:${item.color};">${item.val}</div>
+      <div style="font-size:.65rem;color:var(--text-muted);
+        text-transform:uppercase;margin-top:2px;">${item.label}</div>
+    </div>`).join('');
+}
+
+window.saveLeagueConfig = () => {
+  const prev = leagueConfig.format;
+  leagueConfig = {
+    leagueName  : document.getElementById('cfg-leagueName')?.value   || leagueConfig.leagueName,
+    season      : document.getElementById('cfg-season')?.value       || leagueConfig.season,
+    matchesPerDay: Number(document.getElementById('cfg-matchesPerDay')?.value) || 3,
+    format      : document.getElementById('cfg-format')?.value       || 'single',
+    winPts      : Number(document.getElementById('cfg-winPts')?.value)  || 3,
+    drawPts     : Number(document.getElementById('cfg-drawPts')?.value) || 1,
+    desc        : document.getElementById('cfg-desc')?.value         || '',
+  };
+
+  // Nếu đổi thể thức → cảnh báo & rebuild
+  if (prev !== leagueConfig.format) {
+    if (!confirm(`Đổi thể thức từ "${prev === 'single' ? 'Lượt đi' : 'Lượt đi + về'}" → "${leagueConfig.format === 'single' ? 'Lượt đi' : 'Lượt đi + về'}".\nLịch thi đấu sẽ được tái tạo. Tiếp tục?`)) {
+      leagueConfig.format = prev; return;
+    }
+    rebuildSchedule(true);
+  }
+
+  updateHeaderTitle();
+  persist();
+  closeModal('teamModal');
+  showToast('✅ Đã lưu cài đặt giải đấu!');
+};
+
+/* ═══════════════════════
+   MỞ MODAL ĐỘI
+═══════════════════════ */
+window.openTeamModal = () => {
+  if (!isAdmin) { requireAdmin(() => openTeamModal()); return; }
+  switchTeamTab('teams');
+  renderTeamModalInputs();
+  document.getElementById('teamChangeWarning').style.display = 'none';
+  openModal('teamModal');
+};
+
+/* ═══════════════════════
+   CẬP NHẬT NÚT ĐỘI TRÊN HEADER
+═══════════════════════ */
+// Sửa nút Đội trên header để check admin
+// Trong HTML, đổi onclick của nút 🛡️ Đội thành:
+// onclick="openTeamModal()"
 
 /* ═══════════════════════
    DATE HELPERS
@@ -2052,16 +2624,29 @@ function renderStats(){
 /* ═══════════════════════
    STANDINGS
 ═══════════════════════ */
-function calcStandingsRaw(){
-  const s={};IDS.forEach(id=>s[id]={p:0,w:0,d:0,l:0,gf:0,ga:0,y:0,r:0,played:0});
-  for(let i=0;i<TOTAL;i++){
-    const r=getResult(i);if(!r||r.score1===undefined)continue;
-    const[a,b]=BASE_SCHEDULE[i];
-    s[a].played++;s[b].played++;s[a].gf+=r.score1;s[a].ga+=r.score2;s[b].gf+=r.score2;s[b].ga+=r.score1;
-    s[a].y+=r.y1||0;s[a].r+=r.r1||0;s[b].y+=r.y2||0;s[b].r+=r.r2||0;
-    if(r.score1>r.score2){s[a].p+=3;s[a].w++;s[b].l++;}
-    else if(r.score2>r.score1){s[b].p+=3;s[b].w++;s[a].l++;}
-    else{s[a].p++;s[b].p++;s[a].d++;s[b].d++;}
+function calcStandingsRaw() {
+  // Khởi tạo động theo teamIds hiện tại
+  const s = {};
+  teamIds.forEach(id => s[id] = { p:0, w:0, d:0, l:0, gf:0, ga:0, y:0, r:0, played:0 });
+
+  for (let i = 0; i < TOTAL; i++) {
+    const r = getResult(i);
+    if (!r || r.score1 === undefined) continue;
+    const [a, b] = BASE_SCHEDULE[i];
+    if (!s[a] || !s[b]) continue; // bỏ qua nếu đội không còn tồn tại
+
+    s[a].played++; s[b].played++;
+    s[a].gf += r.score1; s[a].ga += r.score2;
+    s[b].gf += r.score2; s[b].ga += r.score1;
+    s[a].y  += r.y1 || 0; s[a].r += r.r1 || 0;
+    s[b].y  += r.y2 || 0; s[b].r += r.r2 || 0;
+
+    const wp = leagueConfig.winPts  || 3;
+    const dp = leagueConfig.drawPts || 1;
+
+    if (r.score1 > r.score2)      { s[a].p += wp; s[a].w++; s[b].l++; }
+    else if (r.score2 > r.score1) { s[b].p += wp; s[b].w++; s[a].l++; }
+    else                          { s[a].p += dp; s[b].p += dp; s[a].d++; s[b].d++; }
   }
   return s;
 }

@@ -1089,26 +1089,35 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Badge rank trong fixture row - giới hạn width khớp cột 44px */
 .story-rank-badge{
   display        : inline-flex;
+  flex-direction : column;        /* ← xếp dọc */
   align-items    : center;
   justify-content: center;
-  gap            : 2px;
+  gap            : 1px;
   font-size      : .60rem;
   font-weight    : 700;
   line-height    : 1;
   white-space    : nowrap;
   flex-shrink    : 0;
-  width          : 44px;
+  width          : 36px;          /* ← thu từ 44px xuống 36px */
   overflow       : visible;
 }
 .story-rank-badge.home{
-  justify-content: flex-start;
-  padding-left   : 3px;
-  padding-right  : 4px;
+  align-items    : flex-start;
+  padding-left   : 2px;
+  padding-right  : 2px;
 }
 .story-rank-badge.away{
-  justify-content: flex-end;
-  padding-right  : 3px;
-  padding-left   : 4px;
+  align-items    : flex-end;
+  padding-right  : 2px;
+  padding-left   : 2px;
+}
+
+/* Dòng trên: arrow + delta nằm ngang với nhau */
+.story-rank-badge .srb-top{
+  display     : inline-flex;
+  align-items : center;
+  gap         : 1px;
+  line-height : 1;
 }
 
 .story-rank-badge .srb-arrow{ font-size:.62rem; }
@@ -1117,16 +1126,35 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   font-size:.70rem;
   font-weight:700;
 }
+
+/* Dòng dưới: range */
 .story-rank-badge .srb-range{
-  font-size:.55rem;
-  font-weight:500;
-  opacity:.75;
-  margin-left:1px;
+  font-size  : .52rem;
+  font-weight: 500;
+  opacity    : .70;
+  line-height: 1;
+  margin-left: 0;           /* ← reset margin cũ */
+  text-align : center;
 }
+.story-rank-badge.home .srb-range{ text-align: left;  }
+.story-rank-badge.away .srb-range{ text-align: right; }
+
 .story-rank-badge.up   { color:#4ade80; }
 .story-rank-badge.down { color:#f87171; }
 .story-rank-badge.same { color:#4f6080; }
 .story-rank-badge.new  { color:#c5f851; }
+
+@media(max-width:640px){
+  .story-rank-badge        { width: 30px; }   /* ← mobile thu thêm */
+  .story-rank-badge .srb-range{ display: none; } /* ← ẩn range mobile */
+  .story-rank-badge .srb-delta{ font-size:.64rem; }
+}
+@media(max-width:400px){
+  .story-rank-badge{ font-size:.55rem; gap:1px; }
+}
+@media(prefers-reduced-motion:reduce){
+  .story-rank-badge{ transition:none; }
+}
 
 /* Nút toggle giữ nguyên */
 .fixture-sub {
@@ -1226,9 +1254,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 /* Ép fixture-row thành 8 cột: BadgeTrái | ĐộiNhà | TỉSố | VS | TỉSố | ĐộiKhách | BadgePhải | EditBtn */
+/* Desktop */
 .fixture-row {
-  grid-template-columns: 44px minmax(0,1fr) 34px 28px 34px minmax(0,1fr) 44px 28px !important;
+  grid-template-columns: 36px minmax(0,1fr) 34px 28px 34px minmax(0,1fr) 36px 28px !important;
 }
+
 
 /* Xóa wrap cũ, không dùng nữa */
 .fixture-edit-wrap { display: none !important; }
@@ -1289,9 +1319,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Trả lại không gian cho mobile */
 @media(max-width:500px){
-  .fixture-row { 
-    /* Thu nhỏ badge(32px), tỉ số(30px), vs(20px), nút edit(24px) */
-    grid-template-columns: 32px minmax(0,1fr) 30px 20px 30px minmax(0,1fr) 32px 24px !important; 
+  .fixture-row {
+    grid-template-columns: 30px minmax(0,1fr) 30px 20px 30px minmax(0,1fr) 30px 24px !important;
     gap: 3px !important;
     padding: 6px 4px !important;
   }
@@ -2367,39 +2396,73 @@ function buildMatchStoryParts(origIdx) {
     const statsAfter = Object.fromEntries(rowsAfter);
 
     /* Badge rank */
-    function rankBadge(id, side) {
-      const bef = rankBefore[id];
-      const aft = rankAfter[id];
-      if (bef == null) {
-        return `<span class="story-rank-badge new ${side}"
-                      title="Lần đầu lên BXH: #${aft}">
-          <span class="srb-arrow">🆕</span>
-          <span class="srb-delta">#${aft}</span>
-        </span>`;
-      }
-      const delta = bef - aft;
-      if (delta > 0) {
-        return `<span class="story-rank-badge up ${side}"
-                      title="Tăng ${delta} bậc: ${bef}→${aft}">
-          <span class="srb-arrow">▲</span>
-          <span class="srb-delta">${delta}</span>
-          <span class="srb-range">${bef}→${aft}</span>
-        </span>`;
-      }
-      if (delta < 0) {
-        return `<span class="story-rank-badge down ${side}"
-                      title="Giảm ${Math.abs(delta)} bậc: ${bef}→${aft}">
-          <span class="srb-arrow">▼</span>
-          <span class="srb-delta">${Math.abs(delta)}</span>
-          <span class="srb-range">${bef}→${aft}</span>
-        </span>`;
-      }
-      return `<span class="story-rank-badge same ${side}"
-                    title="Giữ nguyên hạng ${aft}">
-        <span class="srb-arrow">–</span>
-        <span class="srb-range">hạng&nbsp;${aft}</span>
-      </span>`;
-    }
+    /* ── Trận đã có kết quả: rankBadge() ── */
+function rankBadge(id, side) {
+  const bef = rankBefore[id];
+  const aft = rankAfter[id];
+  if (bef == null) {
+    return `<span class="story-rank-badge new ${side}"
+                  title="Lần đầu lên BXH: #${aft}">
+      <span class="srb-top">
+        <span class="srb-arrow">🆕</span>
+        <span class="srb-delta">#${aft}</span>
+      </span>
+    </span>`;
+  }
+  const delta = bef - aft;
+  if (delta > 0) {
+    return `<span class="story-rank-badge up ${side}"
+                  title="Tăng ${delta} bậc: ${bef}→${aft}">
+      <span class="srb-top">
+        <span class="srb-arrow">▲</span>
+        <span class="srb-delta">${delta}</span>
+      </span>
+      <span class="srb-range">${bef}→${aft}</span>
+    </span>`;
+  }
+  if (delta < 0) {
+    return `<span class="story-rank-badge down ${side}"
+                  title="Giảm ${Math.abs(delta)} bậc: ${bef}→${aft}">
+      <span class="srb-top">
+        <span class="srb-arrow">▼</span>
+        <span class="srb-delta">${Math.abs(delta)}</span>
+      </span>
+      <span class="srb-range">${bef}→${aft}</span>
+    </span>`;
+  }
+  return `<span class="story-rank-badge same ${side}"
+                title="Giữ nguyên hạng ${aft}">
+    <span class="srb-top">
+      <span class="srb-arrow">–</span>
+    </span>
+    <span class="srb-range">hạng&nbsp;${aft}</span>
+  </span>`;
+}
+
+/* ── Trận chưa đấu: predictBadge() ── */
+function predictBadge(id, side) {
+  const curr  = rankCurrent[id] ?? n;
+  const ifWin = id === hId ? rankIfHWin[id] : rankIfAWin[id];
+  const delta = curr - ifWin;
+
+  if (delta > 0) {
+    return `<span class="story-rank-badge up ${side}"
+                  title="Nếu thắng: lên hạng ${ifWin}">
+      <span class="srb-top">
+        <span class="srb-arrow">▲</span>
+        <span class="srb-delta">${delta}</span>
+      </span>
+      <span class="srb-range">${curr}→${ifWin}?</span>
+    </span>`;
+  }
+  return `<span class="story-rank-badge same ${side}"
+                title="Nếu thắng: vẫn hạng ${ifWin}">
+    <span class="srb-top">
+      <span class="srb-arrow">–</span>
+    </span>
+    <span class="srb-range">hạng&nbsp;${ifWin}</span>
+  </span>`;
+}
 
     const homeBadge = rankBadge(hId, 'home');
     const awayBadge = rankBadge(aId, 'away');

@@ -3705,12 +3705,23 @@ window.resetResultModal = function() {
      <span style="opacity:.75;color:var(--red)">Tỉ số và thẻ phạt của trận này sẽ bị xóa.</span>`,
     () => {
       delete results[String(_editMatchIdx)];
+
+      const playedAfterReset = Object.values(results)
+        .filter(r => r && r.score1 !== undefined).length;
+
+      if (playedAfterReset === 0) {
+        rankMovementState = {};
+        previousRanks = null;
+        clearRankMovementTrigger();
+      }
+
       document.getElementById('score1Modal').value = '';
       document.getElementById('score2Modal').value = '';
       document.getElementById('yellow1Modal').value = '';
       document.getElementById('yellow2Modal').value = '';
       document.getElementById('red1Modal').value = '';
       document.getElementById('red2Modal').value = '';
+
       persist();
       closeModal('resultModal');
       showToast('↩️ Đã hủy kết quả trận đấu!');

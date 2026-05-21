@@ -2442,61 +2442,73 @@ function buildMatchStoryParts(origIdx) {
 
         /* Gap to top */
     function gapToTopLine(id) {
-      const rank     = rankAfter[id];
-      const myPts    = statsAfter[id]?.p ?? 0;
-      const top1Id   = rowsAfter[0]?.[0];
-      const top1Pts  = statsAfter[top1Id]?.p ?? 0;
-      const gap      = top1Pts - myPts;
-      const rematch  = remainingMatches(id, origIdx);
+  const rank     = rankAfter[id];
+  const myPts    = statsAfter[id]?.p ?? 0;
+  const top1Id   = rowsAfter[0]?.[0];
+  const top1Pts  = statsAfter[top1Id]?.p ?? 0;
+  const gap      = top1Pts - myPts;
+  const rematch  = remainingMatches(id, origIdx);
 
-      // 1. Lấy tên của đội đang được nhắc đến
-      const myName   = teams[id] || id;
-      
-      // 2. Lấy tên & icon của đội Top 1
-      const top1Name = teams[top1Id] || top1Id;
-      const top1Emoji = teamEmojis[top1Id] || '👑';
-      const top1Label = `<span class="sub-hl sub-team-name">
-        ${top1Emoji} ${top1Name}
-      </span>`;
+  const myName   = teams[id] || id;
+  
+  const top1Name  = teams[top1Id] || top1Id;
+  const top1Emoji = teamEmojis[top1Id] || '👑';
+  const top1Label = `<span class="sub-hl sub-team-name">
+    ${top1Emoji} ${top1Name}
+  </span>`;
 
-      const remStr = rematch > 0
-        ? `<span class="sub-dot"></span><span>còn <span class="sub-hl">${rematch} trận</span></span>`
-        : `<span class="sub-dot"></span><span style="color:#f87171">hết trận</span>`;
+  const remStr = rematch > 0
+    ? `<span class="sub-dot"></span><span>còn <span class="sub-hl">${rematch} trận</span></span>`
+    : `<span class="sub-dot"></span><span style="color:#f87171">hết trận</span>`;
 
-      if (rank === 1) {
-        const second  = rowsAfter[1];
-        if (!second) return '';
-        const gap2 = myPts - (statsAfter[second[0]]?.p ?? 0);
-        if (gap2 === 0) {
-          return `<div class="sub-line gap-top">
-            <span class="sub-icon">🥇</span>
-            <span><span class="sub-hl sub-team-name">${myName}</span> <span class="sub-hl sub-team-name">${myName}</span> <span class="sub-hl">dẫn đầu</span> - đồng điểm đội nhì ${remStr}</span>
-          </div>`;
-        }
-        return `<div class="sub-line gap-top">
-          <span class="sub-icon">🥇</span>
-          <span><span class="sub-hl sub-team-name">${myName}</span> <span class="sub-hl">dẫn đầu</span> - hơn đội nhì <span class="sub-hl">${gap2} điểm</span>
-            ${remStr}
-          </span>
-        </div>`;
-      }
-      if (gap === 0) {
-        return `<div class="sub-line gap-top">
-          <span class="sub-icon">🔥</span>
-          <span><span class="sub-hl sub-team-name">${myName}</span> đồng điểm top 1 ${top1Label} ${remStr}</span>
-        </div>`;
-      }
-      if (gap <= wp) {
-        return `<div class="sub-line gap-top">
-          <span class="sub-icon">🔥</span>
-          <span><span class="sub-hl sub-team-name">${myName}</span> kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}</span>
-        </div>`;
-      }
+  if (rank === 1) {
+    const second = rowsAfter[1];
+    if (!second) return '';
+    const gap2 = myPts - (statsAfter[second[0]]?.p ?? 0);
+    if (gap2 === 0) {
       return `<div class="sub-line gap-top">
-        <span class="sub-icon">📊</span>
-        <span><span class="sub-hl sub-team-name">${myName}</span> kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}</span>
+        <span class="sub-icon">🥇</span>
+        <span>
+          <span class="sub-hl sub-team-name">${myName}</span>
+          <span class="sub-hl">dẫn đầu</span> - đồng điểm đội nhì ${remStr}
+        </span>
       </div>`;
     }
+    return `<div class="sub-line gap-top">
+      <span class="sub-icon">🥇</span>
+      <span>
+        <span class="sub-hl sub-team-name">${myName}</span>
+        <span class="sub-hl">dẫn đầu</span> - hơn đội nhì <span class="sub-hl">${gap2} điểm</span>
+        ${remStr}
+      </span>
+    </div>`;
+  }
+  if (gap === 0) {
+    return `<div class="sub-line gap-top">
+      <span class="sub-icon">🔥</span>
+      <span>
+        <span class="sub-hl sub-team-name">${myName}</span>
+        đồng điểm top 1 ${top1Label} ${remStr}
+      </span>
+    </div>`;
+  }
+  if (gap <= wp) {
+    return `<div class="sub-line gap-top">
+      <span class="sub-icon">🔥</span>
+      <span>
+        <span class="sub-hl sub-team-name">${myName}</span>
+        kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}
+      </span>
+    </div>`;
+  }
+  return `<div class="sub-line gap-top">
+    <span class="sub-icon">📊</span>
+    <span>
+      <span class="sub-hl sub-team-name">${myName}</span>
+      kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}
+    </span>
+  </div>`;
+}
 
     const hBef = rankBefore[hId], hAft = rankAfter[hId];
     const aBef = rankBefore[aId], aAft = rankAfter[aId];

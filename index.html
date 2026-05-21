@@ -1421,60 +1421,66 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .card-count{font-size:.5rem;padding:1px 3px;}
   }
 
-/* --- HIỆU ỨNG QUẢ BÓNG NẢY & ĐÁ VĂNG --- */
+/* --- HIỆU ỨNG QUẢ BÓNG LĂN & NÉ TƯƠNG TÁC --- */
 .deco-ball-x {
   position: fixed;
-  bottom: 25px;
+  bottom: 2px; /* Ép sát cạnh dưới màn hình */
   left: 0;
   z-index: 9999;
   opacity: 0.85;
-  animation: ball-move-x 7s linear infinite alternate;
-  cursor: pointer; /* Có thể click/chạm */
+  /* Lăn rất chậm qua lại (14 giây/lượt) */
+  animation: ball-move-x 14s linear infinite alternate;
+  cursor: pointer;
 }
 
-/* Hitbox vô hình to hơn (mở rộng 20px mỗi bên) để "né" trước khi chạm hẳn vào bóng */
 .deco-ball-hit {
   position: absolute;
-  top: -20px; right: -20px; bottom: -20px; left: -20px;
+  /* Hitbox to ra xung quanh để nhận diện ngón tay/chuột từ xa */
+  top: -40px; right: -40px; bottom: -10px; left: -40px; 
   border-radius: 50%;
   z-index: 10;
 }
 
+/* Bình thường không nảy nữa, giữ nguyên ở mặt đất */
 .deco-ball-y {
-  animation: ball-bounce 0.45s cubic-bezier(0.32, 0, 0.67, 0) infinite alternate;
+  transform: translateY(0);
 }
 
 .deco-ball-spin {
   font-size: 1.5rem;
-  filter: drop-shadow(0 6px 3px rgba(0, 0, 0, 0.4));
-  animation: ball-spin 7s linear infinite alternate;
+  filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.4));
+  /* Thời gian xoay phải khớp với thời gian lăn (14s) */
+  animation: ball-spin 14s linear infinite alternate;
 }
 
-/* --- TRẠNG THÁI KHI BỊ ĐÁ --- */
-.deco-ball-x.is-kicked {
-  pointer-events: none; /* Khóa tương tác khi đang bay để không click đúp */
+/* Trạng thái khi bị kích hoạt (né tránh) */
+.deco-ball-x.is-evading {
+  pointer-events: none; /* Khóa tương tác, cho phép click xuyên qua bóng xuống UI bên dưới */
 }
-.deco-ball-x.is-kicked .deco-ball-kick {
-  /* Hiệu ứng bay vút lên trời */
-  animation: ball-fly-away 0.8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+.deco-ball-y.is-bouncing {
+  animation: decaying-bounce 2s forwards; /* Gọi hiệu ứng nảy giảm dần */
 }
 
+/* Chạy từ sát mép trái sang sát mép phải */
 @keyframes ball-move-x {
-  0%   { transform: translateX(-40px); }
-  100% { transform: translateX(calc(100vw + 10px)); }
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw - 30px)); }
 }
-@keyframes ball-bounce {
-  0%   { transform: translateY(-35px); }
-  100% { transform: translateY(0); }
-}
+
 @keyframes ball-spin {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(1440deg); }
 }
-@keyframes ball-fly-away {
-  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
-  /* Bay vọt lên góc trên, phóng to lên 2.5 lần, xoay 3 vòng rưỡi rồi mờ dần */
-  100% { transform: translate(25vw, -80vh) scale(2.5) rotate(1260deg); opacity: 0; }
+
+/* Hiệu ứng vật lý: Nảy cao né ra -> rơi xuống -> nảy thấp dần -> lăn tiếp */
+@keyframes decaying-bounce {
+  0%   { transform: translateY(0); animation-timing-function: ease-out; }
+  15%  { transform: translateY(-110px); animation-timing-function: ease-in; } /* Nảy cao nhất để né */
+  30%  { transform: translateY(0); animation-timing-function: ease-out; }
+  50%  { transform: translateY(-50px); animation-timing-function: ease-in; }  /* Nảy lần 2 */
+  70%  { transform: translateY(0); animation-timing-function: ease-out; }
+  85%  { transform: translateY(-15px); animation-timing-function: ease-in; }  /* Nảy nhẹ lần 3 */
+  100% { transform: translateY(0); }
 }
 </style>
 </head>
@@ -3990,26 +3996,30 @@ upgradeStaticCardInputIcons();
 subscribeFirebase();
 
 /* ═══════════════════ BALL ═══════════════════ */
-// Logic tương tác "Đá văng quả bóng"
+// Logic bóng tự động nảy né khi có tương tác
 setTimeout(() => {
   const ball = document.getElementById('decoBall');
-  if(ball) {
-    const kickBall = () => {
-      // Nếu bóng đang bay thì bỏ qua
-      if (ball.classList.contains('is-kicked')) return;
+  const ballY = document.getElementById('decoBallY');
+  
+  if(ball && ballY) {
+    const evadeInteraction = () => {
+      // Nếu bóng đang trong trạng thái né thì không kích hoạt lại
+      if (ball.classList.contains('is-evading')) return;
       
-      // Gắn class kích hoạt animation văng lên trời
-      ball.classList.add('is-kicked');
+      // Thêm class để bóng nảy lên và vô hiệu hóa vùng chạm (để click xuyên qua)
+      ball.classList.add('is-evading');
+      ballY.classList.add('is-bouncing');
       
-      // 1.2 giây sau tự động xóa class, quả bóng sẽ "rơi" về vị trí hiện tại và lăn tiếp
+      // Animation decaying-bounce dài đúng 2s (2000ms), sau đó gỡ class để bình thường lại
       setTimeout(() => {
-        ball.classList.remove('is-kicked');
-      }, 1200);
+        ball.classList.remove('is-evading');
+        ballY.classList.remove('is-bouncing');
+      }, 2000);
     };
     
-    // Lắng nghe: khi chuột lướt vào HOẶC ngón tay chạm vào hitbox
-    ball.addEventListener('mouseenter', kickBall);
-    ball.addEventListener('touchstart', kickBall, { passive: true });
+    // Bắt sự kiện rê chuột vào (PC) hoặc chạm ngón tay (Mobile)
+    ball.addEventListener('mouseenter', evadeInteraction);
+    ball.addEventListener('touchstart', evadeInteraction, { passive: true });
   }
 }, 500); // Set timeout nhỏ để đảm bảo thẻ HTML đã render xong
 
@@ -4137,14 +4147,11 @@ setTimeout(() => {
 
 })();
 </script>
-<!-- Hiệu ứng quả bóng nảy dưới chân màn hình -->
+<!-- Hiệu ứng quả bóng lăn dưới chân màn hình -->
 <div class="deco-ball-x" id="decoBall">
-  <!-- Vùng hitbox vô hình to hơn quả bóng để bắt tương tác sớm -->
   <div class="deco-ball-hit"></div>
-  <div class="deco-ball-y">
-    <div class="deco-ball-kick">
-      <div class="deco-ball-spin">⚽</div>
-    </div>
+  <div class="deco-ball-y" id="decoBallY">
+    <div class="deco-ball-spin">⚽</div>
   </div>
 </div>
 </body>

@@ -1301,7 +1301,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   gap: 5px;
   background: rgba(0, 0, 0, 0.2);
   transition: all .2s;
-  margin-right: auto; /* Đẩy nút Auto sang phải */
+  
+  /* Đổi margin để đẩy nó sát vào nút Auto ở góc phải */
+  margin-left: auto;
+  margin-right: 8px; 
 }
 .filter-chip:hover {
   background: rgba(235, 69, 96, 0.15);

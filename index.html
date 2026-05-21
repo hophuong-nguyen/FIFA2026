@@ -122,8 +122,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .fixture-row:hover{border-color:rgba(0,173,239,.18);}
 .fixture-row.completed{border-left:3px solid var(--green);}
 /* fixture-num giữ nguyên width 44px như cột grid */
-.fixture-num{
-  width          : 44px;
+.fixture-num {
+  width          : 36px;
   display        : flex;
   align-items    : center;
   justify-content: center;
@@ -738,6 +738,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 @media(max-width:640px){
+  .story-rank-badge .srb-range { display: none; }  /* ẩn range mobile */
+  .story-rank-badge .srb-delta { font-size: .64rem; }
+  .story-rank-badge .srb-arrow { font-size: .60rem; }
+  /* Khi ẩn srb-range, badge chỉ còn srb-top → rất nhỏ gọn */
+  .story-rank-badge {
+    padding: 0 1px;
+  }
   .movement-col{width:52px;}
   .movement-badge{
     min-width:38px;
@@ -1087,9 +1094,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 /* Badge rank trong fixture row - giới hạn width khớp cột 44px */
-.story-rank-badge{
+.story-rank-badge {
   display        : inline-flex;
-  flex-direction : column;        /* ← xếp dọc */
+  flex-direction : column;
   align-items    : center;
   justify-content: center;
   gap            : 1px;
@@ -1098,18 +1105,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   line-height    : 1;
   white-space    : nowrap;
   flex-shrink    : 0;
-  width          : 36px;          /* ← thu từ 44px xuống 36px */
-  overflow       : visible;
+  width          : max-content;  /* ← co theo nội dung, không cứng */
+  min-width      : 0;
+  padding        : 0 2px;
 }
-.story-rank-badge.home{
-  align-items    : flex-start;
-  padding-left   : 2px;
-  padding-right  : 2px;
+.story-rank-badge.home {
+  align-items  : flex-start;
+  padding-left : 0;
+  padding-right: 3px;
 }
-.story-rank-badge.away{
-  align-items    : flex-end;
-  padding-right  : 2px;
-  padding-left   : 2px;
+.story-rank-badge.away {
+  align-items  : flex-end;
+  padding-right: 0;
+  padding-left : 3px;
 }
 
 /* Dòng trên: arrow + delta nằm ngang với nhau */
@@ -1151,7 +1159,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   .story-rank-badge .srb-delta{ font-size:.64rem; }
 }
 @media(max-width:400px){
-  .story-rank-badge{ font-size:.55rem; gap:1px; }
+  .story-rank-badge { font-size: .55rem; }
+  .story-rank-badge .srb-delta { font-size: .60rem; }
 }
 @media(prefers-reduced-motion:reduce){
   .story-rank-badge{ transition:none; }
@@ -1321,19 +1330,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Trả lại không gian cho mobile */
 @media(max-width:500px){
   .fixture-row {
-    grid-template-columns: 30px minmax(0,1fr) 30px 20px 30px minmax(0,1fr) 30px 24px !important;
-    gap: 3px !important;
+    grid-template-columns: auto minmax(0,1fr) 28px 18px 28px minmax(0,1fr) auto 24px !important;
+    gap: 2px !important;
     padding: 6px 4px !important;
   }
   .fixture-score-box {
-    min-width: 30px !important;
+    min-width: 28px !important;
     font-size: .9rem;
   }
   .story-rank-badge {
     width: 32px !important; /* Khớp với grid mới */
   }
   .fixture-vs {
-    font-size: .55rem;
+    font-size: .52rem;
   }
 }
 

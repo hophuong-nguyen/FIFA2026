@@ -2280,59 +2280,54 @@ function tiebreakReason(rowsAfter, idA, idB) {
 
  function buildMatchStoryParts(origIdx) {
 
-  const r = getResult(origIdx);
-  const hasResult = r && r.score1 !== undefined;
+  const r = getResult(origIdx) || {};
+  const hasResult = r.score1 !== undefined && r.score2 !== undefined;
   const [hId, aId] = BASE_SCHEDULE[origIdx];
   const wp = leagueConfig.winPts || 3;
   const dp = leagueConfig.drawPts || 1;
   const matchDate = matchDates[String(origIdx)] || '9999-12-31';
 
-  const fullName = id => teams[id] || id;
+  const fullName = id =>
+    `<span class="sub-hl sub-team-name">${teams[id] || id}</span>`;
 
   const rowsBefore = calcStandingsSnapshot(origIdx, -1, matchDate);
   const rowsAfter  = hasResult
-      ? calcStandingsSnapshot(-1, origIdx, matchDate)
-      : calcStandingsSnapshot(-1, -1, '9999-12-31');
+    ? calcStandingsSnapshot(-1, origIdx, matchDate)
+    : calcStandingsSnapshot(-1, -1, '9999-12-31');
 
-  const rankMap = rows => Object.fromEntries(rows.map(([id],i)=>[id,i+1]));
+  const rankMap = rows =>
+    Object.fromEntries(rows.map(([id], i) => [id, i + 1]));
+
   const rankBefore = rankMap(rowsBefore);
   const rankAfter  = rankMap(rowsAfter);
-
   const statsAfter = Object.fromEntries(rowsAfter);
-
-  /* ───────────── BADGE RANK ───────────── */
 
   function badge(id, side) {
     const prev = rankBefore[id];
     const curr = rankAfter[id];
     if (prev == null) return '';
     const delta = prev - curr;
+
     if (delta > 0)
       return `<span class="story-rank-badge up ${side}">
-        ▲<span class="srb-delta">${delta}</span>
+        <span class="srb-arrow">▲</span>
+        <span class="srb-delta">${delta}</span>
       </span>`;
+
     if (delta < 0)
       return `<span class="story-rank-badge down ${side}">
-        ▼<span class="srb-delta">${Math.abs(delta)}</span>
+        <span class="srb-arrow">▼</span>
+        <span class="srb-delta">${Math.abs(delta)}</span>
       </span>`;
+
     return '';
-  }
-
-  /* ───────────── HEADLINE BUILDER ───────────── */
-
-  function headline(text, icon='🔥') {
-    return `
-      <div class="sub-line">
-        <span class="sub-icon">${icon}</span>
-        <span>${text}</span>
-      </div>`;
   }
 
   const lines = [];
 
-  /* ======================================================
-     CASE 1: ĐÃ CÓ KẾT QUẢ
-  ====================================================== */
+  /* =====================================================
+     CASE 1 – MATCH FINISHED
+  ===================================================== */
 
   if (hasResult) {
 
@@ -2344,104 +2339,116 @@ function tiebreakReason(rowsAfter, idA, idB) {
     const hDelta = hPrev - hRank;
     const aDelta = aPrev - aRank;
 
-    const hPts = r.score1 > r.score2 ? wp : r.score1 === r.score2 ? dp : 0;
-    const aPts = r.score2 > r.score1 ? wp : r.score1 === r.score2 ? dp : 0;
-
-    /* ✅ 1️⃣ Headline chính */
+    /* 🔥 HEADLINE */
 
     if (r.score1 > r.score2) {
 
       if (hRank === 1 && hPrev !== 1) {
-        lines.push(headline(
-          `<span class="sub-hl sub-team-name">${fullName(hId)}</span> lên ngôi đầu`,
-          '🥇'
-        ));
+        lines.push(`
+          <div class="sub-line gap-top">
+            <span class="sub-icon">🥇</span>
+            <span>${fullName(hId)} lên ngôi đầu</span>
+          </div>`);
       }
 
       else if (hDelta > 0) {
-        lines.push(headline(
-          `<span class="sub-hl sub-team-name">${fullName(hId)}</span> tăng ${hDelta} bậc`,
-          '🚀'
-        ));
+        lines.push(`
+          <div class="sub-line gap-top">
+            <span class="sub-icon">🚀</span>
+            <span>${fullName(hId)} tăng ${hDelta} bậc</span>
+          </div>`);
       }
 
       else {
-        lines.push(headline(
-          `<span class="sub-hl sub-team-name">${fullName(hId)}</span> giữ vững vị trí`,
-          '⚡'
-        ));
+        lines.push(`
+          <div class="sub-line gap-top">
+            <span class="sub-icon">⚡</span>
+            <span>${fullName(hId)} giữ vững vị trí</span>
+          </div>`);
       }
 
-    } else if (r.score2 > r.score1) {
+    }
+
+    else if (r.score2 > r.score1) {
 
       if (aRank === 1 && aPrev !== 1) {
-        lines.push(headline(
-          `<span class="sub-hl sub-team-name">${fullName(aId)}</span> lên ngôi đầu`,
-          '🥇'
-        ));
+        lines.push(`
+          <div class="sub-line gap-top">
+            <span class="sub-icon">🥇</span>
+            <span>${fullName(aId)} lên ngôi đầu</span>
+          </div>`);
       }
 
       else if (aDelta > 0) {
-        lines.push(headline(
-          `<span class="sub-hl sub-team-name">${fullName(aId)}</span> tăng ${aDelta} bậc`,
-          '🚀'
-        ));
+        lines.push(`
+          <div class="sub-line gap-top">
+            <span class="sub-icon">🚀</span>
+            <span>${fullName(aId)} tăng ${aDelta} bậc</span>
+          </div>`);
       }
 
       else {
-        lines.push(headline(
-          `<span class="sub-hl sub-team-name">${fullName(aId)}</span> giữ vững vị trí`,
-          '⚡'
-        ));
+        lines.push(`
+          <div class="sub-line gap-top">
+            <span class="sub-icon">⚡</span>
+            <span>${fullName(aId)} giữ vững vị trí</span>
+          </div>`);
       }
 
-    } else {
-      lines.push(headline(
-        `Hai đội chia điểm`,
-        '🤝'
-      ));
     }
 
-    /* ✅ 2️⃣ Cuộc đua vô địch */
+    else {
+      lines.push(`
+        <div class="sub-line draw-ctx">
+          <span class="sub-icon">🤝</span>
+          <span>Hai đội chia điểm</span>
+        </div>`);
+    }
 
-    const topId = rowsAfter[0][0];
-    const topPts = statsAfter[topId].p;
+    /* 🔥 TITLE RACE / GAP */
 
-    const id = r.score1 > r.score2 ? hId :
-               r.score2 > r.score1 ? aId : hId;
+    const topId = rowsAfter[0]?.[0];
+    const topPts = statsAfter[topId]?.p ?? 0;
 
-    const gap = topPts - statsAfter[id].p;
+    const idFocus =
+      r.score1 > r.score2 ? hId :
+      r.score2 > r.score1 ? aId : null;
 
-    if (rankAfter[id] !== 1) {
-      lines.push(headline(
-        `Còn cách ngôi đầu ${gap} điểm`,
-        gap <= wp ? '🔥' : '📊'
-      ));
+    if (idFocus && rankAfter[idFocus] !== 1) {
+      const gap = topPts - statsAfter[idFocus].p;
+
+      lines.push(`
+        <div class="sub-line gap-top">
+          <span class="sub-icon">${gap <= wp ? '🔥' : '📊'}</span>
+          <span>Còn cách ngôi đầu <span class="sub-hl">${gap}</span> điểm</span>
+        </div>`);
     }
 
     return {
-      homeBadge: badge(hId,'home'),
-      awayBadge: badge(aId,'away'),
-      lines
+      homeBadge: badge(hId, 'home'),
+      awayBadge: badge(aId, 'away'),
+      lines: lines.filter(Boolean).slice(0,2)
     };
   }
 
-  /* ======================================================
-     CASE 2: CHƯA ĐẤU (PREVIEW STYLE)
-  ====================================================== */
+  /* =====================================================
+     CASE 2 – MATCH NOT PLAYED
+  ===================================================== */
 
-  const hRank = rankAfter[hId];
-  const aRank = rankAfter[aId];
-
-  lines.push(headline(
-    `${fullName(hId)} (${hRank}) vs ${fullName(aId)} (${aRank})`,
-    '📅'
-  ));
+  lines.push(`
+    <div class="sub-line">
+      <span class="sub-icon">📅</span>
+      <span>
+        ${fullName(hId)} (${rankAfter[hId] || '-'}) 
+        vs 
+        ${fullName(aId)} (${rankAfter[aId] || '-'})
+      </span>
+    </div>`);
 
   return {
     homeBadge: '',
     awayBadge: '',
-    lines,
+    lines: lines.slice(0,1),
     isPrediction: true
   };
 }

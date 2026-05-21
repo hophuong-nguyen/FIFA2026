@@ -1155,6 +1155,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   font-family: 'Rajdhani', sans-serif;
   font-size: .68rem;
 }
+
+.sub-team-name {
+  display: inline-block;
+  max-width: 140px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.sub-team-name.do-marquee {
+  text-overflow: clip !important;
+  animation: tname-pingpong 4s ease-in-out infinite alternate !important;
+}
+
 .sub-line.tiebreak  { color:#4f6080; font-style:italic; }
 .sub-line.gap-top   { color:#8fa3b8; }
 .sub-line.gap-top .sub-hl    { color:#c5f851; }
@@ -1178,6 +1193,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   .story-rank-badge .srb-delta{ font-size:.64rem; }
   .sub-line{ font-size:.57rem; }
   .sub-line .sub-hl{ font-size:.63rem; }
+  .sub-team-name{
+    max-width: 100px;
+  }
 }
 @media(max-width:400px){
   .story-rank-badge{ font-size:.55rem; gap:1px; }
@@ -2431,13 +2449,15 @@ function buildMatchStoryParts(origIdx) {
       const gap      = top1Pts - myPts;
       const rematch  = remainingMatches(id, origIdx);
 
-      // 1. Lấy tên rút gọn của đội đang được nhắc đến (chủ ngữ)
-      const myName   = teams[id] ? teams[id].split(' ')[0] : id;
-
+      // 1. Lấy tên của đội đang được nhắc đến
+      const myName   = teams[id] || id;
+      
       // 2. Lấy tên & icon của đội Top 1
-      const top1Name  = teams[top1Id] ? teams[top1Id].split(' ')[0] : top1Id;
+      const top1Name = teams[top1Id] || top1Id;
       const top1Emoji = teamEmojis[top1Id] || '👑';
-      const top1Label = `<span class="sub-hl">${top1Emoji} ${top1Name}</span>`;
+      const top1Label = `<span class="sub-hl sub-team-name">
+        ${top1Emoji} ${top1Name}
+      </span>`;
 
       const remStr = rematch > 0
         ? `<span class="sub-dot"></span><span>còn <span class="sub-hl">${rematch} trận</span></span>`
@@ -2450,12 +2470,12 @@ function buildMatchStoryParts(origIdx) {
         if (gap2 === 0) {
           return `<div class="sub-line gap-top">
             <span class="sub-icon">🥇</span>
-            <span><span class="sub-hl">${myName}</span> <span class="sub-hl">dẫn đầu</span> - đồng điểm đội nhì ${remStr}</span>
+            <span><span class="sub-hl sub-team-name">${myName}</span> <span class="sub-hl sub-team-name">${myName}</span> <span class="sub-hl">dẫn đầu</span> - đồng điểm đội nhì ${remStr}</span>
           </div>`;
         }
         return `<div class="sub-line gap-top">
           <span class="sub-icon">🥇</span>
-          <span><span class="sub-hl">${myName}</span> <span class="sub-hl">dẫn đầu</span> - hơn đội nhì <span class="sub-hl">${gap2} điểm</span>
+          <span><span class="sub-hl sub-team-name">${myName}</span> <span class="sub-hl">dẫn đầu</span> - hơn đội nhì <span class="sub-hl">${gap2} điểm</span>
             ${remStr}
           </span>
         </div>`;
@@ -2463,18 +2483,18 @@ function buildMatchStoryParts(origIdx) {
       if (gap === 0) {
         return `<div class="sub-line gap-top">
           <span class="sub-icon">🔥</span>
-          <span><span class="sub-hl">${myName}</span> đồng điểm top 1 ${top1Label} ${remStr}</span>
+          <span><span class="sub-hl sub-team-name">${myName}</span> đồng điểm top 1 ${top1Label} ${remStr}</span>
         </div>`;
       }
       if (gap <= wp) {
         return `<div class="sub-line gap-top">
           <span class="sub-icon">🔥</span>
-          <span><span class="sub-hl">${myName}</span> kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}</span>
+          <span><span class="sub-hl sub-team-name">${myName}</span> kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}</span>
         </div>`;
       }
       return `<div class="sub-line gap-top">
         <span class="sub-icon">📊</span>
-        <span><span class="sub-hl">${myName}</span> kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}</span>
+        <span><span class="sub-hl sub-team-name">${myName}</span> kém top 1 ${top1Label} <span class="sub-hl">${gap} điểm</span> ${remStr}</span>
       </div>`;
     }
 
@@ -2641,7 +2661,7 @@ function buildMatchStoryParts(origIdx) {
 function applyMarqueeToTeams() {
   if (window.innerWidth > 640) return;
   requestAnimationFrame(() => {
-    document.querySelectorAll('.fixture-team .tname, .table-tname').forEach(el => {
+    document.querySelectorAll('.fixture-team .tname, .table-tname, .sub-team-name').forEach(el => {
       // Reset trạng thái trước khi tính toán
       el.classList.remove('do-marquee');
       el.style.textIndent = '0';

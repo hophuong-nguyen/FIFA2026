@@ -749,12 +749,29 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   }
   /* Thêm đoạn này để text rớt tối đa 2 dòng */
   .fixture-team .tname {
-    white-space: normal;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     line-height: 1.15;
     word-break: break-word;
+  }
+  /* Thêm mới CSS Marquee Ping-pong */
+  .fixture-team .tname {
+    white-space: nowrap !important;
+    display: block !important;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+  }
+  
+  /* Chỉ những tên bị dài (được JS gắn class) mới chạy animation */
+  .tname.do-marquee {
+    text-overflow: clip !important;
+    text-align: left !important; /* Ép lề trái khi cuộn để tránh lỗi lề */
+    animation: tname-pingpong 4s ease-in-out infinite alternate !important;
+  }
+
+  @keyframes tname-pingpong {
+    0%, 15%   { text-indent: 0; }
+    85%, 100% { text-indent: calc(-1 * var(--scroll-w)); }
   }
 }
 
@@ -2444,7 +2461,25 @@ function buildMatchStoryParts(origIdx) {
     isPrediction: true
   };
 }
- 
+
+function applyMarqueeToTeams() {
+  if (window.innerWidth > 640) return;
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.fixture-team .tname').forEach(el => {
+      // Reset trạng thái trước khi tính toán
+      el.classList.remove('do-marquee');
+      el.style.textIndent = '0';
+      
+      // Nếu chữ thực sự dài hơn khung chứa của nó
+      if (el.scrollWidth > el.clientWidth) {
+        const dist = el.scrollWidth - el.clientWidth + 5; // Cuộn dư 5px cho thoáng
+        el.style.setProperty('--scroll-w', dist + 'px');
+        el.classList.add('do-marquee');
+      }
+    });
+  });
+}
+
 /* ═══════════════════ RENDER FIXTURES ═══════════════════ */
 function render() {
   renderFixtures();
@@ -2452,6 +2487,8 @@ function render() {
   renderStats();
   // Cập nhật emoji pool cho canvas animation
   window._liveTeamEmojis = { ...teamEmojis };
+
+  applyMarqueeToTeams(); // Kích hoạt check marquee
 }
 
 function buildFullDayMap() { const map = new Map(); scheduleOrder.forEach(i => { const d = getDate(i); if (!map.has(d)) map.set(d, []); map.get(d).push(Number(i)); }); const keys = [...map.keys()].filter(d => d < '9999').sort(); if (keys.length) { const first = keys[0], last = keys[keys.length - 1]; workdaysInRange(first, last).forEach(d => { if (!map.has(d)) map.set(d, []); }); } return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))); }

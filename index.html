@@ -129,16 +129,15 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   justify-content: center;
   flex-shrink    : 0;
 }
-/* 1. Container đội lấp đầy cột, ép text dư không làm vỡ layout */
-.fixture-team {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  min-width: 0;
-  overflow: hidden; /* Cắt phần tràn để chuẩn bị cho hiệu ứng scroll */
+.fixture-team{
+  font-size:.78rem;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-width:0;
+  min-height:30px;
 }
-
 .fixture-team span.tname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .fixture-team.home{
   justify-content:flex-end;
@@ -152,30 +151,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   flex-direction:row;
 }
 
-/* 3. Tên đội: co dãn tự nhiên, khôi phục Ping-pong */
-.fixture-team .tname {
-  flex: 0 1 auto;      /* Lấy đúng diện tích cần thiết, không tạo khoảng trống thừa */
-  min-width: 0;
-  white-space: nowrap;
-  
-  /* Khôi phục animation pingpong (bỏ text-overflow: ellipsis) */
-  /* Lưu ý: Nếu tên class animation trong file gốc của bạn khác "pingpong", hãy đổi lại cho khớp */
-  animation: pingpong 4s ease-in-out infinite alternate !important;
+.fixture-team .tname{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  min-width:0;
+  font-weight:600;
 }
 
-/* 3. Căn lề chữ cho chuẩn */
-.fixture-team.home .tname { text-align: right; }
-.fixture-team.away .tname { text-align: left; }
-
-/* 4. Giữ nguyên kích thước emoji (không cho bị ép dẹp) */
-.fixture-team .team-emoji {
-  flex-shrink: 0;
-}
-
-/* 5. Keyframes cuộn pingpong (Nếu file bạn chưa có sẵn) */
-@keyframes pingpong {
-  0%, 15%   { transform: translateX(0); }
-  85%, 100% { transform: translateX(calc(-100% + 100%)); /* Cuộn phần bị che khuất */ }
+.fixture-team .team-emoji{
+  font-size:1rem;
+  flex-shrink:0;
 }
 
 .fixture-team .team-cards{

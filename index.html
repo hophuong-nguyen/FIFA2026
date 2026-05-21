@@ -132,11 +132,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .fixture-team{
   font-size:.78rem;
   font-weight:500;
-  display:flex;
-  align-items:center;
-  gap:5px;
-  min-width:0;
   min-height:30px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0; /* Quan trọng: giúp flex child không bị bung layout */
 }
 .fixture-team span.tname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .fixture-team.home{
@@ -151,17 +152,24 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   flex-direction:row;
 }
 
-.fixture-team .tname{
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  min-width:0;
-  font-weight:600;
+/* 2. Cho span tên đội chiếm hết chỗ trống còn lại */
+.fixture-team .tname {
+  flex: 1;
+  min-width: 0; /* Quan trọng: bắt buộc để text-overflow hoạt động */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Tên quá dài sẽ hiện "..." thay vì cuộn pingpong */
+  max-width: none !important; /* Xóa bỏ giới hạn cứng cũ */
+  animation: none !important; /* Tắt hiệu ứng cuộn pingpong */
 }
 
-.fixture-team .team-emoji{
-  font-size:1rem;
-  flex-shrink:0;
+/* 3. Căn lề chữ cho chuẩn */
+.fixture-team.home .tname { text-align: right; }
+.fixture-team.away .tname { text-align: left; }
+
+/* 4. Giữ nguyên kích thước emoji (không cho bị ép dẹp) */
+.fixture-team .team-emoji {
+  flex-shrink: 0;
 }
 
 .fixture-team .team-cards{

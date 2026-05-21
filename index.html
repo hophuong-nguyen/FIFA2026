@@ -1130,25 +1130,44 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   display: none;
 }
 
-/* Nút toggle */
-.story-toggle-btn {
-  font-size: .56rem;
-  color: #8fa3b8;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 4px;
-  padding: 2px 8px;
-  cursor: pointer;
-  margin-top: 2px;
+/* Inline toggle - gắn vào cuối dòng sub-line đầu tiên */
+.sub-toggle-inline {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: .56rem;
+  font-weight: 700;
+  color: #8fa3b8;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  cursor: pointer;
   user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.sub-toggle-inline:hover {
+  background: rgba(197,248,81,.1);
+  color: var(--accent);
+  border-color: rgba(197,248,81,.25);
+}
+.sub-toggle-inline .sub-toggle-arrow {
+  font-size: .48rem;
+  transition: transform .2s;
+  display: inline-block;
 }
 
-.fixture-sub.expanded .story-toggle-btn { background: rgba(255,255,255,.1); }
-.story-toggle-btn::after { content: '▼'; font-size: .5rem; }
-.fixture-sub.expanded .story-toggle-btn::after { content: '▲'; }
+.fixture-sub.expanded .sub-toggle-inline .sub-toggle-arrow {
+  transform: rotate(180deg);
+}
+/* Ẩn các dòng từ thứ 2 trở đi khi chưa expanded */
+.fixture-sub:not(.expanded) .sub-line:nth-child(n+2) {
+  display: none;
+}
 
 /* Trả lại không gian cho mobile */
 @media(max-width:500px){
@@ -2648,15 +2667,26 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
       : editBtn;
 
         /* ── Sub lines (Expand/Collapse logic) ── */
-    let subLineHTML = '';
+        let subLineHTML = '';
     if (story && story.lines && story.lines.length > 0) {
-      const linesHTML = story.lines.join('');
-      const toggleBtn = story.lines.length > 1
-        ? `<div class="story-toggle-btn" onmousedown="event.stopPropagation()" onclick="this.parentElement.classList.toggle('expanded'); event.stopPropagation();">
-             Xem thêm ${story.lines.length - 1} dự đoán
-           </div>`
+      const hasMore = story.lines.length > 1;
+      const firstLine = story.lines[0];
+      const restLines = story.lines.slice(1);
+
+      /* Inject nút toggle vào cuối dòng đầu tiên, inline */
+      const toggleInline = hasMore
+        ? `<span class="sub-toggle-inline"
+                onmousedown="event.stopPropagation()"
+                onclick="this.closest('.fixture-sub').classList.toggle('expanded');event.stopPropagation();">
+             +${restLines.length} <span class="sub-toggle-arrow">▼</span>
+           </span>`
         : '';
-      subLineHTML = `<div class="fixture-sub">${linesHTML}${toggleBtn}</div>`;
+
+      /* Chèn toggleInline vào trước thẻ đóng </div> của dòng đầu */
+      const firstLineWithToggle = firstLine.replace(/<\/div>\s*$/, `${toggleInline}</div>`);
+
+      const restHTML = restLines.join('');
+      subLineHTML = `<div class="fixture-sub">${firstLineWithToggle}${restHTML}</div>`;
     }
 
     /* ── HTML Layout (8 Cột) ── */

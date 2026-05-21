@@ -1289,6 +1289,46 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   }
 }
 
+/* Nút filter trên Header của Lịch thi đấu */
+.filter-chip {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: .75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.2);
+  transition: all .2s;
+  margin-right: auto; /* Đẩy nút Auto sang phải */
+}
+.filter-chip:hover {
+  background: rgba(235, 69, 96, 0.15);
+  border-color: rgba(235, 69, 96, 0.4) !important;
+  color: var(--red) !important;
+}
+
+/* Style mờ các đội không được chọn trong BXH */
+.standings-table.is-filtered tr.team-row {
+  cursor: pointer;
+  transition: opacity .2s, background .2s;
+}
+.standings-table.is-filtered tr.team-row:not(.selected-team) {
+  opacity: 0.35;
+  filter: grayscale(0.5);
+}
+.standings-table.is-filtered tr.team-row.selected-team {
+  background: rgba(197,248,81,.12);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.standings-table tr.team-row {
+  cursor: pointer;
+}
+.standings-table tr.team-row:hover td {
+  background: rgba(197,248,81,.05);
+}
+
 /* ── Icon animations on screen ── */
 @keyframes icon-pulse {
   0%,100% { transform: scale(1);   filter: drop-shadow(0 0 0px currentColor); }
@@ -1700,6 +1740,16 @@ let matchDates = {};
 let scheduleOrder = [];
 let fbReady = false;
 
+/* ═══════════════════ FILTER ═══════════════════ */
+let filterTeamId = null;
+// Hàm xử lý khi click vào đội
+window.setFilterTeam = function(id) {
+  // Nếu click vào đội đang lọc -> Hủy lọc. Nếu click đội khác -> Lọc đội đó
+  filterTeamId = (filterTeamId === id) ? null : id;
+  render();
+};
+
+/* ═══════════════════ BUILD SCHEDULE ═══════════════════ */
 function rebuildSchedule(keepResults = false) {
   const oldSch = [...BASE_SCHEDULE], oldRes = { ...results }, oldDates = { ...matchDates };
   BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
@@ -2588,9 +2638,9 @@ function renderFixtures() {
   wrap.innerHTML = '';
   const today = todayISO();
   const matchdays = buildFullDayMap();
-  const allDates = [...matchdays.keys()].filter(d => d < '9999').sort();
+  let allDates = [...matchdays.keys()].filter(d => d < '9999').sort();
 
-  // ── Tính toán số thứ tự trận đấu (chronological) ──
+  // 1. Tính toán số thứ tự trận đấu (giữ nguyên STT toàn cục dù có lọc hay không)
   const matchNumMap = {};
   let gpos = 1;
   allDates.forEach(d => {
@@ -2598,6 +2648,38 @@ function renderFixtures() {
     arr.forEach(idx => { matchNumMap[idx] = gpos++; });
   });
 
+  // 2. ÁP DỤNG FILTER (NẾU CÓ)
+  if (filterTeamId) {
+    allDates.forEach(d => {
+      let arr = matchdays.get(d) || [];
+      // Chỉ giữ lại trận có sự tham gia của filterTeamId
+      arr = arr.filter(i => BASE_SCHEDULE[i] && (BASE_SCHEDULE[i][0] === filterTeamId || BASE_SCHEDULE[i][1] === filterTeamId));
+      matchdays.set(d, arr);
+    });
+    // Loại bỏ hoàn toàn các ngày trong Quá Khứ mà đội này không thi đấu cho đỡ rác
+    allDates = allDates.filter(d => d >= today || matchdays.get(d).length > 0);
+  }
+
+  // 3. HIỂN THỊ NÚT FILTER TRÊN HEADER
+  let sh = document.querySelector('.section-header');
+  let filterBtn = document.getElementById('activeFilterBtn');
+  if (filterTeamId) {
+    if (!filterBtn) {
+      filterBtn = document.createElement('button');
+      filterBtn.id = 'activeFilterBtn';
+      filterBtn.className = 'btn-flat btn-sm filter-chip';
+      const btnAuto = document.getElementById('btnAuto');
+      sh.insertBefore(filterBtn, btnAuto);
+    }
+    filterBtn.style.border = `1px solid ${teamColors[filterTeamId]}`;
+    filterBtn.style.color = teamColors[filterTeamId];
+    filterBtn.innerHTML = `🔍 ${teamEmojis[filterTeamId]} ${teams[filterTeamId]} <span style="margin-left:4px;opacity:.7">✕</span>`;
+    filterBtn.onclick = () => setFilterTeam(null);
+  } else if (filterBtn) {
+    filterBtn.remove();
+  }
+
+  // 4. Các logic render block giữ nguyên bên dưới
   const pastDates = allDates.filter(d => d < today);
   const presentFutureDates = allDates.filter(d => d >= today);
 
@@ -3066,7 +3148,7 @@ function renderStandings() {
   }
 
   const tb = document.getElementById('standingsTable');
-
+  tb.className = filterTeamId ? 'standings-table is-filtered' : 'standings-table';
   tb.innerHTML = `
     <tr>
       <th>XH</th>
@@ -3099,9 +3181,14 @@ function renderStandings() {
 
     const mv = getRankMovementMeta(id);
 
+    // Kiểm tra xem đội này có đang bị lọc không
+    const isSelected = filterTeamId === id ? 'selected-team' : '';
+
     const rowClasses = [
+      'team-row',
       idx === 0 ? 'tr-rank1' : '',
-      (mv.shouldGlow && mv.dir !== 'same') ? `row-rank-${mv.dir}` : ''
+      (mv.shouldGlow && mv.dir !== 'same') ? `row-rank-${mv.dir}` : '',
+      isSelected
     ].filter(Boolean).join(' ');
 
     const rowStyle = (mv.shouldGlow && mv.dir !== 'same')
@@ -3109,7 +3196,7 @@ function renderStandings() {
       : '';
 
     return `
-      <tr class="${rowClasses}" ${rowStyle}>
+      <tr class="${rowClasses}" ${rowStyle} onclick="setFilterTeam('${id}')" title="Click để xem lịch thi đấu của ${teams[id] || id}">
         <td>
           <div class="rank-wrap">
             <span class="rank-badge ${rbCls}">${idx + 1}</span>

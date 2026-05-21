@@ -180,6 +180,61 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   flex-shrink:0;
 }
 
+/* ── Score box wrapper: cần position relative để badge bám góc ── */
+.fixture-score-wrap {
+  position  : relative;
+  display   : inline-flex;
+  align-self: start;
+}
+
+/* ── Badge thẻ phạt góc trên ── */
+.score-card-badge {
+  position   : absolute;
+  display    : flex;
+  align-items: center;
+  gap        : 1px;
+  line-height: 1;
+  z-index    : 2;
+  pointer-events: none;
+}
+
+/* Home: góc trên-phải của ô tỉ số nhà */
+.score-card-badge.home {
+  top  : -5px;
+  right: -4px;
+}
+
+/* Away: góc trên-trái của ô tỉ số khách */
+.score-card-badge.away {
+  top : -5px;
+  left: -4px;
+}
+
+/* Thẻ nhỏ hơn so với bản cũ */
+.score-card-badge .ref-card-icon {
+  width        : 7px;
+  height       : 10px;
+  border-radius: 1.5px;
+}
+
+/* Số lượng thẻ */
+.score-card-badge .sbc-count {
+  font-size  : .48rem;
+  font-weight: 700;
+  line-height: 1;
+  padding    : 0px 2px;
+  border-radius: 3px;
+  background : rgba(0,0,0,.35);
+  color      : #fff;
+  min-width  : 8px;
+  text-align : center;
+}
+
+/* Ẩn hoàn toàn team-cards cũ */
+.fixture-team .team-cards {
+  display: none !important;
+}
+
 .fixture-score-box{
   min-width:34px;
   height:30px;
@@ -2945,6 +3000,24 @@ function renderCardStack(type, count) {
   `;
 }
 
+function renderScoreCardBadge(yellow, red, side) {
+  yellow = Number(yellow) || 0;
+  red    = Number(red)    || 0;
+  if (yellow === 0 && red === 0) return '';
+
+  const yPart = yellow > 0
+    ? `<span class="ref-card-icon yellow"></span>${yellow > 1
+        ? `<span class="sbc-count">${yellow}</span>` : ''}`
+    : '';
+
+  const rPart = red > 0
+    ? `<span class="ref-card-icon red"></span>${red > 1
+        ? `<span class="sbc-count">${red}</span>` : ''}`
+    : '';
+
+  return `<span class="score-card-badge ${side}">${yPart}${rPart}</span>`;
+}
+
 function upgradeStaticCardInputIcons() {
   document.querySelectorAll('.card-input-wrap .card-icon').forEach(el => {
     if (el.dataset.upgraded === '1') return;
@@ -2975,6 +3048,12 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
     const hasResult = r.score1 !== undefined && r.score2 !== undefined;
     const isLocked  = hasResult;
     const num       = matchNumMap[origIdx];
+
+    /* Tạo badge thẻ phạt góc */
+const homeBadgeCards = hasResult
+  ? renderScoreCardBadge(r.y1, r.r1, 'home') : '';
+const awayBadgeCards = hasResult
+  ? renderScoreCardBadge(r.y2, r.r2, 'away') : '';
 
     /* ── Thắng / thua / hòa ── */
     let homeState = '', awayState = '', homeScoreState = '', awayScoreState = '';
@@ -3063,38 +3142,42 @@ function appendMatchRows(block, arr, date, today, isPast, matchNumMap) {
 
     /* ── HTML Layout (8 Cột) ── */
     row.innerHTML = `
-      ${story?.homeBadge ?? `<div class="fixture-num" style="${numStyle}">${num}</div>`}
+  ${story?.homeBadge ?? `<div class="fixture-num" style="${numStyle}">${num}</div>`}
 
-      <div class="fixture-team home ${homeState}">
-        ${homeCards ? `<span class="team-cards">${homeCards}</span>` : ''}
-        <span class="tname">${teams[m[0]] || m[0]}</span>
-        <span class="team-emoji" style="color:${teamColors[m[0]] || '#fff'}">${teamEmojis[m[0]] || '⚽'}</span>
-      </div>
+  <div class="fixture-team home ${homeState}">
+    <span class="tname">${teams[m[0]] || m[0]}</span>
+    <span class="team-emoji" style="color:${teamColors[m[0]] || '#fff'}">${teamEmojis[m[0]] || '⚽'}</span>
+  </div>
 
-      <div class="fixture-score-box ${hasResult ? homeScoreState : 'pending'}">
-        ${hasResult ? r.score1 : '−'}
-      </div>
+  <div class="fixture-score-wrap">
+    ${homeBadgeCards}
+    <div class="fixture-score-box ${hasResult ? homeScoreState : 'pending'}">
+      ${hasResult ? r.score1 : '−'}
+    </div>
+  </div>
 
-      <div class="fixture-vs">vs.</div>
+  <div class="fixture-vs">vs.</div>
 
-      <div class="fixture-score-box ${hasResult ? awayScoreState : 'pending'}">
-        ${hasResult ? r.score2 : '−'}
-      </div>
+  <div class="fixture-score-wrap">
+    ${awayBadgeCards}
+    <div class="fixture-score-box ${hasResult ? awayScoreState : 'pending'}">
+      ${hasResult ? r.score2 : '−'}
+    </div>
+  </div>
 
-      <div class="fixture-team away ${awayState}">
-        <span class="team-emoji" style="color:${teamColors[m[1]] || '#fff'}">${teamEmojis[m[1]] || '⚽'}</span>
-        <span class="tname">${teams[m[1]] || m[1]}</span>
-        ${awayCards ? `<span class="team-cards">${awayCards}</span>` : ''}
-      </div>
+  <div class="fixture-team away ${awayState}">
+    <span class="team-emoji" style="color:${teamColors[m[1]] || '#fff'}">${teamEmojis[m[1]] || '⚽'}</span>
+    <span class="tname">${teams[m[1]] || m[1]}</span>
+  </div>
 
-      ${story?.awayBadge ?? '<div></div>'}
+  ${story?.awayBadge ?? '<div></div>'}
 
-      <div style="display:flex;align-items:center;justify-content:center;">
-        ${editBtn}
-      </div>
+  <div style="display:flex;align-items:center;justify-content:center;">
+    ${editBtn}
+  </div>
 
-      ${subLineHTML}
-    `;
+  ${subLineHTML}
+`;
 
     /* KHÔNG append fixture-edit-wrap nữa, xóa phần if (story) { append(editWrap) } cũ đi */
 

@@ -129,16 +129,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   justify-content: center;
   flex-shrink    : 0;
 }
-.fixture-team{
-  font-size:.78rem;
-  font-weight:500;
-  min-height:30px;
+/* 1. Container đội lấp đầy cột, ép text dư không làm vỡ layout */
+.fixture-team {
   display: flex;
   align-items: center;
   gap: 4px;
   width: 100%;
-  min-width: 0; /* Quan trọng: giúp flex child không bị bung layout */
+  min-width: 0;
+  overflow: hidden; /* Cắt phần tràn để chuẩn bị cho hiệu ứng scroll */
 }
+
 .fixture-team span.tname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .fixture-team.home{
   justify-content:flex-end;
@@ -152,15 +152,15 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   flex-direction:row;
 }
 
-/* 2. Cho span tên đội chiếm hết chỗ trống còn lại */
+/* 3. Tên đội: co dãn tự nhiên, khôi phục Ping-pong */
 .fixture-team .tname {
-  flex: 1;
-  min-width: 0; /* Quan trọng: bắt buộc để text-overflow hoạt động */
+  flex: 0 1 auto;      /* Lấy đúng diện tích cần thiết, không tạo khoảng trống thừa */
+  min-width: 0;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; /* Tên quá dài sẽ hiện "..." thay vì cuộn pingpong */
-  max-width: none !important; /* Xóa bỏ giới hạn cứng cũ */
-  animation: none !important; /* Tắt hiệu ứng cuộn pingpong */
+  
+  /* Khôi phục animation pingpong (bỏ text-overflow: ellipsis) */
+  /* Lưu ý: Nếu tên class animation trong file gốc của bạn khác "pingpong", hãy đổi lại cho khớp */
+  animation: pingpong 4s ease-in-out infinite alternate !important;
 }
 
 /* 3. Căn lề chữ cho chuẩn */
@@ -170,6 +170,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* 4. Giữ nguyên kích thước emoji (không cho bị ép dẹp) */
 .fixture-team .team-emoji {
   flex-shrink: 0;
+}
+
+/* 5. Keyframes cuộn pingpong (Nếu file bạn chưa có sẵn) */
+@keyframes pingpong {
+  0%, 15%   { transform: translateX(0); }
+  85%, 100% { transform: translateX(calc(-100% + 100%)); /* Cuộn phần bị che khuất */ }
 }
 
 .fixture-team .team-cards{

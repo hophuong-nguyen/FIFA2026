@@ -773,7 +773,60 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     0%, 15%   { text-indent: 0; }
     85%, 100% { text-indent: calc(-1 * var(--scroll-w)); }
   }
+
+  /* 1. Mở tính năng cuộn ngang (scroll) cho Bảng xếp hạng trên mobile */
+  .standings-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap; /* Không cho rớt dòng */
+  }
+  .standings-table tbody {
+    display: table;
+    width: 100%;
+  }
+
+  /* 2. Thiết lập cho Tên đội trong BXH (giới hạn độ rộng để nhường chỗ) */
+  .table-tname {
+    display: block !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px; /* Bóp giới hạn để table không bị giãn quá mức */
+  }
+  /* Kích hoạt animation nếu tên quá dài */
+  .table-tname.do-marquee {
+    text-overflow: clip !important;
+    text-align: left !important;
+    animation: tname-pingpong 4s ease-in-out infinite alternate !important;
+  }
 }
+
+/* 3. Style cho Badge Tăng/Giảm hạng đính góc XH (Áp dụng chung mọi màn hình) */
+.rank-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.table-move-badge {
+  position: absolute;
+  right: -8px;
+  bottom: -6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  font-size: .5rem;
+  font-weight: 700;
+  line-height: 1;
+  background: rgba(13, 26, 10, 0.85); /* Nền tối để che lên số */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+.table-move-badge.move-up { color: var(--green); }
+.table-move-badge.move-down { color: var(--red); }
 
 @media (prefers-reduced-motion: reduce){
   .movement-badge.is-live,
@@ -2465,7 +2518,7 @@ function buildMatchStoryParts(origIdx) {
 function applyMarqueeToTeams() {
   if (window.innerWidth > 640) return;
   requestAnimationFrame(() => {
-    document.querySelectorAll('.fixture-team .tname').forEach(el => {
+    document.querySelectorAll('.fixture-team .tname, .table-tname').forEach(el => {
       // Reset trạng thái trước khi tính toán
       el.classList.remove('do-marquee');
       el.style.textIndent = '0';
@@ -3017,7 +3070,6 @@ function renderStandings() {
   tb.innerHTML = `
     <tr>
       <th>XH</th>
-      <th class="movement-col">Δ</th>
       <th class="team-name-cell">Đội</th>
       <th>Trận</th>
       <th>Điểm</th>
@@ -3058,11 +3110,15 @@ function renderStandings() {
 
     return `
       <tr class="${rowClasses}" ${rowStyle}>
-        <td><span class="rank-badge ${rbCls}">${idx + 1}</span></td>
-        <td class="movement-col">${renderRankMovementBadge(id)}</td>
+        <td>
+          <div class="rank-wrap">
+            <span class="rank-badge ${rbCls}">${idx + 1}</span>
+            ${renderTableMovementBadge(id)}
+          </div>
+        </td>
         <td class="team-name-cell">
           <div class="team-avatar" style="background:${teamColors[id]}">${teamEmojis[id]}</div>
-          <div style="font-weight:600">${teams[id] || id}</div>
+          <div class="table-tname" style="font-weight:600">${teams[id] || id}</div>
         </td>
         <td>${v.played}</td>
         <td><span class="points-badge">${v.p}</span></td>
@@ -3255,6 +3311,16 @@ function renderPodiumMovementBadge(id) {
   return `<span class="podium-move-badge ${cls}" title="${mv.tooltip}">
     <span class="movement-arrow">${arrow}</span>
     <span class="movement-count">${Math.abs(mv.delta)}</span>
+  </span>`;
+}
+
+function renderTableMovementBadge(id) {
+  const mv = getRankMovementMeta(id);
+  if (!mv.isLive || mv.dir === 'same') return '';
+  const arrow = mv.dir === 'up' ? '▲' : '▼';
+  const cls   = mv.dir === 'up' ? 'move-up' : 'move-down';
+  return `<span class="table-move-badge ${cls}" title="${mv.tooltip}">
+    <span class="movement-arrow">${arrow}</span>${Math.abs(mv.delta)}
   </span>`;
 }
 

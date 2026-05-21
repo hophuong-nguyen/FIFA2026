@@ -84,14 +84,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .fixtures-wrap{max-height:65vh;overflow-y:auto;overflow-x:hidden;}
 .matchday-block{margin-bottom:12px;}
 .matchday-header{display:flex;align-items:center;gap:10px;margin-bottom:7px;padding:0 2px;}
-.cal-tile{flex-shrink:0;width:48px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg-card2);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.cal-tile{flex-shrink:0;width:62px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg-card2);box-shadow:0 2px 8px rgba(0,0,0,.3);}
 .cal-tile.today{border-color:var(--accent);box-shadow:0 0 10px rgba(0,173,239,.3);}
 .cal-tile.past{opacity:.55;}
-.cal-month{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;text-align:center;padding:3px 2px 2px;background:linear-gradient(135deg,#3145eb,#252a49);color:#c5f851;}
+.cal-month{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;text-align:center;padding:3px 4px 2px;background:linear-gradient(135deg,#3145eb,#252a49);color:#c5f851;white-space:nowrap;}
 .cal-tile.past .cal-month{background:linear-gradient(135deg,#1c2030,#20242d);color:var(--silver);}
 .cal-day{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;text-align:center;padding:1px 2px;color:var(--text);line-height:1.1;}
 .cal-tile.today .cal-day{color:var(--accent);}
-.cal-dow{font-size:.58rem;text-align:center;color:var(--text-muted);padding-bottom:3px;font-weight:500;}
 .matchday-meta{flex:1;min-width:0;}
 .matchday-label{font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);letter-spacing:.1px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
 .md-badge{display:inline-block;padding:1px 6px;border-radius:5px;font-size:.65rem;border:1px solid;}
@@ -1005,11 +1004,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   line-height    : 1;
   white-space    : nowrap;
   flex-shrink    : 0;
-  width          : 44px;        /* khớp với cột grid */
-  overflow       : hidden;
+  width          : 44px;
+  overflow       : visible;
 }
-.story-rank-badge.home{ justify-content:flex-start; padding-left:3px; }
-.story-rank-badge.away{ justify-content:flex-end;   padding-right:3px; }
+.story-rank-badge.home{
+  justify-content: flex-start;
+  padding-left   : 3px;
+  padding-right  : 4px;
+}
+.story-rank-badge.away{
+  justify-content: flex-end;
+  padding-right  : 3px;
+  padding-left   : 4px;
+}
 
 .story-rank-badge .srb-arrow{ font-size:.62rem; }
 .story-rank-badge .srb-delta{
@@ -1109,7 +1116,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Ép fixture-row thành 8 cột: BadgeTrái | ĐộiNhà | TỉSố | VS | TỉSố | ĐộiKhách | BadgePhải | EditBtn */
 .fixture-row {
-  grid-template-columns: 44px minmax(0,1fr) 28px 24px 28px minmax(0,1fr) 44px 28px !important;
+  grid-template-columns: 44px minmax(0,1fr) 34px 28px 34px minmax(0,1fr) 44px 28px !important;
 }
 
 /* Xóa wrap cũ, không dùng nữa */
@@ -1172,7 +1179,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Trả lại không gian cho mobile */
 @media(max-width:500px){
   .fixture-row { 
-    grid-template-columns: 36px minmax(0,1fr) 28px 24px 28px minmax(0,1fr) 36px 26px !important; 
+    grid-template-columns: 36px minmax(0,1fr) 32px 26px 32px minmax(0,1fr) 36px 26px !important; 
   }
 }
 
@@ -1235,7 +1242,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   .header-actions{gap:3px;}.btn-flat{padding:5px 7px;font-size:.68rem;}
   .fixture-team .tname{font-size:.74rem;}
 .fixture-team .team-emoji{font-size:.9rem;}
-.fixture-score-box{min-width:34px;height:26px;font-size:.92rem;}
+.fixture-score-box{
+  min-width:34px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  border:1px solid rgba(197,248,81,.18);
+  background:rgba(197,248,81,.06);
+  color:var(--accent);
+  font-family:'Rajdhani',sans-serif;
+  font-size:1.02rem;
+  font-weight:700;
+  line-height:1;
+}
 .fixture-vs{font-size:.58rem;}
 .card-chip{font-size:.64rem;margin-left:-6px;}
 .card-count{font-size:.5rem;padding:1px 3px;}
@@ -2421,7 +2442,7 @@ function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); 
 function makeDateBlock(date, arr, today) {
   const isPast = date < today, isToday = date === today; const [, dm, dd] = date.split('-'); const dtObj = new Date(Date.UTC(...date.split('-').map(Number).map((v, i) => i === 1 ? v - 1 : v), 12)); const dowShort = DOWS_SHORT[dtObj.getUTCDay()], dowFull = DOWS_VI[dtObj.getUTCDay()]; const isReserve = arr === null; const done = isReserve ? 0 : arr.filter(i => { const r = getResult(i); return r && r.score1 !== undefined; }).length; const total = isReserve ? 0 : arr.length; const block = document.createElement('div'); block.className = 'matchday-block';
   let badge = ''; if (isToday) badge = '<span class="md-badge md-today-badge">Hôm nay</span>'; else if (isPast && !isReserve) badge = '<span class="md-badge md-past-badge">Đã qua</span>'; else if (isReserve) badge = '<span class="md-badge md-reserve-badge">Dự phòng</span>';
-  block.innerHTML = `<div class="matchday-header"><div class="cal-tile ${isToday ? 'today' : isPast ? 'past' : ''}" style="${isReserve ? 'opacity:.4' : ''}"><div class="cal-month">${MONTHS_VI[+dm - 1]}</div><div class="cal-day">${dd}</div><div class="cal-dow">${dowShort}</div></div><div class="matchday-meta"><div class="matchday-label">${dowFull}${badge}</div><div class="matchday-count">${isReserve ? 'Kéo trận vào đây' : `${done}/${total} trận đã đấu`}</div></div></div>`; return block;
+  block.innerHTML = `<div class="matchday-header"><div class="cal-tile ${isToday ? 'today' : isPast ? 'past' : ''}" style="${isReserve ? 'opacity:.4' : ''}"><div class="cal-month">${MONTHS_VI[+dm - 1]}</div><div class="cal-day">${dd}</div></div><div class="matchday-meta"><div class="matchday-label">${dowFull}${badge}</div><div class="matchday-count">${isReserve ? 'Kéo trận vào đây' : `${done}/${total} trận đã đấu`}</div></div></div>`; return block;
 }
 function makeDropZone(targetDate) { const z = document.createElement('div'); z.className = 'matchday-drop-zone'; z.dataset.date = targetDate; z.addEventListener('dragover', onZoneDragOver); z.addEventListener('dragleave', onZoneDragLeave); z.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return z; }
 function makeEmptyZone(targetDate, isReserve = false) { const emp = document.createElement('div'); emp.className = 'empty-day'; emp.dataset.date = targetDate; if (isReserve) emp.style.opacity = '.52'; emp.textContent = isReserve ? '＋ Kéo trận vào' : 'Kéo trận vào đây'; emp.addEventListener('dragover', onZoneDragOver); emp.addEventListener('dragleave', onZoneDragLeave); emp.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return emp; }

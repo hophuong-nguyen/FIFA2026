@@ -1717,6 +1717,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         </label>
       </div>
     </div>
+    <!-- Thêm vào trong #autoModal, sau thẻ đóng </div> của form-group logic, 
+        trước form-group ngày bắt đầu: -->
+    <div class="form-group">
+      <div id="manualMatchListWrap"></div>
+    </div>
     <div class="form-group"><label class="form-label">Ngày bắt đầu xếp lịch</label><div id="autoDateGroup"></div><div style="font-size:.72rem;color:#f5a623;margin-top:5px;min-height:16px;" id="autoDateHint"></div></div>
     <div class="auto-preview-box" id="autoPreview"><span style="color:var(--text-muted)">Chọn ngày để xem trước...</span></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -1915,6 +1920,7 @@ let BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
 let TOTAL = BASE_SCHEDULE.length;
 let matchDates = {};
 let scheduleOrder = [];
+let manualDates = {}; // { matchIdx: isoDate } - các trận đã được admin set ngày thủ công
 let fbReady = false;
 
 /* ═══════════════════ FILTER ═══════════════════ */
@@ -1929,24 +1935,27 @@ window.setFilterTeam = function(id) {
 /* ═══════════════════ BUILD SCHEDULE ═══════════════════ */
 function rebuildSchedule(keepResults = false) {
   const oldSch = [...BASE_SCHEDULE], oldRes = { ...results }, oldDates = { ...matchDates };
+  const oldManualDates = { ...manualDates };
   BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
   TOTAL = BASE_SCHEDULE.length;
   if (!keepResults) {
+    manualDates = {};
     results = {}; matchDates = buildSeasonDates(); scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
     return;
   }
   const newRes = {}, newDates = buildSeasonDates();
+  const newManual = {};
   BASE_SCHEDULE.forEach(([a, b], ni) => {
     for (let oi = 0; oi < oldSch.length; oi++) {
       if (!oldSch[oi]) continue;
       const [oa, ob] = oldSch[oi];
-      if (oa === a && ob === b) {
-        if (oldRes[String(oi)]) newRes[String(ni)] = oldRes[String(oi)];
-        if (oldDates[String(oi)] && oldDates[String(oi)] < '9999') newDates[String(ni)] = oldDates[String(oi)];
+      if (oa === a && ob === b && oldManualDates?.[String(oi)]) {
+        newManual[String(ni)] = oldManualDates[String(oi)];
         break;
       }
     }
   });
+  manualDates = newManual;
   results = newRes; matchDates = newDates; scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
 }
 
@@ -2042,7 +2051,9 @@ function normalizeState(data) {
   try { BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format); TOTAL = BASE_SCHEDULE.length; } 
   catch(e) { console.error(e); BASE_SCHEDULE = []; TOTAL = 0; }
   
-  matchDates = normalizeMatchDates(data.matchDates); scheduleOrder = normalizeScheduleOrder(data.scheduleOrder);
+  matchDates = normalizeMatchDates(data.matchDates); 
+  scheduleOrder = normalizeScheduleOrder(data.scheduleOrder);
+  manualDates = data.manualDates || {};
 
   /* Nhận rankMovement từ người khác gửi qua Firebase */
   if (data.rankMovement) {
@@ -2063,7 +2074,8 @@ async function pushToFirebase() {
     await set(dbRef('state'), { 
       teamIds, teams, members, teamEmojis, teamColors, results, 
       matchDates, scheduleOrder, leagueConfig,
-      rankMovement: rankMovementState  /* <-- CHỈ THÊM ĐÚNG DÒNG NÀY */
+      rankMovement: rankMovementState,  /* <-- CHỈ THÊM ĐÚNG DÒNG NÀY */
+      manualDates   // ← THÊM
     }); 
     setSyncState('connected'); 
   }
@@ -2210,7 +2222,8 @@ function initTouchDrag(rowEl, origIdx) {
 
         // Thực hiện di chuyển nếu hợp lệ
         if (touchLastTarget.dataset.date) {
-          matchDates[String(src)] = targetDate; 
+          matchDates[String(src)] = targetDate;
+          manualDates[String(src)] = targetDate; 
           scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src); 
           let ins = scheduleOrder.length; 
           for (let k = scheduleOrder.length - 1; k >= 0; k--) { 
@@ -2221,7 +2234,8 @@ function initTouchDrag(rowEl, origIdx) {
         } else if (touchLastTarget.classList.contains('fixture-row')) {
           const ti = Number(touchLastTarget.dataset.orig); 
           if (ti !== src) { 
-            matchDates[String(src)] = targetDate; 
+            matchDates[String(src)] = targetDate;
+            manualDates[String(src)] = targetDate; 
             scheduleOrder = scheduleOrder.map(Number); 
             const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); 
             const di = scheduleOrder.indexOf(ti); scheduleOrder.splice(di, 0, src); 
@@ -2280,12 +2294,246 @@ function groupBack2Back(pending) {
 }
 function getSelectedLogic() { const el = document.querySelector('input[name="scheduleLogic"]:checked'); return el ? el.value : 'independent'; }
 window.onLogicChange = () => { const val = getSelectedLogic(); document.getElementById('logic-opt-A').style.borderColor = val === 'independent' ? 'rgba(197,248,81,.45)' : 'var(--border)'; document.getElementById('logic-opt-B').style.borderColor = val === 'back2back' ? 'rgba(49,69,235,.55)' : 'var(--border)'; const iso = window._autoGetISO ? window._autoGetISO() : ''; if (iso) refreshAutoPreview(iso); };
-window.openAutoModal = function() { const suggested = nearestWorkday(todayISO()); const dg = document.getElementById('autoDateGroup'); dg.innerHTML = ''; let autoISO = suggested; dg.appendChild(makeDpInput('autoStartDate', suggested, iso => { autoISO = iso || suggested; refreshAutoPreview(autoISO); })); const radios = document.querySelectorAll('input[name="scheduleLogic"]'); if (radios.length) radios[0].checked = true; onLogicChange(); refreshAutoPreview(suggested); openModal('autoModal'); window._autoGetISO = () => autoISO; };
-function refreshAutoPreview(rawISO) {
+window.openAutoModal = function() {
+  const suggested = nearestWorkday(todayISO());
+  const dg = document.getElementById('autoDateGroup');
+  dg.innerHTML = '';
+  let autoISO = suggested;
+  dg.appendChild(makeDpInput('autoStartDate', suggested, iso => {
+    autoISO = iso || suggested;
+    refreshAutoPreview(autoISO);
+  }));
+  const radios = document.querySelectorAll('input[name="scheduleLogic"]');
+  if (radios.length) radios[0].checked = true;
+  onLogicChange();
+
+  // Render danh sách manual-scheduled matches
+  renderManualMatchList();
+
+  refreshAutoPreview(suggested);
+  openModal('autoModal');
+  window._autoGetISO = () => autoISO;
+};
+
+function renderManualMatchList() {
+  const container = document.getElementById('manualMatchListWrap');
+  if (!container) return;
+
+  const manualEntries = Object.entries(manualDates)
+    .filter(([k]) => {
+      const i = Number(k);
+      return BASE_SCHEDULE[i] && isPending(i);
+    })
+    .sort((a, b) => (manualDates[a[0]] || '').localeCompare(manualDates[b[0]] || ''));
+
+  if (manualEntries.length === 0) {
+    container.innerHTML = `
+      <div style="padding:10px 12px;border-radius:8px;background:var(--bg-deep);
+                  border:1px solid var(--border);color:var(--text-muted);
+                  font-size:.78rem;text-align:center;">
+        ✅ Không có trận nào được xếp lịch thủ công
+      </div>`;
+    return;
+  }
+
+  const allChecked = manualEntries.every(([k]) =>
+    document.getElementById(`mmc-${k}`)?.checked !== false
+  );
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                margin-bottom:8px;">
+      <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;
+                  letter-spacing:.4px;font-weight:600;">
+        📌 Trận đã xếp thủ công
+        <span style="margin-left:5px;padding:1px 6px;border-radius:4px;
+                     background:rgba(197,248,81,.1);color:var(--accent);
+                     border:1px solid rgba(197,248,81,.2);font-size:.65rem;">
+          ${manualEntries.length}
+        </span>
+      </div>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;
+                    font-size:.74rem;color:var(--text-muted);">
+        <input type="checkbox" id="mmc-all"
+               style="accent-color:var(--accent);width:13px;height:13px;"
+               onchange="toggleAllManualChecks(this.checked)"
+               ${manualEntries.length > 0 ? '' : 'disabled'}>
+        Chọn tất cả
+      </label>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;
+                max-height:180px;overflow-y:auto;padding-right:2px;"
+         id="manualMatchListItems">
+      ${manualEntries.map(([k]) => {
+        const i = Number(k);
+        const [a, b] = BASE_SCHEDULE[i];
+        const d = manualDates[k];
+        return `
+          <label id="mmc-row-${k}"
+                 style="display:flex;align-items:center;gap:8px;padding:7px 10px;
+                        border-radius:8px;border:1px solid var(--border);
+                        background:var(--bg-deep);cursor:pointer;
+                        transition:border-color .15s,background .15s;"
+                 onmouseenter="this.style.borderColor='rgba(197,248,81,.25)'"
+                 onmouseleave="onMmcRowLeave(this,'${k}')">
+            <input type="checkbox" id="mmc-${k}"
+                   data-idx="${k}"
+                   style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0;"
+                   onchange="onMmcChange()">
+            <span style="font-size:.75rem;flex:1;min-width:0;">
+              <span style="color:${teamColors[a]}">${teamEmojis[a]}</span>
+              <span style="font-weight:600;color:var(--text);">
+                ${teams[a] || a}
+              </span>
+              <span style="color:var(--text-muted);margin:0 4px;">vs</span>
+              <span style="color:${teamColors[b]}">${teamEmojis[b]}</span>
+              <span style="font-weight:600;color:var(--text);">
+                ${teams[b] || b}
+              </span>
+            </span>
+            <span style="font-size:.68rem;color:var(--accent);white-space:nowrap;
+                         flex-shrink:0;font-family:'Rajdhani',sans-serif;font-weight:600;">
+              📅 ${formatDateShort(d)}
+            </span>
+          </label>`;
+      }).join('')}
+    </div>
+    <div style="font-size:.7rem;color:var(--text-muted);margin-top:6px;
+                padding:5px 8px;border-radius:6px;
+                background:rgba(235,69,96,.05);border:1px solid rgba(235,69,96,.15);">
+      ☑️ Trận được <strong style="color:var(--red)">check</strong>
+      sẽ bị <strong style="color:var(--red)">xóa ngày thủ công</strong>
+      và được xếp lại tự động
+    </div>`;
+
+  // Sync trạng thái check-all
+  syncCheckAll();
+}
+
+window.toggleAllManualChecks = function(checked) {
+  document.querySelectorAll('#manualMatchListItems input[type="checkbox"]')
+    .forEach(cb => {
+      cb.checked = checked;
+      const row = document.getElementById(`mmc-row-${cb.dataset.idx}`);
+      if (row) {
+        row.style.background = checked
+          ? 'rgba(235,69,96,.07)' : 'var(--bg-deep)';
+        row.style.borderColor = checked
+          ? 'rgba(235,69,96,.3)' : 'var(--border)';
+      }
+    });
+  refreshAutoPreview(window._autoGetISO ? window._autoGetISO() : '');
+};
+
+window.onMmcChange = function() {
+  syncCheckAll();
+  refreshAutoPreview(window._autoGetISO ? window._autoGetISO() : '');
+};
+
+window.onMmcRowLeave = function(row, k) {
+  const cb = document.getElementById(`mmc-${k}`);
+  if (cb?.checked) {
+    row.style.borderColor = 'rgba(235,69,96,.3)';
+    row.style.background  = 'rgba(235,69,96,.07)';
+  } else {
+    row.style.borderColor = 'var(--border)';
+    row.style.background  = 'var(--bg-deep)';
+  }
+};
+
+function syncCheckAll() {
+  const all = [...document.querySelectorAll(
+    '#manualMatchListItems input[type="checkbox"]'
+  )];
+  const allCb = document.getElementById('mmc-all');
+  if (!allCb || all.length === 0) return;
+  allCb.checked = all.every(cb => cb.checked);
+  allCb.indeterminate = !allCb.checked && all.some(cb => cb.checked);
+  all.forEach(cb => {
+    const row = document.getElementById(`mmc-row-${cb.dataset.idx}`);
+    if (!row) return;
+    row.style.background  = cb.checked ? 'rgba(235,69,96,.07)' : 'var(--bg-deep)';
+    row.style.borderColor = cb.checked ? 'rgba(235,69,96,.3)'  : 'var(--border)';
+  });
+}
+
+function getCheckedManualIdxs() {
+  return [...document.querySelectorAll(
+    '#manualMatchListItems input[type="checkbox"]:checked'
+  )].map(cb => Number(cb.dataset.idx));
+}
+
+window.confirmAutoSchedule = function() {
+  let startISO = window._autoGetISO ? window._autoGetISO() : '';
+  if (!startISO) { showToast('⚠️ Vui lòng chọn ngày!', 'warn'); return; }
+  startISO = nearestWorkday(startISO);
+
+  const logic = getSelectedLogic();
+
+  // Các trận manual được check → reset manualDates rồi đưa vào pending
+  const checkedIdxs = getCheckedManualIdxs();
+  checkedIdxs.forEach(i => { delete manualDates[String(i)]; });
+
+  // Phân loại:
+  // - completed: đã có kết quả
+  // - manualKept: manual-set và KHÔNG check (giữ nguyên ngày)
+  // - pending: chưa có kết quả và không bị giữ bởi manualKept
+  const keepManualSet = new Set(
+    Object.keys(manualDates)
+      .map(Number)
+      .filter(i => isPending(i) && !checkedIdxs.includes(i))
+  );
+
+  const completed  = scheduleOrder.filter(i => !isPending(i)).map(Number);
+  const manualKept = scheduleOrder.filter(i => keepManualSet.has(Number(i))).map(Number);
+  const pending    = scheduleOrder
+    .filter(i => isPending(Number(i)) && !keepManualSet.has(Number(i)))
+    .map(Number);
+
+  completed.sort((a, b) => getDate(a).localeCompare(getDate(b)));
+
+  const groups = logic === 'back2back'
+    ? groupBack2Back(pending)
+    : groupIndependent(pending);
+
+  groups.forEach((grp, di) => {
+    const dayISO = di === 0 ? startISO : addWorkdays(startISO, di);
+    grp.forEach(oi => { matchDates[String(oi)] = dayISO; });
+  });
+
+  // Ghép lại: completed → manualKept (giữ ngày cũ) → auto-scheduled
+  scheduleOrder = [
+    ...completed,
+    ...manualKept.sort((a, b) => getDate(a).localeCompare(getDate(b))),
+    ...groups.flat()
+  ];
+
+  closeModal('autoModal');
+  persist();
+  showToast(
+    `⚡ Đã xếp ${pending.length} trận từ ${formatDateShort(startISO)}!` +
+    (manualKept.length ? ` Giữ ${manualKept.length} trận thủ công.` : '')
+  );
+};
+
+function refreshAutoPreview(rawISO) {  
   const hint = document.getElementById('autoDateHint'), preview = document.getElementById('autoPreview');
   if (!rawISO) { hint.textContent = ''; preview.innerHTML = '<span style="color:var(--text-muted)">Chọn ngày...</span>'; return; }
   let startISO = rawISO; if (isWeekend(startISO)) { hint.textContent = '⚠️ Cuối tuần → chuyển sang ngày làm việc.'; startISO = nearestWorkday(startISO); } else hint.textContent = '';
-  const logic = getSelectedLogic(), pendingList = scheduleOrder.filter(i => isPending(i)), completedCnt = scheduleOrder.length - pendingList.length, pendingCnt = pendingList.length;
+  
+  // Thay phần tính pendingList trong refreshAutoPreview:
+  const checkedIdxs = new Set(getCheckedManualIdxs());
+  const keepManualSet = new Set(
+    Object.keys(manualDates)
+      .map(Number)
+      .filter(i => isPending(i) && !checkedIdxs.has(i))
+  );
+  const pendingList = scheduleOrder
+    .filter(i => isPending(i) && !keepManualSet.has(Number(i)));
+  const completedCnt = scheduleOrder.length - scheduleOrder.filter(i => isPending(i)).length;
+  const manualKeptCnt = keepManualSet.size;
+  const pendingCnt = pendingList.length;
+
   if (pendingCnt === 0) { preview.innerHTML = '<div style="color:var(--green)">✅ Tất cả trận đã có kết quả.</div>'; return; }
   const groups = logic === 'back2back' ? groupBack2Back(pendingList) : groupIndependent(pendingList);
   const daysNeeded = groups.length, endISO = daysNeeded <= 1 ? startISO : addWorkdays(startISO, daysNeeded - 1);
@@ -2298,7 +2546,26 @@ function refreshAutoPreview(rawISO) {
     if (d < daysNeeded - 1) cur = addWorkdays(cur, 1);
   }
   if (daysNeeded > 5) rows += `<div style="color:var(--text-muted);font-size:.75rem;padding-top:4px;">... và ${daysNeeded - 5} ngày nữa đến ${formatDateShort(endISO)}</div>`;
-  preview.innerHTML = `<div style="display:flex;gap:18px;margin-bottom:9px;flex-wrap:wrap;"><div><div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Đã đấu</div><strong style="color:var(--green)">${completedCnt}</strong></div><div><div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Cần xếp</div><strong style="color:var(--accent)">${pendingCnt}</strong> / ${daysNeeded} ngày</div><div><div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Kết thúc</div><strong style="color:var(--text)">${formatDateShort(endISO)}</strong></div></div>${rows}`;
+  preview.innerHTML = `
+  <div style="display:flex;gap:18px;margin-bottom:9px;flex-wrap:wrap;">
+    <div>
+      <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Đã đấu</div>
+      <strong style="color:var(--green)">${completedCnt}</strong>
+    </div>
+    ${manualKeptCnt ? `
+    <div>
+      <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Giữ thủ công</div>
+      <strong style="color:#f5a623">${manualKeptCnt}</strong>
+    </div>` : ''}
+    <div>
+      <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Cần xếp</div>
+      <strong style="color:var(--accent)">${pendingCnt}</strong> / ${daysNeeded} ngày
+    </div>
+    <div>
+      <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Kết thúc</div>
+      <strong style="color:var(--text)">${formatDateShort(endISO)}</strong>
+    </div>
+  </div>${rows}`;
 }
 window.confirmAutoSchedule = function() {
   let startISO = window._autoGetISO ? window._autoGetISO() : ''; if (!startISO) { showToast('⚠️ Vui lòng chọn ngày!', 'warn'); return; }
@@ -2801,6 +3068,7 @@ function onZoneDrop(e, targetDate) {
   // Không cho kéo trận tương lai về ngày đã qua
   if (targetDate < today) { showToast('⚠️ Không thể xếp trận chưa đấu vào ngày đã qua!', 'warn'); return; }
   matchDates[String(src)] = targetDate;
+  manualDates[String(src)] = targetDate;
   scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src);
   let ins = scheduleOrder.length;
   for (let k = scheduleOrder.length - 1; k >= 0; k--) {
@@ -2811,7 +3079,7 @@ function onZoneDrop(e, targetDate) {
 }
 function onRowDragOver(e) { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
 function onRowDragLeave() { this.classList.remove('drag-over-row'); }
-function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if (!dragData || dragData.origIdx === Number(targetOrigIdx)) return; const src = dragData.origIdx; matchDates[String(src)] = matchDates[String(targetOrigIdx)]; scheduleOrder = scheduleOrder.map(Number); const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); const di = scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di, 0, src); persist(); }
+function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if (!dragData || dragData.origIdx === Number(targetOrigIdx)) return; const src = dragData.origIdx; matchDates[String(src)] = matchDates[String(targetOrigIdx)]; manualDates[String(src)] = matchDates[String(src)]; scheduleOrder = scheduleOrder.map(Number); const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); const di = scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di, 0, src); persist(); }
 
 function makeDateBlock(date, arr, today) {
   const isPast = date < today, isToday = date === today; const [, dm, dd] = date.split('-'); const dtObj = new Date(Date.UTC(...date.split('-').map(Number).map((v, i) => i === 1 ? v - 1 : v), 12)); const dowShort = DOWS_SHORT[dtObj.getUTCDay()], dowFull = DOWS_VI[dtObj.getUTCDay()]; const isReserve = arr === null; const done = isReserve ? 0 : arr.filter(i => { const r = getResult(i); return r && r.score1 !== undefined; }).length; const total = isReserve ? 0 : arr.length; const block = document.createElement('div'); block.className = 'matchday-block';
@@ -3657,7 +3925,10 @@ window.onMatchChange = function() {
   document.getElementById('red1Modal').value = r.r1 || ''; document.getElementById('red2Modal').value = r.r2 || '';
   const dObj = matchDates[String(_editMatchIdx)]; const iso = dObj && dObj < '9999' ? dObj : todayISO();
   const dg = document.getElementById('resultDateGroup'); dg.innerHTML = '';
-  dg.appendChild(makeDpInput('resultDate', iso, newIso => { matchDates[String(_editMatchIdx)] = newIso; }));
+  dg.appendChild(makeDpInput('resultDate', iso, newIso => {
+    matchDates[String(_editMatchIdx)] = newIso;
+    if (newIso) manualDates[String(_editMatchIdx)] = newIso;  // ← THÊM
+  }));
 };
 window.saveResultModal = function() {
   const s1 = document.getElementById('score1Modal').value, s2 = document.getElementById('score2Modal').value;
@@ -3705,6 +3976,7 @@ window.resetResultModal = function() {
      <span style="opacity:.75;color:var(--red)">Tỉ số và thẻ phạt của trận này sẽ bị xóa.</span>`,
     () => {
       delete results[String(_editMatchIdx)];
+      delete manualDates[String(_editMatchIdx)];
 
       const playedAfterReset = Object.values(results)
         .filter(r => r && r.score1 !== undefined).length;

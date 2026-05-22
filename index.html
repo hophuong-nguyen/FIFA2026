@@ -2427,48 +2427,132 @@ function initTouchDrag(rowEl, origIdx) {
 }
 
 /* ═══════════════════ AUTO SCHEDULE LOGIC ═══════════════════ */
-function groupIndependent(pending) {
-  const remaining = [...pending], days = []; const mpd = leagueConfig.matchesPerDay || 3;
+// Helper: tính số slot đã dùng mỗi "day index" từ danh sách manual-kept
+// dayIndex = thứ tự ngày làm việc tính từ startISO (0-based)
+function calcUsedSlotsPerDay(manualKeptIdxs, startISO) {
+  const slots = {};
+  manualKeptIdxs.forEach(i => {
+    const d = matchDates[String(i)];
+    if (!d || d >= '9999') return;
+    // Tính dayIndex = số ngày làm việc từ startISO đến d
+    const dayIdx = countWorkdaysBetween(startISO, d);
+    if (dayIdx < 0) return; // ngày manual trước startISO → bỏ qua
+    slots[dayIdx] = (slots[dayIdx] || 0) + 1;
+  });
+  return slots;
+}
+
+// Đếm số ngày làm việc từ fromISO đến toISO (inclusive cả 2 đầu nếu workday)
+function countWorkdaysBetween(fromISO, toISO) {
+  if (toISO < fromISO) return -1;
+  const [fy, fm, fd] = fromISO.split('-').map(Number);
+  const [ty, tm, td] = toISO.split('-').map(Number);
+  let cur = new Date(Date.UTC(fy, fm - 1, fd, 12));
+  const end = new Date(Date.UTC(ty, tm - 1, td, 12));
+  let count = 0;
+  while (cur < end) {
+    cur.setUTCDate(cur.getUTCDate() + 1);
+    if (![0, 6].includes(cur.getUTCDay())) count++;
+  }
+  // Nếu toISO chính là fromISO → dayIdx = 0
+  return count;
+}
+
+function groupIndependent(pending, usedSlotsPerDay = {}) {
+  const remaining = [...pending], days = [];
+  const mpd = leagueConfig.matchesPerDay || 3;
+
   while (remaining.length > 0) {
-    const dayGroup = [], usedTeams = new Set(), skipped = [];
+    const dayGroup = [], usedTeams = new Set(), dayIdx = days.length;
+    // Số slot đã bị chiếm bởi manual-kept ở ngày này
+    const alreadyUsed = usedSlotsPerDay[dayIdx] || 0;
+    const slotsLeft = mpd - alreadyUsed;
+
     for (const origIdx of remaining) {
-      if (dayGroup.length >= mpd) break; const [ta, tb] = BASE_SCHEDULE[origIdx];
-      if (!usedTeams.has(ta) && !usedTeams.has(tb)) { dayGroup.push(origIdx); usedTeams.add(ta); usedTeams.add(tb); } else skipped.push(origIdx);
+      if (dayGroup.length >= slotsLeft) break;
+      const [ta, tb] = BASE_SCHEDULE[origIdx];
+      if (!usedTeams.has(ta) && !usedTeams.has(tb)) {
+        dayGroup.push(origIdx); usedTeams.add(ta); usedTeams.add(tb);
+      }
     }
-    if (dayGroup.length === 0) { dayGroup.push(remaining[0]); skipped.splice(0,1); }
-    days.push(dayGroup); const chosen = new Set(dayGroup); remaining.splice(0, remaining.length, ...remaining.filter(i => !chosen.has(i)));
+    if (dayGroup.length === 0) {
+      // Không có trận nào fit vào ngày này (do team conflict + slot đầy)
+      // → skip ngày này (đẩy sang ngày tiếp theo bằng cách push group rỗng)
+      if (slotsLeft <= 0) {
+        days.push([]); // ngày này đã đầy do manual, skip
+        continue;
+      }
+      // Slot còn nhưng mọi team đều conflict → bắt buộc nhét 1 trận
+      dayGroup.push(remaining[0]);
+    }
+    days.push(dayGroup);
+    const chosen = new Set(dayGroup);
+    remaining.splice(0, remaining.length, ...remaining.filter(i => !chosen.has(i)));
   }
   return days;
 }
-function groupBack2Back(pending) {
-  const remaining = [...pending], days = [], mpd = leagueConfig.matchesPerDay || 3;
+
+function groupBack2Back(pending, usedSlotsPerDay = {}) {
+  const remaining = [...pending], days = [];
+  const mpd = leagueConfig.matchesPerDay || 3;
+
   while (remaining.length > 0) {
-    const dayGroup = []; let foundB2B = false;
+    const dayIdx = days.length;
+    const alreadyUsed = usedSlotsPerDay[dayIdx] || 0;
+    const slotsLeft = mpd - alreadyUsed;
+
+    if (slotsLeft <= 0) {
+      days.push([]);
+      continue;
+    }
+
+    const dayGroup = [];
+    let foundB2B = false;
+
     outer: for (let i = 0; i < remaining.length && !foundB2B; i++) {
       const [a1, b1] = BASE_SCHEDULE[remaining[i]];
       for (let j = i + 1; j < remaining.length && !foundB2B; j++) {
-        const [a2, b2] = BASE_SCHEDULE[remaining[j]]; const pivots = [];
-        if (a1 === a2) pivots.push({ p: a1, o: [b1, b2] }); if (a1 === b2) pivots.push({ p: a1, o: [b1, a2] });
-        if (b1 === a2) pivots.push({ p: b1, o: [a1, b2] }); if (b1 === b2) pivots.push({ p: b1, o: [a1, a2] });
+        const [a2, b2] = BASE_SCHEDULE[remaining[j]];
+        const pivots = [];
+        if (a1 === a2) pivots.push({ p: a1, o: [b1, b2] });
+        if (a1 === b2) pivots.push({ p: a1, o: [b1, a2] });
+        if (b1 === a2) pivots.push({ p: b1, o: [a1, b2] });
+        if (b1 === b2) pivots.push({ p: b1, o: [a1, a2] });
         if (pivots.length > 0) {
-          const { p, o } = pivots[0]; dayGroup.push(remaining[i], remaining[j]); const used = new Set([p, ...o]);
-          for (let k = 0; k < remaining.length && dayGroup.length < mpd; k++) { if (k === i || k === j) continue; const [a3, b3] = BASE_SCHEDULE[remaining[k]]; if (!used.has(a3) && !used.has(b3)) { dayGroup.push(remaining[k]); used.add(a3); used.add(b3); } }
+          const { p, o } = pivots[0];
+          dayGroup.push(remaining[i], remaining[j]);
+          const used = new Set([p, ...o]);
+          for (let k = 0; k < remaining.length && dayGroup.length < slotsLeft; k++) {
+            if (k === i || k === j) continue;
+            const [a3, b3] = BASE_SCHEDULE[remaining[k]];
+            if (!used.has(a3) && !used.has(b3)) {
+              dayGroup.push(remaining[k]); used.add(a3); used.add(b3);
+            }
+          }
           foundB2B = true;
         }
       }
     }
+
     if (!foundB2B) {
       const usedTeams = new Set();
       for (const origIdx of remaining) {
-        if (dayGroup.length >= mpd) break; const [ta, tb] = BASE_SCHEDULE[origIdx];
-        if (!usedTeams.has(ta) && !usedTeams.has(tb)) { dayGroup.push(origIdx); usedTeams.add(ta); usedTeams.add(tb); }
+        if (dayGroup.length >= slotsLeft) break;
+        const [ta, tb] = BASE_SCHEDULE[origIdx];
+        if (!usedTeams.has(ta) && !usedTeams.has(tb)) {
+          dayGroup.push(origIdx); usedTeams.add(ta); usedTeams.add(tb);
+        }
       }
       if (dayGroup.length === 0) dayGroup.push(remaining[0]);
     }
-    days.push(dayGroup); const chosen = new Set(dayGroup); remaining.splice(0, remaining.length, ...remaining.filter(i => !chosen.has(i)));
+
+    days.push(dayGroup);
+    const chosen = new Set(dayGroup);
+    remaining.splice(0, remaining.length, ...remaining.filter(i => !chosen.has(i)));
   }
   return days;
 }
+
 function getSelectedLogic() { const el = document.querySelector('input[name="scheduleLogic"]:checked'); return el ? el.value : 'independent'; }
 window.onLogicChange = () => { const val = getSelectedLogic(); document.getElementById('logic-opt-A').style.borderColor = val === 'independent' ? 'rgba(197,248,81,.45)' : 'var(--border)'; document.getElementById('logic-opt-B').style.borderColor = val === 'back2back' ? 'rgba(49,69,235,.55)' : 'var(--border)'; const iso = window._autoGetISO ? window._autoGetISO() : ''; if (iso) refreshAutoPreview(iso); };
 window.openAutoModal = function() {
@@ -2647,14 +2731,9 @@ window.confirmAutoSchedule = function() {
 
   const logic = getSelectedLogic();
 
-  // Các trận manual được check → reset manualDates rồi đưa vào pending
   const checkedIdxs = getCheckedManualIdxs();
   checkedIdxs.forEach(i => { delete manualDates[String(i)]; });
 
-  // Phân loại:
-  // - completed: đã có kết quả
-  // - manualKept: manual-set và KHÔNG check (giữ nguyên ngày)
-  // - pending: chưa có kết quả và không bị giữ bởi manualKept
   const keepManualSet = new Set(
     Object.keys(manualDates)
       .map(Number)
@@ -2669,16 +2748,22 @@ window.confirmAutoSchedule = function() {
 
   completed.sort((a, b) => getDate(a).localeCompare(getDate(b)));
 
-  const groups = logic === 'back2back'
-    ? groupBack2Back(pending)
-    : groupIndependent(pending);
+  // Tính số slot đã bị chiếm bởi manual-kept theo day index
+  const usedSlots = calcUsedSlotsPerDay(manualKept, startISO);
 
-  groups.forEach((grp, di) => {
-    const dayISO = di === 0 ? startISO : addWorkdays(startISO, di);
+  const groups = logic === 'back2back'
+    ? groupBack2Back(pending, usedSlots)
+    : groupIndependent(pending, usedSlots);
+
+  // Assign ngày: bỏ qua group rỗng (ngày đã đầy bởi manual)
+  let autoDay = 0;
+  groups.forEach((grp) => {
+    if (grp.length === 0) { autoDay++; return; } // ngày bị skip do manual đầy
+    const dayISO = addWorkdays(startISO, autoDay);
     grp.forEach(oi => { matchDates[String(oi)] = dayISO; });
+    autoDay++;
   });
 
-  // Ghép lại: completed → manualKept (giữ ngày cũ) → auto-scheduled
   scheduleOrder = [
     ...completed,
     ...manualKept.sort((a, b) => getDate(a).localeCompare(getDate(b))),
@@ -2693,13 +2778,14 @@ window.confirmAutoSchedule = function() {
   );
 };
 
-function refreshAutoPreview(rawISO) {  
+function refreshAutoPreview(rawISO) {
   const hint = document.getElementById('autoDateHint'), preview = document.getElementById('autoPreview');
   if (!rawISO) { hint.textContent = ''; preview.innerHTML = '<span style="color:var(--text-muted)">Chọn ngày...</span>'; return; }
   const logic = getSelectedLogic();
-  let startISO = rawISO; if (isWeekend(startISO)) { hint.textContent = '⚠️ Cuối tuần → chuyển sang ngày làm việc.'; startISO = nearestWorkday(startISO); } else hint.textContent = '';
-  
-  // Thay phần tính pendingList trong refreshAutoPreview:
+  let startISO = rawISO;
+  if (isWeekend(startISO)) { hint.textContent = '⚠️ Cuối tuần → chuyển sang ngày làm việc.'; startISO = nearestWorkday(startISO); } 
+  else hint.textContent = '';
+
   const checkedIdxs = new Set(getCheckedManualIdxs());
   const keepManualSet = new Set(
     Object.keys(manualDates)
@@ -2713,17 +2799,58 @@ function refreshAutoPreview(rawISO) {
   const pendingCnt = pendingList.length;
 
   if (pendingCnt === 0) { preview.innerHTML = '<div style="color:var(--green)">✅ Tất cả trận đã có kết quả.</div>'; return; }
-  const groups = logic === 'back2back' ? groupBack2Back(pendingList) : groupIndependent(pendingList);
-  const daysNeeded = groups.length, endISO = daysNeeded <= 1 ? startISO : addWorkdays(startISO, daysNeeded - 1);
-  let rows = '', cur = startISO; const show = Math.min(daysNeeded, 5);
-  for (let d = 0; d < show; d++) {
-    const grp = groups[d]; const tc = new Map(); grp.forEach(oi => { BASE_SCHEDULE[oi].forEach(t => tc.set(t, (tc.get(t) || 0) + 1)); });
-    const piv = [...tc.entries()].find(([, c]) => c >= 2); let tag = '';
-    if (logic === 'back2back' && piv) tag = `<span style="font-size:.68rem;padding:1px 6px;border-radius:4px;background:rgba(49,69,235,.15);color:#7b96ff;border:1px solid rgba(49,69,235,.3);margin-left:5px;">${teamEmojis[piv[0]]} đá 2</span>`;
-    rows += `<div class="auto-preview-row"><span style="color:var(--text)">${formatDateShort(cur)}</span><span style="color:var(--accent);font-size:.78rem;display:flex;align-items:center;gap:4px;">${grp.length} trận${tag}</span></div>`;
-    if (d < daysNeeded - 1) cur = addWorkdays(cur, 1);
+
+  const usedSlots = calcUsedSlotsPerDay([...keepManualSet], startISO);
+
+  const groups = logic === 'back2back'
+    ? groupBack2Back(pendingList, usedSlots)
+    : groupIndependent(pendingList, usedSlots);
+
+  // Đếm số ngày thực sự có trận (bỏ group rỗng)
+  const nonEmptyGroups = groups.filter(g => g.length > 0);
+  const daysNeeded = groups.length; // tổng ngày kể cả skip
+  const actualDays = nonEmptyGroups.length;
+  const endISO = daysNeeded <= 1 ? startISO : addWorkdays(startISO, daysNeeded - 1);
+
+  let rows = '', autoDay = 0;
+  let shown = 0;
+  for (let d = 0; d < groups.length && shown < 5; d++) {
+    const grp = groups[d];
+    const dayISO = addWorkdays(startISO, d);
+    const manualOnDay = (usedSlots[d] || 0);
+
+    if (grp.length === 0) {
+      // Ngày này đã đầy bởi manual
+      rows += `<div class="auto-preview-row">
+        <span style="color:var(--text-muted)">${formatDateShort(dayISO)}</span>
+        <span style="color:#f5a623;font-size:.75rem;">📌 ${manualOnDay} trận thủ công (đầy slot)</span>
+      </div>`;
+      shown++; continue;
+    }
+
+    const tc = new Map(); 
+    grp.forEach(oi => { BASE_SCHEDULE[oi].forEach(t => tc.set(t, (tc.get(t) || 0) + 1)); });
+    const piv = [...tc.entries()].find(([, c]) => c >= 2); 
+    let tag = '';
+    if (logic === 'back2back' && piv) 
+      tag = `<span style="font-size:.68rem;padding:1px 6px;border-radius:4px;background:rgba(49,69,235,.15);color:#7b96ff;border:1px solid rgba(49,69,235,.3);margin-left:5px;">${teamEmojis[piv[0]]} đá 2</span>`;
+    
+    const manualTag = manualOnDay > 0 
+      ? `<span style="font-size:.65rem;color:#f5a623;margin-left:4px;">+${manualOnDay}📌</span>` 
+      : '';
+
+    rows += `<div class="auto-preview-row">
+      <span style="color:var(--text)">${formatDateShort(dayISO)}</span>
+      <span style="color:var(--accent);font-size:.78rem;display:flex;align-items:center;gap:4px;">
+        ${grp.length} trận${manualTag}${tag}
+      </span>
+    </div>`;
+    shown++;
   }
-  if (daysNeeded > 5) rows += `<div style="color:var(--text-muted);font-size:.75rem;padding-top:4px;">... và ${daysNeeded - 5} ngày nữa đến ${formatDateShort(endISO)}</div>`;
+
+  if (groups.length > 5) 
+    rows += `<div style="color:var(--text-muted);font-size:.75rem;padding-top:4px;">... và ${groups.length - 5} ngày nữa đến ${formatDateShort(endISO)}</div>`;
+
   preview.innerHTML = `
   <div style="display:flex;gap:18px;margin-bottom:9px;flex-wrap:wrap;">
     <div>
@@ -2737,7 +2864,7 @@ function refreshAutoPreview(rawISO) {
     </div>` : ''}
     <div>
       <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Cần xếp</div>
-      <strong style="color:var(--accent)">${pendingCnt}</strong> / ${daysNeeded} ngày
+      <strong style="color:var(--accent)">${pendingCnt}</strong> / ${actualDays} ngày
     </div>
     <div>
       <div style="color:var(--text-muted);font-size:.68rem;text-transform:uppercase;">Kết thúc</div>

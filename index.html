@@ -2060,14 +2060,33 @@ window.handleAuthClick = () => {
 window.doLogin = () => {
   const u = document.getElementById('loginUsername').value.trim();
   const p = document.getElementById('loginPassword').value;
+
   if (u === ADMIN_USER && p === ADMIN_PASS) {
-    isAdmin = true; updateAuthUI(); closeModal('loginModal');
-    document.getElementById('loginUsername').value = '';
-    document.getElementById('loginPassword').value = '';
+    isAdmin = true;
+    updateAuthUI();
+
+    // ✅ Reset input & blur để tránh giữ focus
+    const userInp = document.getElementById('loginUsername');
+    const passInp = document.getElementById('loginPassword');
+    if (userInp) userInp.blur();
+    if (passInp) passInp.blur();
+
+    userInp.value = '';
+    passInp.value = '';
     document.getElementById('loginError').textContent = '';
+
+    // ✅ Đảm bảo modal đóng hoàn toàn
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.style.display = 'none';
+      setTimeout(() => modal.style.display = '', 10);
+    }
+
     showToast('✅ Đăng nhập thành công!');
   } else {
-    document.getElementById('loginError').textContent = '❌ Sai tên đăng nhập hoặc mật khẩu.';
+    document.getElementById('loginError').textContent =
+      '❌ Sai tên đăng nhập hoặc mật khẩu.';
   }
 };
 window.requireAdmin = fn => {
@@ -3092,6 +3111,31 @@ function buildMatchStoryParts(origIdx) {
     /* Sub lines */
     const lines = [];
 
+    // ✅ Kiểm tra nếu có vua phá lưới mùa
+    const seasonScorers = calcSeasonTopScorers();
+    if (seasonScorers.length) {
+      const [topName, topGoals] = seasonScorers[0];
+
+      const matchScorers = [
+        ...(r.scorers1 || []),
+        ...(r.scorers2 || [])
+      ];
+
+      const matchTop = matchScorers.find(p => p.name === topName);
+
+      if (matchTop) {
+        lines.push(`
+          <div class="sub-line">
+            <span class="sub-icon">👑</span>
+            <span>
+              <span class="sub-hl">${topName}</span>
+              dẫn đầu mùa giải với <span class="sub-hl">${topGoals} bàn</span>
+            </span>
+          </div>
+        `);
+      }
+    }
+
     /* Tiebreak */
     const tb = tiebreakLabel(rowsAfter, hId, aId);
     if (tb) {
@@ -3852,6 +3896,26 @@ function calcStandingsRaw() {
   }
   return s;
 }
+
+function calcSeasonTopScorers() {
+  const map = {};
+
+  Object.values(results).forEach(r => {
+    if (!r) return;
+
+    (r.scorers1 || []).forEach(p => {
+      map[p.name] = (map[p.name] || 0) + p.goals;
+    });
+
+    (r.scorers2 || []).forEach(p => {
+      map[p.name] = (map[p.name] || 0) + p.goals;
+    });
+  });
+
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1]);
+}
+
 function calcStandings() { return Object.entries(calcStandingsRaw()).sort((x, y) => y[1].p - x[1].p || ((y[1].gf - y[1].ga) - (x[1].gf - x[1].ga)) || y[1].gf - x[1].gf); }
 
 function renderStats() {
@@ -3881,6 +3945,29 @@ if (topScorers.length) {
       </div>
     `).join('')}
   `;
+  // ✅ Thêm bảng vua phá lưới
+  const scorers = calcSeasonTopScorers();
+
+  if (scorers.length) {
+    const goldenBox = document.createElement('div');
+    goldenBox.style.marginTop = '12px';
+    goldenBox.style.fontSize = '.78rem';
+    goldenBox.style.lineHeight = '1.6';
+
+    goldenBox.innerHTML = `
+      <div style="color:var(--accent);font-weight:600;margin-bottom:4px;">
+        👑 Vua phá lưới
+      </div>
+      ${scorers.slice(0, 3).map((p, i) => `
+        <div>
+          ${i===0?'🥇':i===1?'🥈':'🥉'}
+          <span class="sub-hl">${p[0]}</span> - ${p[1]} bàn
+        </div>
+      `).join('')}
+    `;
+
+    box.appendChild(goldenBox);
+  }
   box.appendChild(goldenBox);
 }
   }

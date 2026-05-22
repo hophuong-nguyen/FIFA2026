@@ -1533,6 +1533,94 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .card-count{font-size:.5rem;padding:1px 3px;}
   }
 
+/* ── Presence & Visit chips ── */
+.presence-bar {
+  display        : flex;
+  align-items    : center;
+  gap            : 6px;
+  flex-wrap      : wrap;
+  justify-content: flex-end;
+}
+
+.presence-chip {
+  display    : inline-flex;
+  align-items: center;
+  gap        : 5px;
+  padding    : 3px 9px;
+  border-radius: 7px;
+  font-size  : .70rem;
+  font-weight: 500;
+  border     : 1px solid var(--border);
+  background : rgba(255,255,255,.03);
+  color      : var(--text-muted);
+  white-space: nowrap;
+  transition : all .25s;
+  line-height: 1;
+}
+
+.presence-chip .chip-dot {
+  width        : 6px;
+  height       : 6px;
+  border-radius: 50%;
+  flex-shrink  : 0;
+}
+
+/* Online chip */
+.chip-online {
+  border-color: rgba(0,214,143,.2);
+  background  : rgba(0,214,143,.05);
+}
+.chip-online .chip-dot {
+  background : var(--green);
+  box-shadow : 0 0 5px var(--green);
+  animation  : blink 1.8s ease-in-out infinite;
+}
+.chip-online .chip-val {
+  font-family: 'Rajdhani', sans-serif;
+  font-size  : .88rem;
+  font-weight: 700;
+  color      : var(--green);
+  line-height: 1;
+  min-width  : 12px;
+  text-align : center;
+}
+
+/* Visit chip */
+.chip-visit {
+  border-color: rgba(197,248,81,.15);
+  background  : rgba(197,248,81,.04);
+}
+.chip-visit .chip-dot {
+  background: var(--accent);
+  opacity   : .55;
+}
+.chip-visit .chip-val {
+  font-family: 'Rajdhani', sans-serif;
+  font-size  : .88rem;
+  font-weight: 700;
+  color      : var(--accent);
+  line-height: 1;
+  min-width  : 12px;
+  text-align : center;
+}
+
+/* Pop animation khi số thay đổi */
+.presence-chip.presence-pop .chip-val {
+  animation: chipPop .35s ease both;
+}
+@keyframes chipPop {
+  0%   { transform: scale(1);    }
+  45%  { transform: scale(1.28); }
+  100% { transform: scale(1);    }
+}
+
+/* Responsive */
+@media(max-width:640px) {
+  .presence-chip { padding: 2px 7px; font-size: .65rem; }
+  .chip-online .chip-val,
+  .chip-visit  .chip-val { font-size: .80rem; }
+}
+
 /* --- HIỆU ỨNG QUẢ BÓNG LĂN & NÉ TƯƠNG TÁC --- */
 .deco-ball-x {
   position: fixed;
@@ -1780,15 +1868,48 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         <p>⚡ Pro Edition · Season 2026 · Real-time Sync</p>
       </div>
     </div>
-    <div class="header-right">
-      <div class="header-actions">
-        <div class="auth-badge" id="authBadge" onclick="handleAuthClick()"><div class="auth-dot"></div><span id="authLabel">Đăng nhập</span></div>
-        <button class="btn-flat" onclick="openTeamModal()">🛡️ Đội</button>
-        <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span></button>
-        <button class="btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">🔄 Reset <span class="admin-lock" id="lockReset">🔒</span></button>
-      </div>
-      <div class="sync-inline offline" id="syncInline"><div class="sync-dot"></div><span id="syncText">Đang kết nối...</span><span id="syncTime"></span></div>
+    <!-- Thay toàn bộ div.header-right hiện tại bằng: -->
+<div class="header-right">
+  <div class="header-actions">
+    <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
+      <div class="auth-dot"></div>
+      <span id="authLabel">Đăng nhập</span>
     </div>
+    <button class="btn-flat" onclick="openTeamModal()">🛡️ Đội</button>
+    <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
+      ⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span>
+    </button>
+    <button class="btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">
+      🔄 Reset <span class="admin-lock" id="lockReset">🔒</span>
+    </button>
+  </div>
+
+  <!-- Presence bar: chips + sync inline -->
+  <div class="presence-bar">
+
+    <!-- Số người đang online -->
+    <div class="presence-chip chip-online" title="Số người đang xem">
+      <span class="chip-dot"></span>
+      <span class="chip-val" id="onlineCount">–</span>
+      <span>online</span>
+    </div>
+
+    <!-- Tổng lượt truy cập -->
+    <div class="presence-chip chip-visit" title="Tổng lượt truy cập">
+      <span class="chip-dot"></span>
+      <span class="chip-val" id="visitCount">–</span>
+      <span>lượt xem</span>
+    </div>
+
+    <!-- Sync status (giữ nguyên) -->
+    <div class="sync-inline offline" id="syncInline">
+      <div class="sync-dot"></div>
+      <span id="syncText">Đang kết nối...</span>
+      <span id="syncTime"></span>
+    </div>
+
+  </div>
+</div>
   </div>
   <div class="grid-2">
     <div class="card">
@@ -1809,7 +1930,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, onValue, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, onValue, set, increment, serverTimestamp, onDisconnect, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
 /* ═══════════════════ FIREBASE CONFIG ═══════════════════ */
 const FIREBASE_CONFIG = {
@@ -1825,6 +1946,61 @@ const FIREBASE_CONFIG = {
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getDatabase(app);
 const ROOT = 'league2026';
+
+/* ═══════════════════ PRESENCE & COUNTER ═══════════════════ */
+
+// Tạo unique session ID cho tab này
+const SESSION_ID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+function initPresenceAndCounter() {
+  // ── 1. Online presence ──
+  const presenceRef  = ref(db, `${ROOT}/presence/${SESSION_ID}`);
+  const presenceList = ref(db, `${ROOT}/presence`);
+
+  // Ghi node presence khi online
+  set(presenceRef, {
+    joinedAt: Date.now(),
+    ua: navigator.userAgent.slice(0, 80)
+  });
+
+  // Tự xóa khi disconnect
+  onDisconnect(presenceRef).remove();
+
+  // Lắng nghe số người online
+  onValue(presenceList, snap => {
+    const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+    updateOnlineUI(count);
+  });
+
+  // ── 2. Total visit counter ──
+  const counterRef = ref(db, `${ROOT}/visitCount`);
+
+  // Tăng 1 mỗi lần load trang
+  set(counterRef, increment(1));
+
+  // Lắng nghe giá trị để hiển thị
+  onValue(counterRef, snap => {
+    const total = snap.exists() ? snap.val() : 0;
+    updateVisitUI(total);
+  });
+}
+
+function updateOnlineUI(count) {
+  const el = document.getElementById('onlineCount');
+  if (!el) return;
+  el.textContent = count;
+
+  // Nhấp nháy nhẹ khi thay đổi
+  el.closest('.presence-chip')?.classList.remove('presence-pop');
+  void el.closest('.presence-chip')?.offsetWidth;
+  el.closest('.presence-chip')?.classList.add('presence-pop');
+}
+
+function updateVisitUI(total) {
+  const el = document.getElementById('visitCount');
+  if (el) el.textContent = total.toLocaleString('vi-VN');
+}
+
 function dbRef(path) { return ref(db, `${ROOT}/${path}`); }
 
 /* ═══════════════════ AUTH ═══════════════════ */
@@ -2137,6 +2313,7 @@ function subscribeFirebase() {
       }
     }, 6000);
   });
+  initPresenceAndCounter();
 }
 function setSyncState(state) {
   const bar = document.getElementById('syncInline'), text = document.getElementById('syncText'), time = document.getElementById('syncTime');

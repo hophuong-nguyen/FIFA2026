@@ -2696,6 +2696,7 @@ window.confirmAutoSchedule = function() {
 function refreshAutoPreview(rawISO) {  
   const hint = document.getElementById('autoDateHint'), preview = document.getElementById('autoPreview');
   if (!rawISO) { hint.textContent = ''; preview.innerHTML = '<span style="color:var(--text-muted)">Chọn ngày...</span>'; return; }
+  const logic = getSelectedLogic();
   let startISO = rawISO; if (isWeekend(startISO)) { hint.textContent = '⚠️ Cuối tuần → chuyển sang ngày làm việc.'; startISO = nearestWorkday(startISO); } else hint.textContent = '';
   
   // Thay phần tính pendingList trong refreshAutoPreview:

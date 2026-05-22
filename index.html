@@ -3927,49 +3927,7 @@ function renderStats() {
     goals += (r.score1 || 0) + (r.score2 || 0);
     yellow += (r.y1 || 0) + (r.y2 || 0);
     red += (r.r1 || 0) + (r.r2 || 0);
-    const topScorers = calcTopScorers();
-
-if (topScorers.length) {
-  const goldenBox = document.createElement('div');
-  goldenBox.style.marginTop = '10px';
-  goldenBox.style.fontSize = '.78rem';
-  goldenBox.style.lineHeight = '1.6';
-  goldenBox.innerHTML = `
-    <div style="color:var(--accent);font-weight:600;margin-bottom:4px;">
-      👑 Vua phá lưới
-    </div>
-    ${topScorers.map((p,i)=>`
-      <div>
-        ${i===0?'🥇':i===1?'🥈':'🥉'}
-        <span class="sub-hl">${p[0]}</span> - ${p[1]} bàn
-      </div>
-    `).join('')}
-  `;
-  // ✅ Thêm bảng vua phá lưới
-  const scorers = calcSeasonTopScorers();
-
-  if (scorers.length) {
-    const goldenBox = document.createElement('div');
-    goldenBox.style.marginTop = '12px';
-    goldenBox.style.fontSize = '.78rem';
-    goldenBox.style.lineHeight = '1.6';
-
-    goldenBox.innerHTML = `
-      <div style="color:var(--accent);font-weight:600;margin-bottom:4px;">
-        👑 Vua phá lưới
-      </div>
-      ${scorers.slice(0, 3).map((p, i) => `
-        <div>
-          ${i===0?'🥇':i===1?'🥈':'🥉'}
-          <span class="sub-hl">${p[0]}</span> - ${p[1]} bàn
-        </div>
-      `).join('')}
-    `;
-
-    box.appendChild(goldenBox);
-  }
-  box.appendChild(goldenBox);
-}
+    
   }
 
   function calcTopScorers() {

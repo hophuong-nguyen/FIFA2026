@@ -1776,9 +1776,43 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div class="form-group"><label class="form-label">Ngày thi đấu</label><div id="resultDateGroup"></div></div>
     <div class="form-group"><label class="form-label">Tỷ số &amp; Thẻ phạt</label>
       <div class="score-cards-grid">
-        <div class="score-col"><div class="score-col-header" id="scoreTeam1Label">Đội 1</div><input class="form-input score-big" type="number" min="0" id="score1Modal" placeholder="0"><div class="card-input-wrap"><span class="card-icon">🟨</span><input class="form-input" type="number" min="0" id="yellow1Modal" placeholder="0"></div><div class="card-input-wrap"><span class="card-icon">🟥</span><input class="form-input" type="number" min="0" id="red1Modal" placeholder="0"></div></div>
+        <div class="score-col">
+          <div class="score-col-header" id="scoreTeam1Label">Đội 1</div>
+
+          <input class="form-input score-big" type="number" min="0" id="score1Modal" placeholder="0">
+
+          <!-- 🔥 GOAL SCORERS -->
+          <div id="scorers1Wrap"></div>
+
+          <div class="card-input-wrap">
+            <span class="card-icon">🟨</span>
+            <input class="form-input" type="number" min="0" id="yellow1Modal" placeholder="0">
+          </div>
+
+          <div class="card-input-wrap">
+            <span class="card-icon">🟥</span>
+            <input class="form-input" type="number" min="0" id="red1Modal" placeholder="0">
+          </div>
+        </div>
         <div class="score-divider"> - </div>
-        <div class="score-col"><div class="score-col-header" id="scoreTeam2Label">Đội 2</div><input class="form-input score-big" type="number" min="0" id="score2Modal" placeholder="0"><div class="card-input-wrap"><span class="card-icon">🟨</span><input class="form-input" type="number" min="0" id="yellow2Modal" placeholder="0"></div><div class="card-input-wrap"><span class="card-icon">🟥</span><input class="form-input" type="number" min="0" id="red2Modal" placeholder="0"></div></div>
+        <div class="score-col">
+          <div class="score-col-header" id="scoreTeam2Label">Đội 2</div>
+
+          <input class="form-input score-big" type="number" min="0" id="score2Modal" placeholder="0">
+
+          <!-- 🔥 GOAL SCORERS -->
+          <div id="scorers2Wrap"></div>
+
+          <div class="card-input-wrap">
+            <span class="card-icon">🟨</span>
+            <input class="form-input" type="number" min="0" id="yellow2Modal" placeholder="0">
+          </div>
+
+          <div class="card-input-wrap">
+            <span class="card-icon">🟥</span>
+            <input class="form-input" type="number" min="0" id="red2Modal" placeholder="0">
+          </div>
+        </div>
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap;">
@@ -3644,6 +3678,23 @@ const awayBadgeCards = hasResult
 
     /* ── Match story ── */
     const story = buildMatchStoryParts(origIdx);
+    let scorerHighlight = '';
+
+if (hasResult) {
+  const topScorer = [...(r.scorers1 || []), ...(r.scorers2 || [])]
+    .sort((a,b)=>b.goals-a.goals)[0];
+
+  if (topScorer && topScorer.goals >= 2) {
+    scorerHighlight = `
+      <div class="sub-line">
+        <span class="sub-icon">🎩</span>
+        <span>
+          <span class="sub-hl">${topScorer.name}</span>
+          lập ${topScorer.goals} bàn!
+        </span>
+      </div>`;
+  }
+}
 
     /* ── Tạo row ── */
     const row = document.createElement('div');
@@ -3702,7 +3753,11 @@ const awayBadgeCards = hasResult
       const firstLineWithToggle = firstLine.replace(/<\/div>\s*$/, `${toggleInline}</div>`);
 
       const restHTML = restLines.join('');
-      subLineHTML = `<div class="fixture-sub">${firstLineWithToggle}${restHTML}</div>`;
+      subLineHTML = `<div class="fixture-sub">
+        ${scorerHighlight}
+        ${firstLineWithToggle}
+        ${restHTML}
+      </div>`;
     }
 
     /* ── HTML Layout (8 Cột) ── */
@@ -3808,7 +3863,45 @@ function renderStats() {
     goals += (r.score1 || 0) + (r.score2 || 0);
     yellow += (r.y1 || 0) + (r.y2 || 0);
     red += (r.r1 || 0) + (r.r2 || 0);
+    const topScorers = calcTopScorers();
+
+if (topScorers.length) {
+  const goldenBox = document.createElement('div');
+  goldenBox.style.marginTop = '10px';
+  goldenBox.style.fontSize = '.78rem';
+  goldenBox.style.lineHeight = '1.6';
+  goldenBox.innerHTML = `
+    <div style="color:var(--accent);font-weight:600;margin-bottom:4px;">
+      👑 Vua phá lưới
+    </div>
+    ${topScorers.map((p,i)=>`
+      <div>
+        ${i===0?'🥇':i===1?'🥈':'🥉'}
+        <span class="sub-hl">${p[0]}</span> - ${p[1]} bàn
+      </div>
+    `).join('')}
+  `;
+  box.appendChild(goldenBox);
+}
   }
+
+  function calcTopScorers() {
+  const map = {};
+
+  Object.values(results).forEach(r => {
+    if (!r) return;
+    (r.scorers1 || []).forEach(p => {
+      map[p.name] = (map[p.name] || 0) + p.goals;
+    });
+    (r.scorers2 || []).forEach(p => {
+      map[p.name] = (map[p.name] || 0) + p.goals;
+    });
+  });
+
+  return Object.entries(map)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,3);
+}
 
   const raw = calcStandingsRaw();
   const wg = Object.entries(raw).filter(([, v]) => v.played > 0);
@@ -4226,17 +4319,33 @@ window.onMatchChange = function() {
     matchDates[String(_editMatchIdx)] = newIso;
     if (newIso) manualDates[String(_editMatchIdx)] = newIso;  // ← THÊM
   }));
+  const r = getResult(_editMatchIdx) || {};
+renderScorerInputs(m[0], 'scorers1Wrap', r.scorers1 || []);
+renderScorerInputs(m[1], 'scorers2Wrap', r.scorers2 || []);
 };
 window.saveResultModal = function() {
   const s1 = document.getElementById('score1Modal').value, s2 = document.getElementById('score2Modal').value;
   if (s1 === '' || s2 === '') { showToast('⚠️ Vui lòng nhập tỷ số!', 'warn'); return; }
-  results[String(_editMatchIdx)] = {
-    score1: Number(s1), score2: Number(s2),
-    y1: Number(document.getElementById('yellow1Modal').value) || 0,
-    y2: Number(document.getElementById('yellow2Modal').value) || 0,
-    r1: Number(document.getElementById('red1Modal').value) || 0,
-    r2: Number(document.getElementById('red2Modal').value) || 0
-  };
+  function collectScorers(wrapId) {
+  const rows = [...document.querySelectorAll(`#${wrapId} input`)];
+  return rows
+    .map(inp => ({
+      name: inp.dataset.player,
+      goals: Number(inp.value) || 0
+    }))
+    .filter(p => p.goals > 0);
+}
+
+results[String(_editMatchIdx)] = {
+  score1: Number(s1),
+  score2: Number(s2),
+  y1: Number(document.getElementById('yellow1Modal').value) || 0,
+  y2: Number(document.getElementById('yellow2Modal').value) || 0,
+  r1: Number(document.getElementById('red1Modal').value) || 0,
+  r2: Number(document.getElementById('red2Modal').value) || 0,
+  scorers1: collectScorers('scorers1Wrap'),
+  scorers2: collectScorers('scorers2Wrap')
+};
   const dInp = document.getElementById('resultDate');
   if (dInp) {
     const raw = dInp.value;
@@ -4297,6 +4406,32 @@ window.resetResultModal = function() {
     }
   );
 };
+
+function renderScorerInputs(teamId, wrapId, existing = []) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+
+  const players = members[teamId] || [];
+  wrap.innerHTML = `
+    <div style="margin:6px 0 8px;font-size:.68rem;color:var(--accent);font-weight:600;">
+      🔥 Cầu thủ ghi bàn
+    </div>
+    ${players.map((p, i) => `
+      <div style="display:flex;gap:6px;margin-bottom:4px;">
+        <div style="flex:1;font-size:.75rem;line-height:28px;">
+          ${p || `Player ${i+1}`}
+        </div>
+        <input type="number"
+          class="form-input"
+          style="width:70px;padding:4px 6px;font-size:.78rem;"
+          min="0"
+          data-player="${p}"
+          value="${existing.find(x => x.name === p)?.goals || ''}"
+          placeholder="0">
+      </div>
+    `).join('')}
+  `;
+}
 
 /* ═══════════════════ CONFIRM CODE HELPER ═══════════════════ */
 let _confirmCode = '', _confirmCallback = null;

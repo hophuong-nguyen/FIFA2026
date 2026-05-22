@@ -4319,7 +4319,7 @@ window.onMatchChange = function() {
     matchDates[String(_editMatchIdx)] = newIso;
     if (newIso) manualDates[String(_editMatchIdx)] = newIso;  // ← THÊM
   }));
-  const r = getResult(_editMatchIdx) || {};
+  
 renderScorerInputs(m[0], 'scorers1Wrap', r.scorers1 || []);
 renderScorerInputs(m[1], 'scorers2Wrap', r.scorers2 || []);
 };

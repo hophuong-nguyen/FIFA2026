@@ -2745,14 +2745,6 @@ function refreshAutoPreview(rawISO) {
     </div>
   </div>${rows}`;
 }
-window.confirmAutoSchedule = function() {
-  let startISO = window._autoGetISO ? window._autoGetISO() : ''; if (!startISO) { showToast('⚠️ Vui lòng chọn ngày!', 'warn'); return; }
-  startISO = nearestWorkday(startISO); const logic = getSelectedLogic(), completed = scheduleOrder.filter(i => !isPending(i)).map(Number), pending = scheduleOrder.filter(i => isPending(i)).map(Number);
-  completed.sort((a, b) => getDate(a).localeCompare(getDate(b)));
-  const groups = logic === 'back2back' ? groupBack2Back(pending) : groupIndependent(pending);
-  groups.forEach((grp, di) => { const dayISO = di === 0 ? startISO : addWorkdays(startISO, di); grp.forEach(oi => { matchDates[String(oi)] = dayISO; }); });
-  scheduleOrder = [...completed, ...groups.flat()]; closeModal('autoModal'); persist(); showToast(`⚡ Đã xếp ${pending.length} trận từ ${formatDateShort(startISO)}!`);
-};
 
 /* ═══════════════════ MATCH STORY v2 ═══════════════════ */
 

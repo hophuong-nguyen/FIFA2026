@@ -3960,6 +3960,13 @@ function renderStats() {
   const box = document.getElementById('statsCompact');
   if (!box) return;
 
+  const topScorers = calcTopScorers();
+  const topScorersHTML = topScorers.length
+    ? topScorers.map(([name, goals], idx) =>
+        `<div style="line-height:1.18;">${idx + 1}. ${name} (${goals})</div>`
+      ).join('')
+    : '<span style="color:var(--text-muted)">–</span>';
+
   box.innerHTML = `
     <div class="sc-item">
       <div class="sc-icon">🏟️</div>
@@ -3970,6 +3977,11 @@ function renderStats() {
       <div class="sc-icon">⚽</div>
       <div class="sc-val">${goals}</div>
       <div class="sc-label">Bàn thắng</div>
+    </div>
+    <div class="sc-item">
+      <div class="sc-icon">👑</div>
+      <div class="sc-val" style="line-height:1.25;">${topScorersHTML}</div>
+      <div class="sc-label">Top 3 phá lưới</div>
     </div>
     <div class="sc-item">
       <div class="sc-icon sc-card-icon">${renderCardIconHtml('yellow')}</div>

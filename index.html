@@ -23,6 +23,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--accent);}
 
+#aboutToast {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: var(--bg-card); border: 1px solid var(--accent);
+  padding: 24px; border-radius: 16px; width: 90%; max-width: 500px;
+  max-height: 80vh; overflow-y: auto; z-index: 1000;
+  display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  color: #e2e8f0; line-height: 1.6;
+}
+#aboutToast h3 { color: var(--accent); margin-bottom: 12px; }
+#aboutToast ul { margin-left: 20px; margin-bottom: 15px; }
+.close-toast { 
+  margin-top: 20px; width: 100%; padding: 10px; cursor: pointer;
+  background: var(--accent2); color: white; border: none; border-radius: 8px;
+}
+
 /* Bố cục chính */
 .container{position:relative;z-index:1;max-width:1500px;margin:auto;padding:12px 16px 16px;}
 @media (max-width: 480px) {
@@ -2042,6 +2057,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
       <div class="auth-dot"></div>
       <span id="authLabel">Đăng nhập</span>
     </div>
+    <div class="header-actions">
+  <button class="btn-flat" id="btnAbout">Giới thiệu</button> </div>
     <button class="btn-flat" onclick="openTeamModal()">🛡️ Đội</button>
     <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
       ⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span>
@@ -5118,6 +5135,27 @@ setTimeout(() => {
 </div>
 
 <script>
+// Thêm div Toast vào body khi trang tải xong
+document.body.insertAdjacentHTML('beforeend', `
+  <div id="aboutToast">
+    <h3>🏆 FIFA League Manager Pro</h3>
+    <p>Chào mừng bạn! Đây là công cụ quản lý giải đấu chuyên nghiệp:</p>
+    <ul>
+      <li><b>Kéo & Thả:</b> Sắp xếp lịch thi đấu dễ dàng.</li>
+      <li><b>Real-time:</b> Đồng bộ dữ liệu tức thì qua Firebase.</li>
+      <li><b>Match Story:</b> Phân tích dự đoán thay đổi thứ hạng.</li>
+      <li><b>Podium:</b> Vinh danh Top 3 với hiệu ứng đẹp mắt.</li>
+    </ul>
+    <p>💡 <b>Gợi ý:</b> Vào Cài đặt để thêm đội bóng, nhấn vào tỷ số để cập nhật kết quả.</p>
+    <button class="close-toast" onclick="document.getElementById('aboutToast').style.display='none'">Đã hiểu</button>
+  </div>
+`);
+
+// Xử lý sự kiện click
+document.getElementById('btnAbout').addEventListener('click', () => {
+  document.getElementById('aboutToast').style.display = 'block';
+});
+
 /* ── Live icon animator ── */
 (function () {
 

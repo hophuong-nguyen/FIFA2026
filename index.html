@@ -80,8 +80,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  align-items: stretch; /* Đảm bảo 2 card luôn cao bằng nhau */
-  height: calc(100vh - 100px); /* Ép grid có chiều cao cụ thể dựa trên màn hình */
+  align-items: start; /* Sửa thành start thay vì stretch */
 }
 @media(max-width:960px){.grid-2{grid-template-columns:1fr;}}
 
@@ -109,6 +108,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 /* Fixtures List */
+#fixturesListParentCard {
+  position: sticky;       /* Giúp nó đứng yên khi cuộn trang */
+  top: 20px;              /* Cách mép trên 20px */
+  height: calc(100vh - 60px); /* Chỉ giới hạn chiều cao trong tầm nhìn */
+  display: flex;
+  flex-direction: column;
+}
+
+#fixturesList {
+  flex: 1;
+  overflow-y: auto;       /* Chỉ cuộn phần danh sách trận */
+  min-height: 0;
+}
+
 .fixtures-wrap {
   flex: 1 1 auto;      /* Lấp đầy không gian còn lại */
   overflow-y: auto;    /* Bắt buộc có dòng này để cuộn */
@@ -367,6 +380,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .btn-icon{width:26px;height:26px;padding:0;border-radius:6px;background:rgba(0,173,239,.1);color:var(--accent);border:1px solid rgba(0,173,239,.2);font-size:12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
 .btn-icon:hover{background:rgba(0,173,239,.22);transform:scale(1.08);}
 .admin-lock{display:inline-flex;align-items:center;font-size:.65rem;color:var(--text-muted);vertical-align:middle;margin-left:3px;}
+
+/* Cột phải (Bảng xếp hạng) */
+#standingsTableParentCard { /* Hoặc thẻ card chứa bảng xếp hạng */
+  height: auto;           /* Bỏ height: 100% để nó dài tự nhiên theo bảng */
+  overflow: visible;      /* Cho phép bảng hiển thị hết */
+}
 
 /* Podium */
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px;padding:8px 4px 0;}

@@ -521,7 +521,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .standings-table td:nth-child(1) { width: 36px;  }   /* XH */
 
 .standings-table th:nth-child(2),
-.standings-table td:nth-child(2) { width: auto;  }   /* Đội - chiếm phần còn lại */
+.standings-table td:nth-child(2) {
+  width: auto;
+  max-width: 0;        /* Trick: buộc cell không giãn dù content dài */
+  overflow: hidden;
+}   /* Đội - chiếm phần còn lại */
 
 .standings-table th:nth-child(3),
 .standings-table td:nth-child(3) { width: 42px;  }   /* Trận */
@@ -576,15 +580,36 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .rank-2{background:linear-gradient(135deg,#3145eb,#1e2fa0);color:#fff;}
 .rank-3{background:linear-gradient(135deg,#252a49,#1c2030);color:#8fa3b8;border:1px solid #2e3550;}
 .rank-other{background:rgba(255,255,255,.07);color:var(--silver);}
+
+/* ── team-name-cell: flex container cứng, không tràn ── */
 .team-name-cell {
   text-align: left !important;
   display: flex;
   align-items: center;
   gap: 7px;
-  overflow: hidden;     /* THÊM */
-  min-width: 0;         /* THÊM - quan trọng với flexbox */
+  overflow: hidden;
+  min-width: 0;
+  padding: 8px 10px;   /* Giữ đúng padding, không thêm margin âm */
+  width: 100%;
+  box-sizing: border-box;
 }
-.team-avatar{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+
+/* ── team-avatar: clip nội dung, không tràn ra ngoài cell ── */
+.team-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;    /* THÊM: clip emoji không tràn */
+  position: relative;  /* THÊM: tạo stacking context riêng */
+  z-index: 0;          /* THÊM: không đè lên row trên */
+}
+
 .points-badge{display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(197,248,81,.1);color:var(--accent);font-weight:700;border:1px solid rgba(197,248,81,.2);}
 .gd-positive{color:var(--green);}.gd-negative{color:var(--red);}
 .yellow-card{color:#f5a623;}.red-card{color:var(--red);}
@@ -1044,19 +1069,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     width: 100%;
   }
 
-  /* ── table-tname: giới hạn width + overflow trên mọi màn hình ── */
+  /* ── table-tname: clip trong flex item, dùng clip-path thay vì overflow ── */
   .table-tname {
     display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%; /* Bám theo width ô td, không hardcode px */
+    min-width: 0;
+    flex: 1;             /* Chiếm phần còn lại trong flex, không giãn ra ngoài */
+    /* QUAN TRỌNG: dùng padding thay vì text-indent để tránh layout shift */
   }
 
   .table-tname.do-marquee {
     text-overflow: clip !important;
     text-align: left !important;
-    animation: tname-pingpong 4s ease-in-out infinite alternate !important;
+    animation: table-marquee 4s ease-in-out infinite alternate !important;
   }
 
   @media (max-width: 960px) {
@@ -1069,6 +1096,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
   @media (max-width: 400px) {
     .table-tname { max-width: 72px; }
+  }
+
+  /* Dùng transform thay vì text-indent → KHÔNG gây layout shift */
+  @keyframes table-marquee {
+    0%, 15%   { transform: translateX(0); }
+    85%, 100% { transform: translateX(calc(-1 * var(--scroll-w))); }
   }
 }
 
@@ -1889,9 +1922,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   100% { transform: translateY(0); }
 }
 
+/* Thay thế keyframe cũ dùng text-indent */
 @keyframes tname-pingpong {
-  0%, 15%   { text-indent: 0; }
-  85%, 100% { text-indent: calc(-1 * var(--scroll-w)); }
+  0%, 15%   { transform: translateX(0); }
+  85%, 100% { transform: translateX(calc(-1 * var(--scroll-w))); }
 }
 </style>
 </head>
@@ -3715,7 +3749,10 @@ function applyMarqueeToTeams() {
     ).forEach(el => {
       el.classList.remove('do-marquee');
       el.style.removeProperty('--scroll-w');
-      void el.offsetWidth;
+      // Reset transform cũ
+      el.style.removeProperty('transform');
+
+      void el.offsetWidth; // reflow
 
       if (el.scrollWidth > el.clientWidth + 2) {
         const dist = el.scrollWidth - el.clientWidth + 8;

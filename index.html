@@ -502,8 +502,44 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Standings Table */
 .standings-table {
   width: 100%;
-  table-layout: fixed; /* Ép bảng không được tự giãn ngang */
+  table-layout: fixed;
+  border-collapse: collapse;
 }
+
+/* Định nghĩa width cứng cho từng cột theo thứ tự:
+   XH | Đội | Trận | Điểm | T | H | B | BT | HS | 🟨 | 🟥 */
+.standings-table th:nth-child(1),
+.standings-table td:nth-child(1) { width: 36px;  }   /* XH */
+
+.standings-table th:nth-child(2),
+.standings-table td:nth-child(2) { width: auto;  }   /* Đội - chiếm phần còn lại */
+
+.standings-table th:nth-child(3),
+.standings-table td:nth-child(3) { width: 42px;  }   /* Trận */
+
+.standings-table th:nth-child(4),
+.standings-table td:nth-child(4) { width: 48px;  }   /* Điểm */
+
+.standings-table th:nth-child(5),
+.standings-table td:nth-child(5) { width: 30px;  }   /* T */
+
+.standings-table th:nth-child(6),
+.standings-table td:nth-child(6) { width: 30px;  }   /* H */
+
+.standings-table th:nth-child(7),
+.standings-table td:nth-child(7) { width: 30px;  }   /* B */
+
+.standings-table th:nth-child(8),
+.standings-table td:nth-child(8) { width: 30px;  }   /* BT */
+
+.standings-table th:nth-child(9),
+.standings-table td:nth-child(9) { width: 38px;  }   /* HS */
+
+.standings-table th:nth-child(10),
+.standings-table td:nth-child(10) { width: 30px; }   /* 🟨 */
+
+.standings-table th:nth-child(11),
+.standings-table td:nth-child(11) { width: 30px; }   /* 🟥 */
 
 .standings-table th {
   padding: 10px;
@@ -531,7 +567,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .rank-2{background:linear-gradient(135deg,#3145eb,#1e2fa0);color:#fff;}
 .rank-3{background:linear-gradient(135deg,#252a49,#1c2030);color:#8fa3b8;border:1px solid #2e3550;}
 .rank-other{background:rgba(255,255,255,.07);color:var(--silver);}
-.team-name-cell{text-align:left!important;display:flex;align-items:center;gap:7px;}
+.team-name-cell {
+  text-align: left !important;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;     /* THÊM */
+  min-width: 0;         /* THÊM - quan trọng với flexbox */
+}
 .team-avatar{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
 .points-badge{display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(197,248,81,.1);color:var(--accent);font-weight:700;border:1px solid rgba(197,248,81,.2);}
 .gd-positive{color:var(--green);}.gd-negative{color:var(--red);}
@@ -998,10 +1041,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 120px; /* Desktop default */
+    max-width: 100%; /* Bám theo width ô td, không hardcode px */
   }
 
-  /* Kích hoạt ping-pong khi tên quá dài */
   .table-tname.do-marquee {
     text-overflow: clip !important;
     text-align: left !important;
@@ -1019,11 +1061,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   @media (max-width: 400px) {
     .table-tname { max-width: 72px; }
   }
-}
-
-@keyframes tname-pingpong {
-  0%, 15%   { text-indent: 0; }
-  85%, 100% { text-indent: calc(-1 * var(--scroll-w)); }
 }
 
 /* 3. Style cho Badge Tăng/Giảm hạng đính góc XH (Áp dụng chung mọi màn hình) */
@@ -1842,6 +1879,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   70%  { transform: translateY(0); animation-timing-function: ease-out; }
   85%  { transform: translateY(-15px); animation-timing-function: ease-in; }  /* Nảy nhẹ lần 3 */
   100% { transform: translateY(0); }
+}
+
+@keyframes tname-pingpong {
+  0%, 15%   { text-indent: 0; }
+  85%, 100% { text-indent: calc(-1 * var(--scroll-w)); }
 }
 </style>
 </head>
@@ -3564,15 +3606,12 @@ function buildMatchStoryParts(origIdx) {
 }
 
 function applyMarqueeToTeams() {
-  // Áp dụng cho cả desktop lẫn mobile
   requestAnimationFrame(() => {
     document.querySelectorAll(
       '.fixture-team .tname, .table-tname, .sub-team-name'
     ).forEach(el => {
       el.classList.remove('do-marquee');
       el.style.removeProperty('--scroll-w');
-
-      // Buộc browser tính lại layout trước khi đọc scrollWidth
       void el.offsetWidth;
 
       if (el.scrollWidth > el.clientWidth + 2) {
@@ -5090,7 +5129,6 @@ upgradeStaticCardInputIcons();
 subscribeFirebase();
 
 window.addEventListener('resize', () => {
-  // Debounce nhẹ tránh gọi liên tục khi kéo cửa sổ
   clearTimeout(window._marqueeResizeTimer);
   window._marqueeResizeTimer = setTimeout(applyMarqueeToTeams, 180);
 });

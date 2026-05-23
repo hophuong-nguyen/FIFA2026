@@ -67,8 +67,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  align-items: stretch; /* Đảm bảo 2 card luôn bằng chiều cao của nhau */
-  min-height: 0; 
+  width: 100%; /* Đảm bảo grid không quá 100% */
 }
 
 .card {
@@ -145,10 +144,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   padding-right: 5px;  /* Tạo khoảng trống cho thanh cuộn */
 }
 
-/* (Tuỳ chọn) Nếu dùng trên điện thoại (1 cột xếp dọc), ta vẫn nên giới hạn để dễ cuộn web */
-@media (max-width: 960px) {
-  .fixtures-wrap {
-    max-height: 75vh;
+/* Quan trọng: Trên mobile, đưa về 1 cột để không bị phình ngang */
+@media (max-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr !important;
   }
 }
 .matchday-block{margin-bottom:12px;}

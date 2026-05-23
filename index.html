@@ -67,22 +67,22 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   background: rgba(37,42,56,.88);
   border-radius: 16px;
   padding: 16px;
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 32px rgba(0,0,0,.55);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(6px);
-  
-  display: flex;            /* Biến nó thành flex container */
-  flex-direction: column;   /* Xếp dọc header và danh sách trận */
-  height: 100%;             /* Ép card cao bằng thẻ cha .grid-2 */
-  overflow: hidden;         /* Ngăn không cho nội dung tràn ra ngoài */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Quan trọng: Cho phép card thu nhỏ lại nếu nội dung quá dài */
+  overflow: hidden; /* Cắt bỏ phần dư thừa */
 }
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--accent);letter-spacing:.3px;}
 .card-title .icon{width:30px;height:30px;border-radius:8px;background:rgba(0,173,239,.1);border:1px solid rgba(0,173,239,.2);display:flex;align-items:center;justify-content:center;font-size:15px;}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch; /* Đảm bảo 2 card luôn cao bằng nhau */
+  height: calc(100vh - 100px); /* Ép grid có chiều cao cụ thể dựa trên màn hình */
+}
 @media(max-width:960px){.grid-2{grid-template-columns:1fr;}}
 
 /* Stats Compact */
@@ -110,11 +110,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Fixtures List */
 .fixtures-wrap {
-  flex: 1;                /* Tự động chiếm hết khoảng trống còn lại của .card */
-  overflow-y: auto;       /* Chỉ cuộn khi nội dung bên trong quá dài */
-  overflow-x: hidden;
-  min-height: 200px;      /* Đảm bảo vẫn hiển thị ít nhất 200px chiều cao */
-  padding-right: 4px;     /* Cho đẹp */
+  flex: 1 1 auto;      /* Lấp đầy không gian còn lại */
+  overflow-y: auto;    /* Bắt buộc có dòng này để cuộn */
+  min-height: 0;       /* Cho phép nó cuộn thay vì phình to ra */
 }
 
 /* (Tuỳ chọn) Nếu dùng trên điện thoại (1 cột xếp dọc), ta vẫn nên giới hạn để dễ cuộn web */

@@ -63,6 +63,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 #syncTime{font-size:.66rem;opacity:.65;}
 
 /* Cards & Layout */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  /* Quan trọng: Grid này sẽ tự co giãn theo nội dung, không được ép cứng height */
+  align-items: start; 
+}
+
 .card {
   background: rgba(37,42,56,.88);
   border-radius: 16px;
@@ -72,16 +80,24 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   min-height: 0; /* Quan trọng: Cho phép card thu nhỏ lại nếu nội dung quá dài */
   overflow: hidden; /* Cắt bỏ phần dư thừa */
 }
+/* Cột Lịch thi đấu (Cột trái) */
+.card:first-child {
+  display: flex;
+  flex-direction: column;
+  /* Ép nó chiếm không gian bằng với cột bên phải nhưng không quá màn hình */
+  max-height: 80vh; 
+  overflow: hidden; /* Cắt phần tràn để ép nó phải cuộn */
+}
+/* Cột phải (Bảng xếp hạng) */
+.card:last-child {
+  height: auto;        /* Dài bao nhiêu tùy thích */
+  overflow: visible;   /* Hiển thị hết, không bị cắt */
+}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--accent);letter-spacing:.3px;}
 .card-title .icon{width:30px;height:30px;border-radius:8px;background:rgba(0,173,239,.1);border:1px solid rgba(0,173,239,.2);display:flex;align-items:center;justify-content:center;font-size:15px;}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: start; /* Sửa thành start thay vì stretch */
-}
+
 @media(max-width:960px){.grid-2{grid-template-columns:1fr;}}
 
 /* Stats Compact */
@@ -123,9 +139,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 .fixtures-wrap {
-  flex: 1 1 auto;      /* Lấp đầy không gian còn lại */
-  overflow-y: auto;    /* Bắt buộc có dòng này để cuộn */
-  min-height: 0;       /* Cho phép nó cuộn thay vì phình to ra */
+  flex: 1;             /* Chiếm hết khoảng trống còn lại trong cái card bị giới hạn 80vh */
+  overflow-y: auto;    /* Thanh cuộn chỉ xuất hiện ở đây */
+  overflow-x: hidden;
+  /* Đảm bảo phần tử này không bị phình to làm vỡ card */
+  min-height: 0; 
 }
 
 /* (Tuỳ chọn) Nếu dùng trên điện thoại (1 cột xếp dọc), ta vẫn nên giới hạn để dễ cuộn web */

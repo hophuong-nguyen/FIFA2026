@@ -67,18 +67,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  /* Quan trọng: Grid này sẽ tự co giãn theo nội dung, không được ép cứng height */
-  align-items: start; 
+  align-items: stretch; /* Đảm bảo 2 card luôn bằng chiều cao của nhau */
+  min-height: 0; 
 }
 
 .card {
-  background: rgba(37,42,56,.88);
+  background: rgba(37, 42, 56, .88);
   border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Quan trọng: Cho phép card thu nhỏ lại nếu nội dung quá dài */
-  overflow: hidden; /* Cắt bỏ phần dư thừa */
+  min-height: 0; /* Cho phép card co giãn linh hoạt */
+  height: 100%;  /* Bắt buộc card cao bằng hàng của grid */
 }
 /* Cột Lịch thi đấu (Cột trái) */
 .card:first-child {
@@ -139,11 +139,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 .fixtures-wrap {
-  flex: 1;             /* Chiếm hết khoảng trống còn lại trong cái card bị giới hạn 80vh */
-  overflow-y: auto;    /* Thanh cuộn chỉ xuất hiện ở đây */
-  overflow-x: hidden;
-  /* Đảm bảo phần tử này không bị phình to làm vỡ card */
-  min-height: 0; 
+  flex: 1;             /* Chiếm hết phần không gian còn lại của card */
+  overflow-y: auto;    /* Thanh cuộn chỉ hiện ở đây */
+  min-height: 0;       /* Quan trọng: tránh nội dung làm phình card */
+  padding-right: 5px;  /* Tạo khoảng trống cho thanh cuộn */
 }
 
 /* (Tuỳ chọn) Nếu dùng trên điện thoại (1 cột xếp dọc), ta vẫn nên giới hạn để dễ cuộn web */

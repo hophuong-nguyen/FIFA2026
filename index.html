@@ -65,9 +65,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Cards & Layout */
 .grid-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Thay vì 1fr 1fr (chia đôi), hãy dùng minmax */
+  /* Điều này ép các cột ít nhất là 300px, nếu không đủ chỗ nó sẽ tự xuống hàng */
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
   gap: 16px;
-  width: 100%; /* Đảm bảo grid không quá 100% */
+  width: 100%;
 }
 
 .card {
@@ -457,7 +459,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .p3 .podium-stand{height:26px;background:linear-gradient(180deg,rgba(37,42,73,.35),rgba(37,42,73,.1));border:1px solid rgba(37,42,73,.5);border-bottom:none;color:#8fa3b8;}
 
 /* Standings Table */
-.standings-table{width:100%;border-collapse:collapse;}
+.standings-table {
+  width: 100%;
+  table-layout: fixed; /* Ép bảng không được tự giãn ngang */
+}
+
 .standings-table th {
   padding: 10px;
   text-align: center;

@@ -79,6 +79,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .sc-label{font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;margin-top:3px;font-weight:400;}
 .sc-icon{font-size:.8rem;margin-bottom:2px;}
 .sc-item.fairplay .sc-val{font-size:.72rem;padding-top:2px;line-height:1.3;}
+/* Ép nhỏ font chữ riêng cho ô Top Scorer */
+.sc-item.top-scorer .sc-val {
+  font-size: 0.72rem; /* Nhỏ lại bằng với ô Fairplay */
+  font-weight: 500;
+  padding-top: 2px;
+}
+/* Xử lý tên Player quá dài: sẽ tự động cắt và hiện dấu ... */
+.sc-item.top-scorer .sc-val div {
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  max-width: 100px; /* Giới hạn khung để không đẩy các ô khác */
+  margin: 0 auto;
+}
 
 /* Fixtures List */
 .fixtures-wrap{max-height:65vh;overflow-y:auto;overflow-x:hidden;}
@@ -4005,8 +4019,7 @@ function renderStats() {
       <div class="sc-val">${goals}</div>
       <div class="sc-label">Bàn thắng</div>
     </div>
-    <div class="sc-item">
-      <div class="sc-icon">👑</div>
+    <div class="sc-item top-scorer"> <div class="sc-icon">👑</div>
       <div class="sc-val" style="line-height:1.25;">${topScorersHTML}</div>
       <div class="sc-label">Top 3 phá lưới</div>
     </div>

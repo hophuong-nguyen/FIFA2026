@@ -2586,13 +2586,28 @@ function initTouchDrag(rowEl, origIdx) {
         // Thực hiện di chuyển nếu hợp lệ
         if (touchLastTarget.dataset.date) {
           matchDates[String(src)] = targetDate;
-          manualDates[String(src)] = targetDate; 
-          scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src); 
-          let ins = scheduleOrder.length; 
-          for (let k = scheduleOrder.length - 1; k >= 0; k--) { 
-            if (matchDates[String(scheduleOrder[k])] === targetDate) { ins = k + 1; break; } 
-          } 
-          scheduleOrder.splice(ins, 0, src); 
+          manualDates[String(src)] = targetDate;
+          scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src);
+          // Tìm vị trí chính xác dựa vào drop-zone index trong DOM
+          const afterOrig = touchLastTarget.dataset.after != null
+            ? Number(touchLastTarget.dataset.after)
+            : null;
+          let ins = scheduleOrder.length;
+          if (afterOrig === -1) {
+            // Thả vào drop-zone đầu ngày → chèn trước trận đầu tiên của ngày
+            const firstOfDay = scheduleOrder.findIndex(i => matchDates[String(i)] === targetDate);
+            ins = firstOfDay === -1 ? scheduleOrder.length : firstOfDay;
+          } else if (afterOrig != null) {
+            // Thả vào drop-zone sau trận afterOrig
+            const afterIdx = scheduleOrder.indexOf(afterOrig);
+            ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
+          } else {
+            // Fallback: cuối ngày
+            for (let k = scheduleOrder.length - 1; k >= 0; k--) {
+              if (matchDates[String(scheduleOrder[k])] === targetDate) { ins = k + 1; break; }
+            }
+          }
+          scheduleOrder.splice(ins, 0, src);
           persist();
         } else if (touchLastTarget.classList.contains('fixture-row')) {
           const ti = Number(touchLastTarget.dataset.orig); 
@@ -3594,7 +3609,7 @@ function makeDateBlock(date, arr, today) {
   let badge = ''; if (isToday) badge = '<span class="md-badge md-today-badge">Hôm nay</span>'; else if (isPast && !isReserve) badge = '<span class="md-badge md-past-badge">Đã qua</span>'; else if (isReserve) badge = '<span class="md-badge md-reserve-badge">Dự phòng</span>';
   block.innerHTML = `<div class="matchday-header"><div class="cal-tile ${isToday ? 'today' : isPast ? 'past' : ''}" style="${isReserve ? 'opacity:.4' : ''}"><div class="cal-month">${MONTHS_VI[+dm - 1]}</div><div class="cal-day">${dd}</div></div><div class="matchday-meta"><div class="matchday-label">${dowFull}${badge}</div><div class="matchday-count">${isReserve ? 'Kéo trận vào đây' : `${done}/${total} trận đã đấu`}</div></div></div>`; return block;
 }
-function makeDropZone(targetDate) { const z = document.createElement('div'); z.className = 'matchday-drop-zone'; z.dataset.date = targetDate; z.addEventListener('dragover', onZoneDragOver); z.addEventListener('dragleave', onZoneDragLeave); z.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return z; }
+function makeDropZone(targetDate, afterOrig) { const z = document.createElement('div'); z.className = 'matchday-drop-zone'; z.dataset.date = targetDate; z.dataset.after = afterOrig ?? -1; z.addEventListener('dragover', onZoneDragOver); z.addEventListener('dragleave', onZoneDragLeave); z.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return z; }
 function makeEmptyZone(targetDate, isReserve = false) { const emp = document.createElement('div'); emp.className = 'empty-day'; emp.dataset.date = targetDate; if (isReserve) emp.style.opacity = '.52'; emp.textContent = isReserve ? '＋ Kéo trận vào' : 'Kéo trận vào đây'; emp.addEventListener('dragover', onZoneDragOver); emp.addEventListener('dragleave', onZoneDragLeave); emp.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return emp; }
 
 function renderFixtures() {
@@ -4013,7 +4028,7 @@ if (hasResult) {
     if (!isLocked) initTouchDrag(row, origIdx);
 
     block.appendChild(row);
-    block.appendChild(makeDropZone(date));
+    block.appendChild(makeDropZone(date, origIdx));
   });
 }
 

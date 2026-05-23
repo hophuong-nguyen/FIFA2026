@@ -73,10 +73,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   overflow: hidden;
   backdrop-filter: blur(6px);
   
-  /* Cấu hình lại để con bên trong tự căn chỉnh */
-  display: flex;
-  flex-direction: column;
-  /* BỎ height: 100%; (nếu có) để tránh làm vỡ layout */
+  display: flex;            /* Biến nó thành flex container */
+  flex-direction: column;   /* Xếp dọc header và danh sách trận */
+  height: 100%;             /* Ép card cao bằng thẻ cha .grid-2 */
+  overflow: hidden;         /* Ngăn không cho nội dung tràn ra ngoài */
 }
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--accent);letter-spacing:.3px;}
@@ -110,13 +110,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Fixtures List */
 .fixtures-wrap {
-  flex-grow: 1;           /* Tự lấp đầy khoảng trống còn lại */
-  overflow-y: auto;       /* BẮT BUỘC CÓ DÒNG NÀY ĐỂ HIỆN THANH CUỘN */
+  flex: 1;                /* Tự động chiếm hết khoảng trống còn lại của .card */
+  overflow-y: auto;       /* Chỉ cuộn khi nội dung bên trong quá dài */
   overflow-x: hidden;
-  
-  /* Khóa chiều cao để nó không tự giãn ra vô tận */
-  min-height: 200px;      /* Đảm bảo khung luôn hiện ít nhất một vài trận */
-  max-height: calc(100vh - 250px); /* Tự động co giãn theo chiều cao màn hình */
+  min-height: 200px;      /* Đảm bảo vẫn hiển thị ít nhất 200px chiều cao */
+  padding-right: 4px;     /* Cho đẹp */
 }
 
 /* (Tuỳ chọn) Nếu dùng trên điện thoại (1 cột xếp dọc), ta vẫn nên giới hạn để dễ cuộn web */

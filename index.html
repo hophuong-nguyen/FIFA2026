@@ -2588,24 +2588,14 @@ function initTouchDrag(rowEl, origIdx) {
           matchDates[String(src)] = targetDate;
           manualDates[String(src)] = targetDate;
           scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src);
-          // Tìm vị trí chính xác dựa vào drop-zone index trong DOM
-          const afterOrig = touchLastTarget.dataset.after != null
-            ? Number(touchLastTarget.dataset.after)
-            : null;
-          let ins = scheduleOrder.length;
-          if (afterOrig === -1) {
-            // Thả vào drop-zone đầu ngày → chèn trước trận đầu tiên của ngày
+          const after = Number(touchLastTarget.dataset.after ?? -1);
+          let ins;
+          if (after === -1) {
             const firstOfDay = scheduleOrder.findIndex(i => matchDates[String(i)] === targetDate);
             ins = firstOfDay === -1 ? scheduleOrder.length : firstOfDay;
-          } else if (afterOrig != null) {
-            // Thả vào drop-zone sau trận afterOrig
-            const afterIdx = scheduleOrder.indexOf(afterOrig);
-            ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
           } else {
-            // Fallback: cuối ngày
-            for (let k = scheduleOrder.length - 1; k >= 0; k--) {
-              if (matchDates[String(scheduleOrder[k])] === targetDate) { ins = k + 1; break; }
-            }
+            const afterIdx = scheduleOrder.indexOf(after);
+            ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
           }
           scheduleOrder.splice(ins, 0, src);
           persist();
@@ -3579,23 +3569,26 @@ function onFixtureDragStart(e, origIdx) { dragData = { origIdx: Number(origIdx) 
 function onFixtureDragEnd() { document.querySelectorAll('.fixture-row').forEach(el => el.classList.remove('dragging', 'drag-over-row')); document.querySelectorAll('.matchday-drop-zone,.empty-day').forEach(el => el.classList.remove('drag-over-zone')); dragData = null; }
 function onZoneDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; this.classList.add('drag-over-zone'); }
 function onZoneDragLeave() { this.classList.remove('drag-over-zone'); }
-function onZoneDrop(e, targetDate) {
+function onZoneDrop(e, targetDate, afterOrig) {
   e.preventDefault(); e.stopPropagation();
   this.classList.remove('drag-over-zone');
   if (!dragData) return;
   const today = todayISO();
   const src = dragData.origIdx;
   const hasResult = (() => { const r = getResult(src); return r && r.score1 !== undefined; })();
-  // Không cho kéo trận đã có kết quả
   if (hasResult) { showToast('⚠️ Trận đã có kết quả, không thể di chuyển!', 'warn'); return; }
-  // Không cho kéo trận tương lai về ngày đã qua
   if (targetDate < today) { showToast('⚠️ Không thể xếp trận chưa đấu vào ngày đã qua!', 'warn'); return; }
   matchDates[String(src)] = targetDate;
   manualDates[String(src)] = targetDate;
   scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src);
-  let ins = scheduleOrder.length;
-  for (let k = scheduleOrder.length - 1; k >= 0; k--) {
-    if (matchDates[String(scheduleOrder[k])] === targetDate) { ins = k + 1; break; }
+  const after = Number(afterOrig ?? this.dataset.after ?? -1);
+  let ins;
+  if (after === -1) {
+    const firstOfDay = scheduleOrder.findIndex(i => matchDates[String(i)] === targetDate);
+    ins = firstOfDay === -1 ? scheduleOrder.length : firstOfDay;
+  } else {
+    const afterIdx = scheduleOrder.indexOf(after);
+    ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
   }
   scheduleOrder.splice(ins, 0, src);
   persist();
@@ -3609,7 +3602,7 @@ function makeDateBlock(date, arr, today) {
   let badge = ''; if (isToday) badge = '<span class="md-badge md-today-badge">Hôm nay</span>'; else if (isPast && !isReserve) badge = '<span class="md-badge md-past-badge">Đã qua</span>'; else if (isReserve) badge = '<span class="md-badge md-reserve-badge">Dự phòng</span>';
   block.innerHTML = `<div class="matchday-header"><div class="cal-tile ${isToday ? 'today' : isPast ? 'past' : ''}" style="${isReserve ? 'opacity:.4' : ''}"><div class="cal-month">${MONTHS_VI[+dm - 1]}</div><div class="cal-day">${dd}</div></div><div class="matchday-meta"><div class="matchday-label">${dowFull}${badge}</div><div class="matchday-count">${isReserve ? 'Kéo trận vào đây' : `${done}/${total} trận đã đấu`}</div></div></div>`; return block;
 }
-function makeDropZone(targetDate, afterOrig) { const z = document.createElement('div'); z.className = 'matchday-drop-zone'; z.dataset.date = targetDate; z.dataset.after = afterOrig ?? -1; z.addEventListener('dragover', onZoneDragOver); z.addEventListener('dragleave', onZoneDragLeave); z.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return z; }
+function makeDropZone(targetDate, afterOrig) { const z = document.createElement('div'); z.className = 'matchday-drop-zone'; z.dataset.date = targetDate; z.dataset.after = (afterOrig != null) ? afterOrig : -1; z.addEventListener('dragover', onZoneDragOver); z.addEventListener('dragleave', onZoneDragLeave); z.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate, z.dataset.after); }); return z; }
 function makeEmptyZone(targetDate, isReserve = false) { const emp = document.createElement('div'); emp.className = 'empty-day'; emp.dataset.date = targetDate; if (isReserve) emp.style.opacity = '.52'; emp.textContent = isReserve ? '＋ Kéo trận vào' : 'Kéo trận vào đây'; emp.addEventListener('dragover', onZoneDragOver); emp.addEventListener('dragleave', onZoneDragLeave); emp.addEventListener('drop', function(e) { onZoneDrop.call(this, e, targetDate); }); return emp; }
 
 function renderFixtures() {

@@ -40,6 +40,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Bố cục chính */
 .container{position:relative;z-index:1;max-width:1500px;margin:auto;padding:12px 16px 16px;}
+
+/* Xóa hết touch-action cũ trong mọi @media, thay bằng rule global này */
+.fixture-row {
+  touch-action: pan-y; /* default: cho phép scroll */
+}
+
+.fixture-row.is-dragging {
+  touch-action: none;  /* chỉ block scroll khi ĐANG drag thực sự */
+}
+
 @media (max-width: 480px) {
   .container { padding: 10px 10px 16px; }
 }
@@ -218,7 +228,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   transition:all .2s;
   user-select:none;
   cursor:grab;
-  touch-action: pan-y;
 }
 @media (max-width: 480px) {
   .fixture-row {
@@ -1696,7 +1705,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   transition:all .2s;
   user-select:none;
   cursor:grab;
-  touch-action:none;
 }
   .emoji-picker{width:calc(100vw - 24px);left:12px!important;}
   .dp-popup{width:calc(100vw - 24px);left:12px!important;}
@@ -2584,108 +2592,203 @@ function updateHeaderTitle() { const h1 = document.querySelector('.header-title 
 
 /* ═══════════════════ TOUCH DRAG ═══════════════════ */
 let touchDragData = null, touchClone = null, touchLastTarget = null;
+
 function initTouchDrag(rowEl, origIdx) {
-  rowEl.addEventListener('touchstart', e => {
-    if (e.touches.length > 1) return; 
-    const touch = e.touches[0]; 
-    touchDragData = { origIdx: Number(origIdx), startX: touch.clientX, startY: touch.clientY };
-    touchDragData.timer = setTimeout(() => { 
-      touchDragData.active = true; 
-      rowEl.classList.add('dragging'); 
-      touchClone = rowEl.cloneNode(true); 
-      touchClone.style.cssText = `position:fixed;z-index:9999;opacity:.85;pointer-events:none;width:${rowEl.offsetWidth}px;border:1px solid var(--accent);border-radius:9px;background:var(--bg-card2);left:${touch.clientX - rowEl.offsetWidth / 2}px;top:${touch.clientY - 20}px;transform:scale(1.03);box-shadow:0 8px 24px rgba(0,0,0,.5);`; 
-      document.body.appendChild(touchClone); 
-      if (navigator.vibrate) navigator.vibrate(40); 
-    }, 350);
-  }, { passive: true });
+  let startX = 0, startY = 0;
+  let longPressTimer = null;
+  let isDragging = false;
+  let clone = null;
+  let lastTarget = null;
+  const LONG_PRESS_MS = 400;
+  const MOVE_CANCEL_PX = 12;
 
-  rowEl.addEventListener('touchmove', e => {
-    if (!touchDragData) return; 
-    const touch = e.touches[0]; 
-    const dx = Math.abs(touch.clientX - touchDragData.startX), dy = Math.abs(touch.clientY - touchDragData.startY); 
-    if (dx > 8 || dy > 8) clearTimeout(touchDragData.timer);
-    if (!touchDragData.active) return;
-    if (e.cancelable) e.preventDefault(); 
-    if (touchClone) { 
-      touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px'; 
-      touchClone.style.top = (touch.clientY - 20) + 'px'; 
-    } 
-    touchClone.style.display = 'none'; 
-    const el = document.elementFromPoint(touch.clientX, touch.clientY); 
-    touchClone.style.display = ''; 
-    if (touchLastTarget) touchLastTarget.classList.remove('drag-over-zone', 'drag-over-row');
-    if (el) { 
-      const zone = el.closest('.matchday-drop-zone,.empty-day'), targetRow = el.closest('.fixture-row'); 
-      if (zone) { zone.classList.add('drag-over-zone'); touchLastTarget = zone; } 
-      else if (targetRow && targetRow !== rowEl) { targetRow.classList.add('drag-over-row'); touchLastTarget = targetRow; } 
-      else touchLastTarget = null; 
+  function createClone(touch) {
+    const rect = rowEl.getBoundingClientRect();
+    clone = rowEl.cloneNode(true);
+    clone.style.cssText = `
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      width: ${rect.width}px;
+      opacity: 0.85;
+      border: 1.5px solid var(--accent);
+      border-radius: 9px;
+      background: var(--bg-card2);
+      box-shadow: 0 8px 28px rgba(0,0,0,.6);
+      transform: scale(1.03);
+      left: ${touch.clientX - rect.width / 2}px;
+      top: ${touch.clientY - rect.height / 2}px;
+      transition: none;
+    `;
+    document.body.appendChild(clone);
+  }
+
+  function moveClone(touch) {
+    if (!clone) return;
+    const rect = rowEl.getBoundingClientRect();
+    clone.style.left = `${touch.clientX - rect.width / 2}px`;
+    clone.style.top  = `${touch.clientY - rect.height / 2}px`;
+  }
+
+  function removeClone() {
+    if (clone) { clone.remove(); clone = null; }
+  }
+
+  function clearLastTarget() {
+    if (lastTarget) {
+      lastTarget.classList.remove('drag-over-zone', 'drag-over-row');
+      lastTarget = null;
     }
-  }, { passive: true });
+  }
 
-  rowEl.addEventListener('touchend', () => {
-    if (!touchDragData) return; 
-    clearTimeout(touchDragData.timer);
-    if (touchDragData.active) {
-      rowEl.classList.remove('dragging'); 
-      if (touchClone) { touchClone.remove(); touchClone = null; }
-      
-      if (touchLastTarget) {
-        touchLastTarget.classList.remove('drag-over-zone', 'drag-over-row'); 
-        const src = touchDragData.origIdx;
-        const today = todayISO();
-        const sourceDate = matchDates[String(src)];
-        
-        let targetDate = null;
+  function getDropTarget(touch) {
+    if (clone) clone.style.display = 'none';
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (clone) clone.style.display = '';
+    return el;
+  }
 
-        // Nếu thả vào khoảng trống của ngày
-        if (touchLastTarget.dataset.date) { 
-          targetDate = touchLastTarget.dataset.date; 
-        } 
-        // Nếu thả đè lên trận khác
-        else if (touchLastTarget.classList.contains('fixture-row')) { 
-          const ti = Number(touchLastTarget.dataset.orig);
-          targetDate = matchDates[String(ti)];
+  function startDrag(touch) {
+    isDragging = true;
+    // Gắn class is-dragging để CSS đổi touch-action: none
+    rowEl.classList.add('dragging', 'is-dragging');
+    createClone(touch);
+    if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
+  }
+
+  function endDrag() {
+    isDragging = false;
+    rowEl.classList.remove('dragging', 'is-dragging');
+    removeClone();
+    clearLastTarget();
+  }
+
+  // ── touchstart ──
+  rowEl.addEventListener('touchstart', e => {
+    if (e.touches.length > 1) return;
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+    isDragging = false;
+
+    longPressTimer = setTimeout(() => {
+      longPressTimer = null;
+      startDrag(e.touches[0]);
+    }, LONG_PRESS_MS);
+
+  }, { passive: true }); // passive: true → browser tự scroll bình thường lúc chờ
+
+  // ── touchmove ──
+  rowEl.addEventListener('touchmove', e => {
+    const touch = e.touches[0];
+    const dx = Math.abs(touch.clientX - startX);
+    const dy = Math.abs(touch.clientY - startY);
+
+    if (!isDragging) {
+      // Chưa kích hoạt drag: di chuyển sớm → hủy long-press, để scroll tự nhiên
+      if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      return;
+    }
+
+    // Đang drag → chặn scroll
+    // Lưu ý: passive: false ở addEventListener bên dưới
+    e.preventDefault();
+    e.stopPropagation();
+
+    moveClone(touch);
+    clearLastTarget();
+
+    const el = getDropTarget(touch);
+    if (!el) return;
+
+    const zone = el.closest('.matchday-drop-zone, .empty-day');
+    const targetRow = el.closest('.fixture-row');
+
+    if (zone) {
+      zone.classList.add('drag-over-zone');
+      lastTarget = zone;
+    } else if (targetRow && targetRow !== rowEl) {
+      targetRow.classList.add('drag-over-row');
+      lastTarget = targetRow;
+    }
+
+  }, { passive: false }); // passive: false để e.preventDefault() hoạt động khi drag
+
+  // ── touchend ──
+  rowEl.addEventListener('touchend', e => {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+
+    if (!isDragging) return;
+
+    const today = todayISO();
+    const src = Number(origIdx);
+    const sourceDate = matchDates[String(src)];
+
+    if (lastTarget) {
+      let targetDate = null;
+
+      if (lastTarget.dataset.date) {
+        targetDate = lastTarget.dataset.date;
+      } else if (lastTarget.classList.contains('fixture-row')) {
+        targetDate = matchDates[String(Number(lastTarget.dataset.orig))];
+      }
+
+      // Chặn kéo về ngày đã qua
+      if (targetDate && sourceDate >= today && targetDate < today) {
+        showToast('⚠️ Không thể kéo trận chưa đấu về ngày đã qua!', 'warn');
+        endDrag();
+        return;
+      }
+
+      if (lastTarget.dataset.date) {
+        matchDates[String(src)] = targetDate;
+        manualDates[String(src)] = targetDate;
+        scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src);
+
+        const after = Number(lastTarget.dataset.after ?? -1);
+        let ins;
+        if (after === -1) {
+          const firstOfDay = scheduleOrder.findIndex(
+            i => matchDates[String(i)] === targetDate
+          );
+          ins = firstOfDay === -1 ? scheduleOrder.length : firstOfDay;
+        } else {
+          const afterIdx = scheduleOrder.indexOf(after);
+          ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
         }
+        scheduleOrder.splice(ins, 0, src);
+        endDrag();
+        persist();
 
-        // Logic chặn kéo từ tương lai/hôm nay về quá khứ
-        if (targetDate && sourceDate >= today && targetDate < today) {
-          showToast('⚠️ Không thể kéo trận chưa đấu về ngày đã qua!', 'warn');
-          touchLastTarget = null;
-          touchDragData = null;
-          return;
-        }
-
-        // Thực hiện di chuyển nếu hợp lệ
-        if (touchLastTarget.dataset.date) {
+      } else if (lastTarget.classList.contains('fixture-row')) {
+        const ti = Number(lastTarget.dataset.orig);
+        if (ti !== src) {
           matchDates[String(src)] = targetDate;
           manualDates[String(src)] = targetDate;
-          scheduleOrder = scheduleOrder.map(Number).filter(i => i !== src);
-          const after = Number(touchLastTarget.dataset.after ?? -1);
-          let ins;
-          if (after === -1) {
-            const firstOfDay = scheduleOrder.findIndex(i => matchDates[String(i)] === targetDate);
-            ins = firstOfDay === -1 ? scheduleOrder.length : firstOfDay;
-          } else {
-            const afterIdx = scheduleOrder.indexOf(after);
-            ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
-          }
-          scheduleOrder.splice(ins, 0, src);
+          scheduleOrder = scheduleOrder.map(Number);
+          const si = scheduleOrder.indexOf(src);
+          scheduleOrder.splice(si, 1);
+          const di = scheduleOrder.indexOf(ti);
+          scheduleOrder.splice(di, 0, src);
+          endDrag();
           persist();
-        } else if (touchLastTarget.classList.contains('fixture-row')) {
-          const ti = Number(touchLastTarget.dataset.orig); 
-          if (ti !== src) { 
-            matchDates[String(src)] = targetDate;
-            manualDates[String(src)] = targetDate; 
-            scheduleOrder = scheduleOrder.map(Number); 
-            const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); 
-            const di = scheduleOrder.indexOf(ti); scheduleOrder.splice(di, 0, src); 
-            persist(); 
-          }
+          return;
         }
-        touchLastTarget = null;
       }
     }
-    touchDragData = null;
+
+    endDrag();
+  }, { passive: true });
+
+  // ── touchcancel ──
+  rowEl.addEventListener('touchcancel', () => {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+    if (isDragging) endDrag();
   }, { passive: true });
 }
 

@@ -63,24 +63,26 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 #syncTime{font-size:.66rem;opacity:.65;}
 
 /* Cards & Layout */
-/* 1. Card phải là Flex container để đẩy các phần tử con */
 .card {
+  background: rgba(37,42,56,.88);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0,0,0,.55);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+  
+  /* Cấu hình lại để con bên trong tự căn chỉnh */
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ép card chiếm đủ chiều cao grid cấp cho nó */
-  min-height: 400px; /* Thiết lập chiều cao tối thiểu để không bị quá dẹt */
-  /* ... giữ nguyên các thuộc tính cũ như background, border ... */
+  /* BỎ height: 100%; (nếu có) để tránh làm vỡ layout */
 }
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--accent);letter-spacing:.3px;}
 .card-title .icon{width:30px;height:30px;border-radius:8px;background:rgba(0,173,239,.1);border:1px solid rgba(0,173,239,.2);display:flex;align-items:center;justify-content:center;font-size:15px;}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: stretch; /* Đảm bảo 2 card bằng chiều cao nhau */
-}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 @media(max-width:960px){.grid-2{grid-template-columns:1fr;}}
 
 /* Stats Compact */
@@ -107,16 +109,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 /* Fixtures List */
-/* 2. Loại bỏ max-height cứng nhắc, thay bằng flex-grow */
 .fixtures-wrap {
-  flex-grow: 1;           /* Tự động nở ra lấp đầy khoảng trống */
-  overflow-y: auto;       /* Chỉ cuộn khi nội dung vượt quá khung */
+  flex-grow: 1;           /* Tự lấp đầy khoảng trống còn lại */
+  overflow-y: auto;       /* BẮT BUỘC CÓ DÒNG NÀY ĐỂ HIỆN THANH CUỘN */
   overflow-x: hidden;
   
-  /* Đảm bảo khung này không bị vỡ do nội dung bên trong */
-  display: flex;
-  flex-direction: column;
-  margin-bottom: -16px; /* Bù trừ cho padding của .card để danh sách chạm sát mép dưới */
+  /* Khóa chiều cao để nó không tự giãn ra vô tận */
+  min-height: 200px;      /* Đảm bảo khung luôn hiện ít nhất một vài trận */
+  max-height: calc(100vh - 250px); /* Tự động co giãn theo chiều cao màn hình */
 }
 
 /* (Tuỳ chọn) Nếu dùng trên điện thoại (1 cột xếp dọc), ta vẫn nên giới hạn để dễ cuộn web */

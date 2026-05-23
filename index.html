@@ -2042,6 +2042,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
       <div class="auth-dot"></div>
       <span id="authLabel">Đăng nhập</span>
     </div>
+    <button id="introBtn" class="glass-btn">
+  ℹ️ Giới thiệu
+</button>
     <button class="btn-flat" onclick="openTeamModal()">🛡️ Đội</button>
     <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
       ⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span>
@@ -5213,6 +5216,101 @@ setTimeout(() => {
   <div class="deco-ball-hit"></div>
   <div class="deco-ball-y" id="decoBallY">
     <div class="deco-ball-spin">⚽</div>
+  </div>
+</div>
+<div id="introToast" class="intro-toast hidden">
+  <div class="intro-card">
+
+    <div class="intro-header">
+      <div class="intro-title">
+        🏆 FIFA League Manager Pro
+      </div>
+
+      <button id="closeIntroToast" class="intro-close">
+        ✖
+      </button>
+    </div>
+
+    <div class="intro-content">
+
+      <div class="intro-section">
+        <h3>⚽ Tổng quan tính năng</h3>
+
+        <p>
+          Ứng dụng giúp bạn tổ chức và quản lý giải đấu bóng đá
+          với trải nghiệm chuyên nghiệp và trực quan.
+        </p>
+      </div>
+
+      <div class="intro-section">
+        <h3>📅 Quản lý Lịch thi đấu</h3>
+
+        <ul>
+          <li>Kéo & thả lịch đấu trực quan</li>
+          <li>Tạo lịch tự động thông minh</li>
+          <li>Cập nhật realtime cho mọi người chơi</li>
+        </ul>
+      </div>
+
+      <div class="intro-section">
+        <h3>📊 Bảng xếp hạng tự động</h3>
+
+        <ul>
+          <li>Tự tính điểm Thắng / Hòa / Thua</li>
+          <li>Sắp xếp theo hiệu số & Fair-play</li>
+          <li>Hiển thị thay đổi thứ hạng trực tiếp</li>
+        </ul>
+      </div>
+
+      <div class="intro-section">
+        <h3>🔥 Match Story</h3>
+
+        <ul>
+          <li>Highlight trận đấu</li>
+          <li>Dự đoán thay đổi BXH</li>
+          <li>Tạo cảm giác như giải đấu thực thụ</li>
+        </ul>
+      </div>
+
+      <div class="intro-section">
+        <h3>🥇 Podium & Hiệu ứng</h3>
+
+        <ul>
+          <li>Vinh danh Top 3 đội mạnh nhất</li>
+          <li>Hiệu ứng bóng đá sống động</li>
+          <li>UI phong cách esports hiện đại</li>
+        </ul>
+      </div>
+
+      <div class="intro-section">
+        <h3>🔐 Bảo mật & Đồng bộ</h3>
+
+        <ul>
+          <li>Firebase realtime sync</li>
+          <li>Phân quyền Admin</li>
+          <li>Bảo vệ kết quả giải đấu</li>
+        </ul>
+      </div>
+
+      <div class="intro-section">
+        <h3>💡 Gợi ý cho người mới</h3>
+
+        <ul>
+          <li>⚙️ Vào Cài đặt để đổi tên giải đấu</li>
+          <li>😀 Thêm emoji cho đội bóng</li>
+          <li>🔒 Nhấn icon khóa để nhập tỷ số</li>
+          <li>🏆 Theo dõi Podium để xem đội dẫn đầu</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="intro-footer">
+      <button id="closeIntroToastBottom" class="glass-btn primary">
+        Đóng
+      </button>
+    </div>
+
   </div>
 </div>
 </body>

@@ -339,13 +339,40 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .podium-item.p3 .podium-avatar{width:46px;height:46px;font-size:19px;box-shadow:0 0 0 2px #252a49,0 0 10px rgba(37,42,73,.5);}
 .podium-crown{font-size:1.3rem;animation:float 2s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
-.podium-name{width:100%;text-align:center;font-weight:700;font-size:.8rem;overflow:hidden;}
-.podium-name-inner{display:inline-block;white-space:nowrap;padding:0 4px;}
-.podium-name-inner.marquee{animation:marquee 6s linear infinite;}
+/* Tùy chỉnh font chữ nhỏ lại và xử lý tên dài */
+.podium-name {
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.72rem; /* Chữ các Top 2, Top 3 nhỏ lại (cũ là 0.8rem) */
+  line-height: 1.25;
+  color: #fff;
+  
+  /* Tính năng tự rớt dòng và thêm dấu ... nếu vượt quá 2 dòng */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal; /* Ép rớt dòng thay vì nằm dài ra */
+  margin-top: 2px;
+}
+
 @keyframes marquee{0%{transform:translateX(50%);}100%{transform:translateX(-100%);}}
-.podium-item.p1 .podium-name{font-size:.92rem;color:#c5f851;}
-.podium-item.p2 .podium-name{color:#3145eb;}
-.podium-item.p3 .podium-name{color:#8fa3b8;}
+/* Chữ của Top 1 to hơn 1 chút để nổi bật, nhưng vẫn nhỏ hơn bản cũ */
+.podium-item.p1 .podium-name {
+  font-size: 0.8rem; /* (cũ là 0.92rem) */
+  color: #c5f851;
+}
+
+.podium-item.p2 .podium-name {
+  color: #3145eb;
+}
+
+.podium-item.p3 .podium-name {
+  color: #8fa3b8;
+}
 .podium-pts{font-family:'Rajdhani',sans-serif;font-weight:500;font-size:.82rem;}
 .podium-item.p1 .podium-pts{font-size:1rem;color:#c5f851;font-weight:600;}
 .podium-item.p2 .podium-pts{color:#3145eb;}
@@ -4046,18 +4073,16 @@ function renderStandings() {
 
       item.appendChild(avWrap);
 
+      // Tạo container chứa tên
       const nm = document.createElement('div');
       nm.className = 'podium-name';
-      const tnn = teams[id] || id;
-      const ni = document.createElement('div');
-      ni.className = 'podium-name-inner';
-      ni.textContent = tnn;
-      nm.appendChild(ni);
-      item.appendChild(nm);
+      nm.textContent = teams[id] || id; // Gắn thẳng tên vào, bỏ luôn thẻ inner
 
-      requestAnimationFrame(() => {
-        if (ni.scrollWidth > nm.clientWidth) ni.classList.add('marquee');
-      });
+      item.appendChild(nm);
+      // (Bạn CÓ THỂ XÓA đoạn requestAnimationFrame kiểm tra scrollWidth thêm marquee cũ đi)
+      //requestAnimationFrame(() => {
+      //  if (ni.scrollWidth > nm.clientWidth) ni.classList.add('marquee');
+      //});
 
       const pt = document.createElement('div');
       pt.className = 'podium-pts';

@@ -2532,8 +2532,8 @@ function initTouchDrag(rowEl, origIdx) {
     const touch = e.touches[0]; 
     const dx = Math.abs(touch.clientX - touchDragData.startX), dy = Math.abs(touch.clientY - touchDragData.startY); 
     if (dx > 8 || dy > 8) clearTimeout(touchDragData.timer);
-    if (!touchDragData.active) return; 
-    e.preventDefault(); 
+    if (!touchDragData.active) return;
+    if (e.cancelable) e.preventDefault(); 
     if (touchClone) { 
       touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px'; 
       touchClone.style.top = (touch.clientY - 20) + 'px'; 
@@ -2548,7 +2548,7 @@ function initTouchDrag(rowEl, origIdx) {
       else if (targetRow && targetRow !== rowEl) { targetRow.classList.add('drag-over-row'); touchLastTarget = targetRow; } 
       else touchLastTarget = null; 
     }
-  }, { passive: false });
+  }, { passive: true });
 
   rowEl.addEventListener('touchend', () => {
     if (!touchDragData) return; 

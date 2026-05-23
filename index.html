@@ -63,7 +63,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 #syncTime{font-size:.66rem;opacity:.65;}
 
 /* Cards & Layout */
-.card{background:rgba(37,42,56,.88);border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.55);position:relative;overflow:hidden;backdrop-filter:blur(6px);}
+.card{background:rgba(37,42,56,.88);border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.55);position:relative;overflow:hidden;backdrop-filter:blur(6px);display: flex;flex-direction: column; height: 100%;}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--accent);letter-spacing:.3px;}
 .card-title .icon{width:30px;height:30px;border-radius:8px;background:rgba(0,173,239,.1);border:1px solid rgba(0,173,239,.2);display:flex;align-items:center;justify-content:center;font-size:15px;}
@@ -95,7 +95,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 /* Fixtures List */
-.fixtures-wrap{max-height:65vh;overflow-y:auto;overflow-x:hidden;}
+.fixtures-wrap {
+  flex: 1;             /* Bắt buộc khối này nở ra lấp trọn toàn bộ không gian trống */
+  min-height: 0;       /* Cực kỳ quan trọng: Giữ cho khung không bị phình to làm vỡ layout */
+  max-height: none;    /* Xóa bỏ giới hạn 65vh cũ */
+  overflow-y: auto;    /* Vẫn giữ thanh cuộn khi số trận quá nhiều */
+  overflow-x: hidden;
+  margin-bottom: -4px; /* Trừ hao một chút để nằm sát mép dưới cho đẹp */
+}
+
+/* (Tuỳ chọn) Nếu dùng trên điện thoại (1 cột xếp dọc), ta vẫn nên giới hạn để dễ cuộn web */
+@media (max-width: 960px) {
+  .fixtures-wrap {
+    max-height: 75vh;
+  }
+}
 .matchday-block{margin-bottom:12px;}
 .matchday-header{display:flex;align-items:center;gap:10px;margin-bottom:7px;padding:0 2px;}
 .cal-tile{flex-shrink:0;width:62px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg-card2);box-shadow:0 2px 8px rgba(0,0,0,.3);}

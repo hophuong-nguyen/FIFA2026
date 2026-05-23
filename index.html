@@ -65,6 +65,141 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
 #syncTime{font-size:.66rem;opacity:.65;}
 
+/* Intro Toast */
+.intro-toast{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(10px);
+  z-index:99999;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:20px;
+
+  animation:fadeIn .25s ease;
+}
+
+.intro-toast.hidden{
+  display:none;
+}
+
+.intro-card{
+  width:min(760px,95vw);
+  max-height:90vh;
+
+  overflow:hidden;
+
+  border-radius:24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20,20,30,.98),
+      rgba(10,10,18,.96)
+    );
+
+  border:1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 0 40px rgba(0,0,0,.5),
+    0 0 20px rgba(0,255,170,.08);
+
+  display:flex;
+  flex-direction:column;
+}
+
+.intro-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding:18px 22px;
+
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.intro-title{
+  font-size:1.2rem;
+  font-weight:700;
+
+  background:linear-gradient(90deg,#00ffa3,#00c3ff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.intro-close{
+  border:none;
+  background:rgba(255,255,255,.08);
+
+  width:40px;
+  height:40px;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+  color:white;
+  font-size:1rem;
+
+  transition:.2s;
+}
+
+.intro-close:hover{
+  transform:scale(1.05);
+  background:rgba(255,255,255,.16);
+}
+
+.intro-content{
+  overflow:auto;
+
+  padding:22px;
+}
+
+.intro-section{
+  margin-bottom:24px;
+}
+
+.intro-section h3{
+  margin-bottom:10px;
+
+  color:#00ffa3;
+  font-size:1rem;
+}
+
+.intro-section p,
+.intro-section li{
+  line-height:1.7;
+  opacity:.92;
+}
+
+.intro-section ul{
+  padding-left:20px;
+}
+
+.intro-footer{
+  padding:18px 22px;
+
+  border-top:1px solid rgba(255,255,255,.08);
+
+  display:flex;
+  justify-content:flex-end;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:scale(.98);
+  }
+
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
 /* Cards & Layout */
 .grid-2 {
   display: grid;
@@ -5058,6 +5193,37 @@ window.handleResetConfirm = () => {
 updateAuthUI();
 upgradeStaticCardInputIcons();
 subscribeFirebase();
+
+/* ═══════════════════ INTRO TOAST ═══════════════════ */
+const introToast = document.getElementById('introToast');
+
+document
+  .getElementById('introBtn')
+  ?.addEventListener('click', () => {
+
+    introToast.classList.remove('hidden');
+
+  });
+
+function closeIntroToast(){
+  introToast.classList.add('hidden');
+}
+
+document
+  .getElementById('closeIntroToast')
+  ?.addEventListener('click', closeIntroToast);
+
+document
+  .getElementById('closeIntroToastBottom')
+  ?.addEventListener('click', closeIntroToast);
+
+introToast?.addEventListener('click', (e) => {
+
+  if(e.target === introToast){
+    closeIntroToast();
+  }
+
+});
 
 /* ═══════════════════ BALL ═══════════════════ */
 // Logic bóng tự động nảy né khi có tương tác

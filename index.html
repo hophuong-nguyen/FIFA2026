@@ -96,7 +96,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
   gap: 16px;
   width: 100%;
-  align-items: start;
+  align-items: stretch;
+  max-height: calc(100vh - 110px);
 }
 
 .card {
@@ -117,14 +118,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .card:first-child {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 100px);
-  max-height: calc(100vh - 100px);
   overflow: hidden;
+  min-height: 0;
 }
 /* Cột phải (Bảng xếp hạng) */
 .card:last-child {
-  height: auto;
   overflow: visible;
+  min-height: 0;
 }
 
 @media (max-width: 768px) {
@@ -173,9 +173,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   flex-direction: column;
 }
 @media (max-width: 768px) {
+  .grid-2 {
+    max-height: none;
+  }
   .card:first-child {
     height: auto;
     max-height: 80vh;
+    overflow: hidden;
   }
   #fixturesListParentCard {
     position: static;

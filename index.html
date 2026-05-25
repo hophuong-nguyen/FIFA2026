@@ -96,21 +96,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
   gap: 16px;
   width: 100%;
-  align-items: stretch;
-}
-
-.left-wrapper {
-  position: relative; 
-  height: 100%;
-}
-
-.left-wrapper .card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto; /* Adds a scrollbar to the fixtures when they overflow */
 }
 
 .card {
@@ -2174,14 +2159,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 </div>
   </div>
   <div class="grid-2">
-    <div class="left-wrapper">
-      <div class="card">
-        <div class="section-header">
-          <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
-          <button class="btn-flat btn-flat-teal btn-sm" id="btnAuto" onclick="requireAdmin(()=>openAutoModal())">⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span></button>
-        </div>
-        <div class="fixtures-wrap" id="fixturesList"></div>
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
+        <button class="btn-flat btn-flat-teal btn-sm" id="btnAuto" onclick="requireAdmin(()=>openAutoModal())">⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span></button>
       </div>
+      <div class="fixtures-wrap" id="fixturesList"></div>
     </div>
     <div class="card">
       <div class="card-title"><div class="icon">🏆</div>Bảng xếp hạng</div>

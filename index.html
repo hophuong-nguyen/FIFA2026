@@ -862,6 +862,38 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   color: #00adef;
 }
 
+/* ── Scorer list dưới tên đội ── */
+.fixture-scorers {
+  font-size: .62rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  padding-bottom: 2px;
+}
+.fixture-scorers.home {
+  grid-column: 2;
+  align-items: flex-end;
+  text-align: right;
+}
+.fixture-scorers.away {
+  grid-column: 6;
+  align-items: flex-start;
+  text-align: left;
+}
+.scorer-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+@media (max-width: 500px) {
+  .fixture-scorers { font-size: .58rem; }
+}
+
 .fixture-score-box.is-winner{
   background: rgba(197,248,81,.14);
   border-color: rgba(197,248,81,.4);
@@ -1529,8 +1561,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Ép fixture-row thành 8 cột: BadgeTrái | ĐộiNhà | TỉSố | VS | TỉSố | ĐộiKhách | BadgePhải | EditBtn */
 /* Desktop */
+/* Desktop */
 .fixture-row {
   grid-template-columns: 36px minmax(0,1fr) 34px 28px 34px minmax(0,1fr) 36px 28px !important;
+  grid-template-rows: auto auto auto;
 }
 
 
@@ -4130,6 +4164,7 @@ if (hasResult) {
     <span class="tname">${teams[m[0]] || m[0]}</span>
     <span class="team-emoji" style="color:${teamColors[m[0]] || '#fff'}">${teamEmojis[m[0]] || '⚽'}</span>
   </div>
+  ${hasResult && (r.scorers1||[]).length ? `<div class="fixture-scorers home">${(r.scorers1||[]).map(s=>`<span class="scorer-item">⚽ ${s.name}${s.goals>1?` ×${s.goals}`:''}</span>`).join('')}</div>` : '<div class="fixture-scorers"></div>'}
 
   <div class="fixture-score-wrap">
     ${homeBadgeCards}
@@ -4151,6 +4186,7 @@ if (hasResult) {
     <span class="team-emoji" style="color:${teamColors[m[1]] || '#fff'}">${teamEmojis[m[1]] || '⚽'}</span>
     <span class="tname">${teams[m[1]] || m[1]}</span>
   </div>
+  ${hasResult && (r.scorers2||[]).length ? `<div class="fixture-scorers away">${(r.scorers2||[]).map(s=>`<span class="scorer-item">⚽ ${s.name}${s.goals>1?` ×${s.goals}`:''}</span>`).join('')}</div>` : '<div class="fixture-scorers"></div>'}
 
   ${story?.awayBadge ?? '<div></div>'}
 

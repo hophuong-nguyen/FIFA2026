@@ -91,11 +91,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 #syncTime{font-size:.66rem;opacity:.65;}
 
 /* Cards & Layout */
+/* Grid container dùng align-items: stretch để 2 card cùng height */
 .grid-2 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
-  gap: 16px;
-  width: 100%;
+  align-items: stretch;
 }
 
 .card {
@@ -112,17 +110,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   box-sizing: border-box;
 }
 /* Cột Lịch thi đấu (Cột trái) */
+/* Cột trái: không được cao hơn viewport, nội dung scroll */
 .card:first-child {
   display: flex;
   flex-direction: column;
-  max-height: 140vh; 
+  max-height: 100vh;
   overflow: hidden;
 }
+
 /* Cột phải (Bảng xếp hạng) */
+/* Cột phải: cao tự nhiên theo nội dung */
 .card:last-child {
   height: auto;
   overflow: visible;
 }
+
 @media (max-width: 768px) {
   .card:first-child {
     max-height: 80vh;
@@ -162,14 +164,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 /* Fixtures List */
+/* Card lịch thi đấu: sticky bỏ đi, dùng height 100% của card */
 #fixturesListParentCard {
-  position: sticky;
-  top: 20px;
-  height: calc(100vh - 60px);
+  position: static;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
+
 @media (max-width: 768px) {
+  .card:first-child {
+    max-height: 80vh;
+  }
+  .card:last-child {
+    max-height: none;
+  }
   #fixturesListParentCard {
     position: static;
     height: auto;

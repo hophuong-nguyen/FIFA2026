@@ -5277,12 +5277,12 @@ function syncFixtureCardHeight() {
   card.style.height = availH + 'px';
   card.style.maxHeight = availH + 'px';
 
-  // Chiều cao bảng xếp hạng
+  // Chiều cao bảng xếp hạng bằng card trái
   const rightCard = document.querySelector('.grid-2 .card:last-child');
   if (rightCard) {
-    const rightH = rightCard.getBoundingClientRect().height;
-    // Nếu BXH cao hơn viewport limit thì 2 card bằng nhau, không cần làm gì thêm
-    // Nếu BXH thấp hơn: card trái đã bị giới hạn bởi viewport, đúng yêu cầu
+    rightCard.style.height = availH + 'px';
+    rightCard.style.maxHeight = availH + 'px';
+    rightCard.style.overflowY = 'auto';
   }
 }
 

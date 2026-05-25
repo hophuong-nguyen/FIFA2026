@@ -96,8 +96,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
   gap: 16px;
   width: 100%;
-  align-items: stretch;
-  max-height: calc(100vh - 110px);
+  align-items: start;
 }
 
 .card {
@@ -119,12 +118,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-height: 0;
 }
 /* Cột phải (Bảng xếp hạng) */
 .card:last-child {
+  height: auto;
   overflow: visible;
-  min-height: 0;
 }
 
 @media (max-width: 768px) {
@@ -173,16 +171,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   flex-direction: column;
 }
 @media (max-width: 768px) {
-  .grid-2 {
-    max-height: none;
-  }
   .card:first-child {
-    height: auto;
     max-height: 80vh;
-    overflow: hidden;
   }
   #fixturesListParentCard {
-    position: static;
     height: auto;
   }
 }
@@ -5273,6 +5265,37 @@ setTimeout(() => {
     ball.addEventListener('touchstart', evadeInteraction, { passive: true });
   }
 }, 500); // Set timeout nhỏ để đảm bảo thẻ HTML đã render xong
+
+/* ── Sync chiều cao card lịch thi đấu với mép dưới viewport ── */
+function syncFixtureCardHeight() {
+  if (window.innerWidth <= 768) return; // mobile: CSS lo
+  const card = document.querySelector('.grid-2 .card:first-child');
+  if (!card) return;
+  const top = card.getBoundingClientRect().top + window.scrollY;
+  const scrollTop = window.scrollY;
+  const availH = window.innerHeight - (top - scrollTop) - 10;
+  card.style.height = availH + 'px';
+  card.style.maxHeight = availH + 'px';
+
+  // Chiều cao bảng xếp hạng
+  const rightCard = document.querySelector('.grid-2 .card:last-child');
+  if (rightCard) {
+    const rightH = rightCard.getBoundingClientRect().height;
+    // Nếu BXH cao hơn viewport limit thì 2 card bằng nhau, không cần làm gì thêm
+    // Nếu BXH thấp hơn: card trái đã bị giới hạn bởi viewport, đúng yêu cầu
+  }
+}
+
+// Gọi sau mỗi lần render
+const _origRender = render;
+render = function() {
+  _origRender.apply(this, arguments);
+  requestAnimationFrame(syncFixtureCardHeight);
+};
+
+window.addEventListener('resize', syncFixtureCardHeight);
+window.addEventListener('scroll', syncFixtureCardHeight);
+setTimeout(syncFixtureCardHeight, 500);
 
 </script>
 

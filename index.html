@@ -96,6 +96,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
   gap: 16px;
   width: 100%;
+  align-items: start;
 }
 
 .card {
@@ -111,11 +112,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   max-width: 100%;
   box-sizing: border-box;
 }
+
 /* Cột Lịch thi đấu (Cột trái) */
 .card:first-child {
   display: flex;
   flex-direction: column;
-  max-height: 100vh-120px; /* Giới hạn chiều cao tối đa để không tràn ra ngoài viewport */
+  height: calc(100vh - 100px);
+  max-height: calc(100vh - 100px);
   overflow: hidden;
 }
 /* Cột phải (Bảng xếp hạng) */
@@ -170,10 +173,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   flex-direction: column;
 }
 @media (max-width: 768px) {
+  .card:first-child {
+    height: auto;
+    max-height: 80vh;
+  }
   #fixturesListParentCard {
     position: static;
     height: auto;
-    max-height: 80vh;
   }
 }
 

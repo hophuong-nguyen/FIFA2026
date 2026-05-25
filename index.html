@@ -3346,27 +3346,45 @@ function buildMatchStoryParts(origIdx) {
   const matchDate  = matchDates[String(origIdx)] || '9999-12-31';
   const n          = teamIds.length;
 
-  /* ── Tổng số trận mỗi đội ── */
+  /* ── scheduleOrder position: dùng làm tie-break khi cùng ngày ── */
+  const orderPos = scheduleOrder.indexOf(origIdx);
+
+  /* ── Tổng số trận mỗi đội (toàn mùa) ── */
   function totalMatchesForTeam(id) {
     return BASE_SCHEDULE.filter(([a, b]) => a === id || b === id).length;
   }
-  function playedMatchesForTeam(id, upToIdx) {
+
+  /*
+   * Đếm trận đã đấu của 1 đội tính đến và bao gồm trận origIdx,
+   * dựa theo (date, scheduleOrder position) — đúng kể cả sau khi kéo/thả.
+   */
+  function playedUpToMatch(id) {
     let count = 0;
-    for (let i = 0; i <= upToIdx; i++) {
+    for (let i = 0; i < TOTAL; i++) {
       if (!BASE_SCHEDULE[i]) continue;
       const rv = getResult(i);
       if (!rv || rv.score1 === undefined) continue;
       const [a, b] = BASE_SCHEDULE[i];
-      if (a === id || b === id) count++;
+      if (a !== id && b !== id) continue;
+      const d   = matchDates[String(i)] || '9999-12-31';
+      const pos = scheduleOrder.indexOf(i);
+      /* Trận i xảy ra trước hoặc đúng trận này (theo date rồi order) */
+      if (d < matchDate || (d === matchDate && pos <= orderPos)) count++;
     }
     return count;
   }
-  function remainingMatches(id, upToIdx) {
-    return totalMatchesForTeam(id) - playedMatchesForTeam(id, upToIdx);
+
+  function remainingMatches(id) {
+    return totalMatchesForTeam(id) - playedUpToMatch(id);
   }
 
-  /* ── Snapshot helpers ── */
-  function calcSnapshot(excludeIdx, upToIdx, upToDate) {
+  /*
+   * calcSnapshot: tính BXH tại 1 thời điểm dựa theo date + scheduleOrder.
+   * excludeIdx : loại trận này khỏi tính toán (-1 = không loại)
+   * beforeMatch: true  → chỉ tính các trận TRƯỚC origIdx (không gồm origIdx)
+   *              false → tính các trận đến và GỒM origIdx
+   */
+  function calcSnapshot(excludeIdx, beforeMatch) {
     const s = {};
     teamIds.forEach(id => {
       s[id] = { p:0, w:0, d:0, l:0, gf:0, ga:0, played:0 };
@@ -3375,9 +3393,18 @@ function buildMatchStoryParts(origIdx) {
       if (i === excludeIdx) continue;
       const rv = getResult(i);
       if (!rv || rv.score1 === undefined) continue;
-      const d = matchDates[String(i)] || '9999-12-31';
-      if (upToDate && d > upToDate) continue;
-      if (upToDate && d === upToDate && upToIdx >= 0 && i > upToIdx) continue;
+      const d   = matchDates[String(i)] || '9999-12-31';
+      const pos = scheduleOrder.indexOf(i);
+      /* So sánh thứ tự thời gian: date trước, cùng date thì dùng scheduleOrder */
+      if (beforeMatch) {
+        /* Chỉ lấy trận xảy ra TRƯỚC origIdx */
+        if (d > matchDate) continue;
+        if (d === matchDate && pos >= orderPos) continue;
+      } else {
+        /* Lấy trận đến và gồm origIdx */
+        if (d > matchDate) continue;
+        if (d === matchDate && pos > orderPos) continue;
+      }
       const [a, b] = BASE_SCHEDULE[i];
       if (!s[a] || !s[b]) continue;
       s[a].played++; s[b].played++;
@@ -3420,8 +3447,8 @@ function buildMatchStoryParts(origIdx) {
     else if (s2 > s1) aPts = wp;
     else              { hPts = dp; aPts = dp; }
 
-    const rowsBefore = calcSnapshot(origIdx, -1, matchDate);
-    const rowsAfter  = calcSnapshot(-1, origIdx, matchDate);
+    const rowsBefore = calcSnapshot(origIdx, true);
+    const rowsAfter  = calcSnapshot(-1,      false);
     const rankBefore = rankMap(rowsBefore);
     const rankAfter  = rankMap(rowsAfter);
     const statsAfter = Object.fromEntries(rowsAfter);
@@ -3525,7 +3552,7 @@ function buildMatchStoryParts(origIdx) {
   const top1Id   = rowsAfter[0]?.[0];
   const top1Pts  = statsAfter[top1Id]?.p ?? 0;
   const gap      = top1Pts - myPts;
-  const rematch  = remainingMatches(id, origIdx);
+  const rematch  = remainingMatches(id);
 
   const myName   = teams[id] || id;
   
@@ -3606,7 +3633,7 @@ function buildMatchStoryParts(origIdx) {
   ════════════════════════════════ */
 
   /* BXH hiện tại (chưa có trận này) */
-  const rowsCurrent = calcSnapshot(origIdx, -1, '9999-12-31');
+  const rowsCurrent = calcSnapshot(origIdx, true);
   const rankCurrent = rankMap(rowsCurrent);
   const statsCurrent = Object.fromEntries(rowsCurrent);
 
@@ -3691,7 +3718,7 @@ function buildMatchStoryParts(origIdx) {
     const ifWin = id === hId ? rankIfHWin[id] : rankIfAWin[id];
     const delta = curr - ifWin;
     const name  = teams[id] || id;
-    const rem   = remainingMatches(id, origIdx - 1);
+    const rem   = remainingMatches(id);
 
     if (delta > 0) {
       return `<div class="sub-line gap-top">

@@ -2421,20 +2421,33 @@ function rebuildSchedule(keepResults = false) {
     results = {}; matchDates = buildSeasonDates(); scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
     return;
   }
-  const newRes = {}, newDates = buildSeasonDates();
-  const newManual = {};
-  BASE_SCHEDULE.forEach(([a, b], ni) => {
-    for (let oi = 0; oi < oldSch.length; oi++) {
-      if (!oldSch[oi]) continue;
-      const [oa, ob] = oldSch[oi];
-      if (oa === a && ob === b && oldManualDates?.[String(oi)]) {
-        newManual[String(ni)] = oldManualDates[String(oi)];
-        break;
-      }
-    }
+  // Map kết quả + ngày cũ sang index mới dựa trên cặp đấu (a, b)
+  // → dùng Map key = "A|B" để tra index cũ, tránh nhầm lẫn khi thứ tự thay đổi
+  const oldPairMap = new Map(); // "A|B" → [oldIdx, ...]
+  oldSch.forEach(([a, b], oi) => {
+    const key = `${a}|${b}`;
+    if (!oldPairMap.has(key)) oldPairMap.set(key, []);
+    oldPairMap.get(key).push(oi);
   });
+
+  const newRes = {}, newDates = buildSeasonDates(), newManual = {};
+  const usedOldIdx = new Set();
+
+  BASE_SCHEDULE.forEach(([a, b], ni) => {
+    const key = `${a}|${b}`;
+    const candidates = (oldPairMap.get(key) || []).filter(oi => !usedOldIdx.has(oi));
+    if (candidates.length === 0) return;
+    const oi = candidates[0];
+    usedOldIdx.add(oi);
+    if (oldRes[String(oi)] !== undefined)                      newRes[String(ni)]    = oldRes[String(oi)];
+    if (oldDates[String(oi)] && oldDates[String(oi)] < '9999') newDates[String(ni)]  = oldDates[String(oi)];
+    if (oldManualDates[String(oi)])                            newManual[String(ni)] = oldManualDates[String(oi)];
+  });
+
   manualDates = newManual;
-  results = newRes; matchDates = newDates; scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
+  results     = newRes;
+  matchDates  = newDates;
+  scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
 }
 
 /* ═══════════════════ DATE HELPERS ═══════════════════ */

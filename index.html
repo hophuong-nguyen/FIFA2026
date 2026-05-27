@@ -2529,7 +2529,8 @@ function normalizeState(data) {
   else if (data.teams && typeof data.teams === 'object') teamIds = Object.keys(data.teams);
   if (!teamIds || teamIds.length < MIN_TEAMS) teamIds = ['A','B','C','D','E','F','G'];
   
-  teams = data.teams || teams; members = data.members || members; teamEmojis = data.teamEmojis || teamEmojis; teamColors = data.teamColors || teamColors; results = data.results || {};
+  teams = data.teams || teams; members = data.members || members; teamEmojis = data.teamEmojis || teamEmojis; teamColors = data.teamColors || teamColors;
+  results = (data.results && typeof data.results === 'object') ? data.results : {};
   leagueConfig = { ...leagueConfig, ...(data.leagueConfig || {}) };
   
   teamIds.forEach((id, i) => {
@@ -2584,14 +2585,18 @@ function subscribeFirebase() {
   onValue(dbRef('state'), snap => {
     try {
       const data = snap.val();
-      if (data) normalizeState(data);
-      else {
+      if (data) {
+        normalizeState(data);
+      } else if (!fbReady) {
+        // Chỉ khởi tạo mặc định lần đầu tiên (chưa có data trên Firebase)
+        // KHÔNG push nếu fbReady đã true → tránh ghi đè khi Firebase reconnect
         BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
         TOTAL = BASE_SCHEDULE.length;
         matchDates = buildSeasonDates();
         scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
         pushToFirebase();
       }
+      // Nếu data === null VÀ fbReady === true → Firebase đang reconnect, bỏ qua
     } catch(e) {
       console.error(e);
       BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);

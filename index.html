@@ -1737,9 +1737,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Responsive */
 @media(max-width:640px){
   .container{padding:8px 10px;}
-  .header{padding:10px 12px;border-radius:13px;flex-wrap:nowrap;align-items:center;gap:6px;}
-  .header-left{flex:1 1 0;min-width:0;overflow:hidden;}
-  .header-right{flex:0 0 auto;}
+  .header{padding:10px 12px;border-radius:13px;flex-wrap:wrap;align-items:center;gap:4px 6px;}
+  .header-left{flex:1 1 100%;min-width:0;}
+  .header-right{flex:0 0 100%;display:flex;justify-content:flex-end;}
   .header-actions{flex-wrap:nowrap;gap:3px;}
   .btn-hide-mobile{display:none;}
   .btn-label{display:none;}

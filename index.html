@@ -5568,5 +5568,112 @@ document.getElementById('btnAbout').addEventListener('click', () => {
     <div class="deco-ball-spin">⚽</div>
   </div>
 </div>
+
+<!-- ══ BLOCK 12b – Confetti / Snow FX ══════════════════════════════ -->
+<canvas id="confettiCanvas" style="
+  position:fixed;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:9999;
+"></canvas>
+
+<script>
+(function(){
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx    = canvas.getContext('2d');
+
+  // ── Cấu hình ──────────────────────────────────────────────────
+  const PARTICLE_COUNT = 120;   // số mảnh
+  const DURATION_MS    = 4500;  // tổng thời gian (ms)
+  const COLORS = ['#c5f851','#ffffff','#ffd700','#00cfff','#ff6b6b','#b39ddb'];
+
+  let W, H, particles = [], startTime = null, raf;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  // Mỗi mảnh bay chéo từ trên-trái → dưới-phải như tuyết nghiêng
+  function makeParticle() {
+    const size  = Math.random() * 9 + 4;       // kích thước 4–13px
+    const speed = Math.random() * 2.5 + 1.2;  // tốc độ rơi
+    const drift = Math.random() * 1.8 + 0.4;  // độ trôi ngang (bay chéo)
+    const wobble= Math.random() * Math.PI * 2; // phase lắc lư
+    const shape = Math.random() < 0.5 ? 'rect' : 'circle'; // hình dạng
+    return {
+      x      : Math.random() * W,
+      y      : Math.random() * -H,       // bắt đầu trên màn hình
+      size,
+      color  : COLORS[Math.floor(Math.random() * COLORS.length)],
+      speed,
+      drift,
+      wobble,
+      wobbleSpeed: Math.random() * 0.06 + 0.02,
+      rotation   : Math.random() * Math.PI * 2,
+      rotSpeed   : (Math.random() - 0.5) * 0.12,
+      shape,
+      opacity: 1,
+    };
+  }
+
+  function draw(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed  = ts - startTime;
+    const progress = Math.min(elapsed / DURATION_MS, 1); // 0 → 1
+
+    ctx.clearRect(0, 0, W, H);
+
+    particles.forEach(p => {
+      // Fade out trong 20% cuối
+      p.opacity = progress > 0.8
+        ? 1 - (progress - 0.8) / 0.2
+        : 1;
+
+      // Di chuyển
+      p.y       += p.speed;
+      p.x       += p.drift + Math.sin(p.wobble) * 0.8;
+      p.wobble  += p.wobbleSpeed;
+      p.rotation+= p.rotSpeed;
+
+      ctx.save();
+      ctx.globalAlpha = p.opacity;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.fillStyle = p.color;
+
+      if (p.shape === 'rect') {
+        ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+
+    if (progress < 1) {
+      raf = requestAnimationFrame(draw);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+      cancelAnimationFrame(raf);
+    }
+  }
+
+  function launch() {
+    resize();
+    startTime = null;
+    particles = Array.from({ length: PARTICLE_COUNT }, makeParticle);
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+
+  // ── Kích hoạt: gọi window.launchConfetti() từ bất kỳ đâu ──
+  window.launchConfetti = launch;
+
+  // ── Tự chạy khi trang load xong ───────────────────────────
+  window.addEventListener('load', () => setTimeout(launch, 600));
+})();
+</script>
 </body>
 </html>

@@ -5121,7 +5121,9 @@ window.saveTeamsModal = () => {
   const doSave = () => {
     closeEmojiPicker();
     applyTempToReal();
-    rebuildSchedule(true);
+    // Chỉ rebuild lịch khi số đội hoặc thứ tự thay đổi
+    // Đổi tên / emoji / màu / thành viên → KHÔNG rebuild, giữ nguyên kết quả
+    if (teamCountChanged || teamOrderChanged) rebuildSchedule(true);
     persist();
     closeModal('teamModal');
     showToast('✅ Đã lưu thông tin đội!');

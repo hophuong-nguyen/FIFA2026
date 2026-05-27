@@ -62,7 +62,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .header-title h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.1rem,3vw,1.65rem);font-weight:700;letter-spacing:1px;line-height:1.1;color:var(--accent);}
 .header-title p{color:var(--text-muted);font-size:.7rem;margin-top:2px;letter-spacing:2px;text-transform:uppercase;font-weight:400;}
 .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:1;min-width:0;max-width:100%;}
-.header-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:100%;}
+.header-actions{display:flex;gap:5px;align-items:center;flex-wrap:nowrap;justify-content:flex-end;max-width:100%;}
 
 /* Buttons & Badges */
 .btn-flat{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--text-muted);font-size:.78rem;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
@@ -1722,9 +1722,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Responsive */
 @media(max-width:640px){
-  .container{padding:8px 10px;}.header{padding:11px 14px;border-radius:13px;}
-  .header-title h1{font-size:1rem;}.header-title p{display:none;}
-  .header-logo{width:38px;height:38px;font-size:19px;}
+  .container{padding:8px 10px;}
+  .header{padding:10px 12px;border-radius:13px;flex-wrap:nowrap;align-items:center;gap:8px;}
+  .header-left{flex:1;min-width:0;gap:8px;}
+  .header-right{flex-shrink:0;}
+  .header-title h1{font-size:.92rem;}.header-title p{display:none;}
+  .header-logo{width:34px;height:34px;font-size:17px;}
   .btn-flat{padding:5px 9px;font-size:.72rem;}
   .modal-box{padding:16px;border-radius:14px;}
   .score-cards-grid{grid-template-columns:1fr 24px 1fr;}
@@ -1752,7 +1755,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   .stats-compact .sc-label{display:none;}.stats-compact .sc-val{font-size:1.05rem;}
 }
 @media(max-width:400px){
-  .header-actions{gap:3px;}.btn-flat{padding:5px 7px;font-size:.68rem;}
+  .header-actions{gap:2px;flex-wrap:nowrap;}
+.btn-flat{padding:4px 6px;font-size:.64rem;gap:2px;}
+.btn-flat .admin-lock{display:none;}
   .fixture-team .tname{font-size:.74rem;}
 .fixture-team .team-emoji{font-size:.9rem;}
 .fixture-score-box{

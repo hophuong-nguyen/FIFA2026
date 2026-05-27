@@ -61,8 +61,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 @keyframes spin{to{transform:rotate(360deg);}}
 .header-title h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.1rem,3vw,1.65rem);font-weight:700;letter-spacing:1px;line-height:1.1;color:var(--accent);}
 .header-title p{color:var(--text-muted);font-size:.7rem;margin-top:2px;letter-spacing:2px;text-transform:uppercase;font-weight:400;}
-.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0;}
-.header-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:1;min-width:0;max-width:100%;}
+.header-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:100%;}
 
 /* Buttons & Badges */
 .btn-flat{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--text-muted);font-size:.78rem;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
@@ -2156,8 +2156,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
       <div class="auth-dot"></div>
       <span id="authLabel">Đăng nhập</span>
     </div>
-    <div class="header-actions">
-  <button class="btn-flat" id="btnAbout">Info</button> </div>
+    <button class="btn-flat" id="btnAbout">Info</button>
     <button class="btn-flat" onclick="openTeamModal()">🛡️ Đội</button>
     <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
       ⚽ Kết quả <span class="admin-lock" id="lockResult">🔒</span>

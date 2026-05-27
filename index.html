@@ -1737,9 +1737,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Responsive */
 @media(max-width:640px){
   .container{padding:8px 10px;}
-  .header{padding:10px 12px;border-radius:13px;flex-wrap:nowrap;align-items:center;gap:8px;}
-  .header-left{flex:1;min-width:0;gap:8px;}
-  .header-right{flex-shrink:0;}
+  .header{padding:10px 12px;border-radius:13px;flex-wrap:nowrap;align-items:center;gap:6px;}
+  .header-left{flex:1 1 0;min-width:0;overflow:hidden;}
+  .header-right{flex:0 0 auto;}
+  .header-actions{flex-wrap:nowrap;gap:3px;}
+  .btn-hide-mobile{display:none;}
+  .btn-label{display:none;}
+  .admin-lock{display:none;}
+  .auth-badge{padding:5px 8px;font-size:.72rem;}
   .header-title h1{font-size:.92rem;}.header-title p{display:none;}
   .header-logo{width:34px;height:34px;font-size:17px;}
   .btn-flat{padding:5px 9px;font-size:.72rem;}
@@ -2168,22 +2173,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         <p>⚡ Pro Edition · Season 2026 · Real-time Sync</p>
       </div>
     </div>
-    <!-- Thay toàn bộ div.header-right hiện tại bằng: -->
-<div class="header-right">
-  <div class="header-actions">
-    <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
-      <div class="auth-dot"></div>
-      <span id="authLabel">Đăng nhập</span>
+    <div class="header-right">
+    <div class="header-actions">
+      <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
+        <div class="auth-dot"></div>
+        <span id="authLabel">Đăng nhập</span>
+      </div>
+      <button class="btn-flat btn-hide-mobile" id="btnAbout">Info</button>
+      <button class="btn-flat" onclick="openTeamModal()">🛡️ <span class="btn-label">Đội</span></button>
+      <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">⚽ <span class="btn-label">Kết quả</span><span class="admin-lock" id="lockResult">🔒</span></button>
+      <button class="btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">🔄 <span class="btn-label">Reset</span><span class="admin-lock" id="lockReset">🔒</span></button>
     </div>
-    <button class="btn-flat btn-hide-mobile" id="btnAbout">Info</button>
-    <button class="btn-flat" onclick="openTeamModal()">🛡️ <span class="btn-label">Đội</span></button>
-    <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">
-      ⚽ <span class="btn-label">Kết quả</span><span class="admin-lock" id="lockResult">🔒</span>
-    </button>
-    <button class="btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">
-      🔄 <span class="btn-label">Reset</span><span class="admin-lock" id="lockReset">🔒</span>
-    </button>
-  </div>
 
   <!-- Presence bar: chips + sync inline -->
   <div class="presence-bar">

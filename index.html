@@ -121,10 +121,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   gap: 16px;
   width: 100%;
   align-items: start;
+  background: transparent;
 }
 
 .card {
-  background: rgba(37, 42, 56, .88);
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -135,6 +136,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  border: 1px solid var(--border);
 }
 
 /* Cột Lịch thi đấu (Cột trái) */
@@ -5446,7 +5448,7 @@ function applyTheme(t) {
     const rv = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
     return `rgba(${rv},${g},${b},${a})`;
   }
-  const dark = t.body <= '#181818';
+  const bodyHex = t.body.replace('#',''); const _br=parseInt(bodyHex.slice(0,2),16),_bg=parseInt(bodyHex.slice(2,4),16),_bb=parseInt(bodyHex.slice(4,6),16); const dark = (0.299*_br+0.587*_bg+0.114*_bb)/255 < 0.5;
   r.setProperty('--bg-deep',    t.bg);
   r.setProperty('--bg-card',    t.card);
   r.setProperty('--bg-card2',   t.card2);
@@ -5476,8 +5478,8 @@ function applyTheme(t) {
   r.setProperty('--red-a16',     ha(t.red,.16));
   r.setProperty('--bg-card-96',  ha(t.card,.96));
   r.setProperty('--header-bg',   ha(t.card2,.92));
-  r.setProperty('--surface-a04', dark ? 'var(--surface-a04)' : 'rgba(0,0,0,.04)');
-  r.setProperty('--surface-a05', dark ? 'var(--surface-a05)' : 'rgba(0,0,0,.05)');
+  r.setProperty('--surface-a04', dark ? 'rgba(255,255,255,.04)' : 'rgba(0,0,0,.04)');
+  r.setProperty('--surface-a05', dark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)');
   r.setProperty('--border-a50',  ha(t.border,.50));
   document.body.style.background = t.body;
   localStorage.setItem(THEME_KEY, t.name);

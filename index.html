@@ -531,21 +531,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .podium-item.p1 .podium-pts{font-size:1rem;color:#c5f851;font-weight:600;}
 .podium-item.p2 .podium-pts{color:#3145eb;}
 .podium-item.p3 .podium-pts{font-size:.78rem;color:#8fa3b8;}
-/* ── Scorer podium name scroll (ping-pong marquee) ── */
-.podium-name-scroll {
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.podium-name-scroll span {
-  display: inline-block;
-  animation: marquee-pingpong 4s linear infinite alternate;
-  padding: 0 4px;
-}
-@keyframes marquee-pingpong {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(calc(-100% + 80px)); }
-}
 .podium-stand{width:100%;border-radius:7px 7px 0 0;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;}
 .p1 .podium-stand{height:52px;background:linear-gradient(180deg,rgba(197,248,81,.18),rgba(197,248,81,.05));border:1px solid rgba(197,248,81,.28);border-bottom:none;color:#c5f851;}
 .p2 .podium-stand{height:38px;background:linear-gradient(180deg,rgba(49,69,235,.18),rgba(49,69,235,.05));border:1px solid rgba(49,69,235,.28);border-bottom:none;color:#3145eb;}
@@ -4447,6 +4432,7 @@ if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D
 }
 
 let topScorersAnimState = null;
+let topScorersExpanded = false;
 
 function drawHair(ctx, x, y, name) {
   let hash = 0;
@@ -4487,7 +4473,10 @@ function drawHair(ctx, x, y, name) {
   }
 }
 
-function drawFaceDetails(ctx, x, y, isJumping) {
+function drawFaceDetails(ctx, x, y, isJumping, name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+
   if (isJumping) {
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1.5;
@@ -4513,17 +4502,48 @@ function drawFaceDetails(ctx, x, y, isJumping) {
     ctx.fillStyle = '#e11d48';
     ctx.fill();
   } else {
+    // Normal eyes
     ctx.fillStyle = '#1e293b';
     ctx.beginPath();
     ctx.arc(x - 3.5, y - 2, 1.2, 0, Math.PI * 2);
     ctx.arc(x + 3.5, y - 2, 1.2, 0, Math.PI * 2);
     ctx.fill();
     
+    // Focused determined eyebrows (competitive pro style)
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = 'round';
+    
+    // Left eyebrow: \
+    ctx.beginPath();
+    ctx.moveTo(x - 5.5, y - 5.5);
+    ctx.lineTo(x - 1.5, y - 4);
+    ctx.stroke();
+    
+    // Right eyebrow: /
+    ctx.beginPath();
+    ctx.moveTo(x + 5.5, y - 5.5);
+    ctx.lineTo(x + 1.5, y - 4);
+    ctx.stroke();
+    
+    // Smirk smile
     ctx.beginPath();
     ctx.arc(x, y + 1, 4.5, 0.1 * Math.PI, 0.9 * Math.PI);
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1.5;
     ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+  
+  // Pro athletic headband (drawn for players with even name hashes)
+  if (hash % 2 === 0) {
+    ctx.fillStyle = '#ffffff'; // Sporty white headband
+    ctx.beginPath();
+    ctx.roundRect(x - 9.5, y - 8.5, 19, 3.2, 1);
+    ctx.fill();
+    // Thin headband outline
+    ctx.strokeStyle = 'rgba(30, 41, 59, 0.12)';
+    ctx.lineWidth = 0.5;
     ctx.stroke();
   }
 }
@@ -4537,48 +4557,104 @@ function drawPlayer(ctx, player, time) {
   const teamId = player.entry.teamId;
   const primaryColor = teamColors[teamId] || '#ffffff';
   
-  // 1. Legs
+  // 1. Legs, knee socks, and boots (Soccer Pro Uniform)
   ctx.lineWidth = 3.5;
   ctx.lineCap = 'round';
-  ctx.strokeStyle = '#ffcbb4';
   
+  // Left leg skin above sock
+  ctx.strokeStyle = '#ffcbb4';
   ctx.beginPath();
   ctx.moveTo(x - 5, feetY - 15);
-  ctx.lineTo(x - 5, feetY - 3);
+  ctx.lineTo(x - 5, feetY - 12);
   ctx.stroke();
   
+  // Left high sock
+  ctx.strokeStyle = primaryColor;
+  ctx.beginPath();
+  ctx.moveTo(x - 5, feetY - 12);
+  ctx.lineTo(x - 5, feetY - 3.5);
+  ctx.stroke();
+  
+  // Left sock stripe
+  ctx.strokeStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(x - 5, feetY - 11);
+  ctx.lineTo(x - 5, feetY - 9.5);
+  ctx.stroke();
+  
+  // Right leg skin above sock
+  ctx.strokeStyle = '#ffcbb4';
   ctx.beginPath();
   ctx.moveTo(x + 5, feetY - 15);
-  ctx.lineTo(x + 5, feetY - 3);
+  ctx.lineTo(x + 5, feetY - 12);
   ctx.stroke();
   
-  // Boots (High-vis neon yellow)
-  ctx.fillStyle = '#c5f851';
+  // Right high sock
+  ctx.strokeStyle = primaryColor;
   ctx.beginPath();
-  ctx.roundRect(x - 8, feetY - 3, 5, 3, 1);
-  ctx.roundRect(x + 3, feetY - 3, 5, 3, 1);
+  ctx.moveTo(x + 5, feetY - 12);
+  ctx.lineTo(x + 5, feetY - 3.5);
+  ctx.stroke();
+  
+  // Right sock stripe
+  ctx.strokeStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(x + 5, feetY - 11);
+  ctx.lineTo(x + 5, feetY - 9.5);
+  ctx.stroke();
+  
+  // Sleek soccer cleats with neon accent studs
+  ctx.fillStyle = '#1e293b'; // Boot main body
+  ctx.beginPath();
+  ctx.roundRect(x - 8, feetY - 3.5, 5.5, 3.5, 1);
+  ctx.roundRect(x + 2.5, feetY - 3.5, 5.5, 3.5, 1);
   ctx.fill();
   
-  // Shorts (White)
+  ctx.fillStyle = '#c5f851'; // Neon yellow cleats/studs
+  ctx.fillRect(x - 7.5, feetY - 0.6, 4.5, 0.8);
+  ctx.fillRect(x + 3, feetY - 0.6, 4.5, 0.8);
+  
+  // 2. Dual-Opening Athletic Shorts
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
-  ctx.roundRect(x - 7, feetY - 18, 14, 5, 1);
+  ctx.roundRect(x - 9, feetY - 18, 8, 6, 1);
+  ctx.roundRect(x + 1, feetY - 18, 8, 6, 1);
   ctx.fill();
+  ctx.fillRect(x - 4, feetY - 18, 8, 2); // Connect top waist
   
-  // 2. Torso (Jersey)
+  // 3. Torso (Sport jersey with defined shoulders)
   ctx.fillStyle = primaryColor;
   ctx.beginPath();
-  ctx.roundRect(x - 8, feetY - 34, 16, 17, 2);
+  ctx.moveTo(x - 8, feetY - 34);
+  ctx.lineTo(x + 8, feetY - 34);
+  ctx.lineTo(x + 9.5, feetY - 18);
+  ctx.lineTo(x - 9.5, feetY - 18);
+  ctx.closePath();
   ctx.fill();
   
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-  ctx.fillRect(x - 1.5, feetY - 34, 3, 17);
+  // V-Neck collar contrast
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(x - 3, feetY - 34);
+  ctx.lineTo(x + 3, feetY - 34);
+  ctx.lineTo(x, feetY - 29);
+  ctx.closePath();
+  ctx.fill();
   
-  // 3. Arms
+  // Short sleeves
+  ctx.fillStyle = primaryColor;
+  ctx.beginPath();
+  ctx.roundRect(x - 12.5, feetY - 33.5, 4.5, 8, 1);
+  ctx.roundRect(x + 8, feetY - 33.5, 4.5, 8, 1);
+  ctx.fill();
+  
+  // 4. Arms (Skin forearms coming out of sleeves)
   ctx.strokeStyle = '#ffcbb4';
   ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
   
-  const shoulderY = feetY - 30;
+  const shoulderLeftY = feetY - 27;
+  const shoulderRightY = feetY - 27;
   const waveOffset = player.waveOffset;
   
   if (player.rank === 1) {
@@ -4586,7 +4662,7 @@ function drawPlayer(ctx, player, time) {
     const trophyHandX = x - 15;
     const trophyHandY = feetY - 34;
     ctx.beginPath();
-    ctx.moveTo(x - 8, shoulderY);
+    ctx.moveTo(x - 10.5, shoulderLeftY);
     ctx.lineTo(trophyHandX, trophyHandY);
     ctx.stroke();
     
@@ -4597,9 +4673,9 @@ function drawPlayer(ctx, player, time) {
     
     // Right arm waves or punches
     ctx.beginPath();
-    ctx.moveTo(x + 8, shoulderY);
+    ctx.moveTo(x + 10.5, shoulderRightY);
     if (isPunching) {
-      const handX = x + 11;
+      const handX = x + 12;
       const handY = feetY - 46 + Math.sin(time * 8) * 4;
       ctx.lineTo(handX, handY);
       ctx.stroke();
@@ -4610,52 +4686,52 @@ function drawPlayer(ctx, player, time) {
       ctx.fill();
     } else {
       const angle = -0.3 + Math.sin(time * 1.5 + waveOffset) * 0.5;
-      const handX = x + 8 + Math.cos(angle) * 11;
-      const handY = shoulderY + Math.sin(angle) * 11;
+      const handX = x + 9 + Math.cos(angle) * 11;
+      const handY = shoulderRightY + Math.sin(angle) * 11;
       ctx.lineTo(handX, handY);
       ctx.stroke();
     }
   } else {
     // Left arm waves
     ctx.beginPath();
-    ctx.moveTo(x - 8, shoulderY);
+    ctx.moveTo(x - 10.5, shoulderLeftY);
     const angleLeft = Math.PI + 0.3 + Math.sin(time * 1.2 + waveOffset) * 0.4;
-    const handLeftX = x - 8 + Math.cos(angleLeft) * 11;
-    const handLeftY = shoulderY + Math.sin(angleLeft) * 11;
+    const handLeftX = x - 9 + Math.cos(angleLeft) * 11;
+    const handLeftY = shoulderLeftY + Math.sin(angleLeft) * 11;
     ctx.lineTo(handLeftX, handLeftY);
     ctx.stroke();
     
     // Right arm waves or punches
     ctx.beginPath();
-    ctx.moveTo(x + 8, shoulderY);
+    ctx.moveTo(x + 10.5, shoulderRightY);
     if (isJumping && isPunching) {
-      const handX = x + 11;
+      const handX = x + 12;
       const handY = feetY - 46 + Math.sin(time * 8) * 4;
       ctx.lineTo(handX, handY);
       ctx.stroke();
     } else {
       const angleRight = -0.3 + Math.sin(time * 1.4 + waveOffset + 1) * 0.4;
-      const handRightX = x + 8 + Math.cos(angleRight) * 11;
-      const handRightY = shoulderY + Math.sin(angleRight) * 11;
+      const handRightX = x + 9 + Math.cos(angleRight) * 11;
+      const handRightY = shoulderRightY + Math.sin(angleRight) * 11;
       ctx.lineTo(handRightX, handRightY);
       ctx.stroke();
     }
   }
   
-  // 4. Head
+  // 5. Head
   const headY = feetY - 44;
   ctx.fillStyle = '#ffcbb4';
   ctx.beginPath();
   ctx.arc(x, headY, 10, 0, Math.PI * 2);
   ctx.fill();
   
-  // 5. Hair
+  // 6. Hair
   drawHair(ctx, x, headY, name);
   
-  // 6. Face Details
-  drawFaceDetails(ctx, x, headY, isJumping);
+  // 7. Face Details
+  drawFaceDetails(ctx, x, headY, isJumping, name);
   
-  // 7. floating crown
+  // 8. floating crown
   if (player.rank === 1) {
     ctx.font = '15px sans-serif';
     ctx.textAlign = 'center';
@@ -4836,85 +4912,146 @@ function renderTopScorers() {
   const pa = document.getElementById('scorerPodiumArea');
   const tb = document.getElementById('topScorersTable');
   if (!pa || !tb) return;
-
-  // Dọn canvas animation cũ nếu có
-  if (topScorersAnimState && topScorersAnimState.frameId) {
-    cancelAnimationFrame(topScorersAnimState.frameId);
-  }
-  topScorersAnimState = null;
-
+  
   if (scorers.length === 0) {
+    if (topScorersAnimState && topScorersAnimState.frameId) {
+      cancelAnimationFrame(topScorersAnimState.frameId);
+    }
+    topScorersAnimState = null;
     pa.innerHTML = '';
     tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Chưa có cầu thủ nào ghi bàn</td></tr>';
     const toggleWrap = document.getElementById('topScorersToggleWrap');
     if (toggleWrap) toggleWrap.innerHTML = '';
     return;
   }
-
+  
+  // Create top 3 list mapping to gold (1), silver (2), bronze (3)
   const top3 = scorers.slice(0, 3);
-
-  // ── Podium HTML (giống style top 3 đội) ──────────────────────────────
-  const makeItem = (entry, pClass, crownHtml, pts_label) => {
-    if (!entry) return '';
-    const name = entry.name;
-    // Dùng marquee nếu tên > 10 ký tự (sẽ scroll ping-pong)
-    const nameHtml = name.length > 10
-      ? `<div class="podium-name podium-name-scroll"><span>${name}</span></div>`
-      : `<div class="podium-name">${name}</div>`;
-    return `
-      <div class="podium-item ${pClass}">
-        ${crownHtml}
-        <div class="podium-avatar-wrap">
-          <div class="podium-avatar">${teamEmojis[entry.teamId] || '⚽'}</div>
-        </div>
-        ${nameHtml}
-        <div class="podium-pts">${entry.goals} ⚽</div>
-        <div class="podium-stand">${pts_label}</div>
-      </div>`;
-  };
-
-  pa.innerHTML = `<div class="podium-wrap">
-    ${makeItem(top3[1], 'p2', '', '2')}
-    ${makeItem(top3[0], 'p1', '<div class="podium-crown">👑</div>', '1')}
-    ${makeItem(top3[2], 'p3', '', '3')}
-  </div>`;
-
-  // ── Bảng danh sách ───────────────────────────────────────────────────
+  
+  // Cleanup if parent element changed or doesn't exist
+  if (topScorersAnimState && topScorersAnimState.canvas.parentNode !== pa) {
+    if (topScorersAnimState.frameId) {
+      cancelAnimationFrame(topScorersAnimState.frameId);
+    }
+    topScorersAnimState = null;
+  }
+  
+  // Setup canvas if first time or reset
+  if (!topScorersAnimState) {
+    pa.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    canvas.style.width = '100%';
+    canvas.style.height = '240px';
+    canvas.style.display = 'block';
+    canvas.style.background = 'transparent';
+    pa.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    topScorersAnimState = {
+      canvas: canvas,
+      ctx: ctx,
+      frameId: null,
+      time: 0,
+      players: [],
+      particles: [],
+      lastTime: Date.now()
+    };
+    
+    const animLoop = () => {
+      if (!topScorersAnimState) return;
+      if (document.hidden) {
+        // Pause loop computation when tab is inactive, just schedule next check
+        topScorersAnimState.frameId = requestAnimationFrame(animLoop);
+        return;
+      }
+      
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const targetWidth = rect.width || 480;
+      const targetHeight = 240;
+      
+      if (canvas.width !== targetWidth * dpr || canvas.height !== targetHeight * dpr) {
+        canvas.width = targetWidth * dpr;
+        canvas.height = targetHeight * dpr;
+        ctx.scale(dpr, dpr);
+      }
+      
+      drawScorersCanvas(topScorersAnimState, targetWidth, targetHeight);
+      topScorersAnimState.frameId = requestAnimationFrame(animLoop);
+    };
+    topScorersAnimState.frameId = requestAnimationFrame(animLoop);
+  }
+  
+  // Update state players dynamically to prevent animation jumping
+  const newPlayers = [];
+  if (top3[0]) {
+    const existing = topScorersAnimState.players.find(p => p.rank === 1 && p.entry.name === top3[0].name);
+    newPlayers.push(existing || { rank: 1, entry: top3[0] });
+  }
+  if (top3[1]) {
+    const existing = topScorersAnimState.players.find(p => p.rank === 2 && p.entry.name === top3[1].name);
+    newPlayers.push(existing || { rank: 2, entry: top3[1] });
+  }
+  if (top3[2]) {
+    const existing = topScorersAnimState.players.find(p => p.rank === 3 && p.entry.name === top3[2].name);
+    newPlayers.push(existing || { rank: 3, entry: top3[2] });
+  }
+  topScorersAnimState.players = newPlayers;
+  
+  // Truncate list if collapsed (topScorersExpanded is false)
   const displayScorers = topScorersExpanded ? scorers : scorers.slice(0, 5);
-  let html = `<tr>
-    <th style="width:36px;">XH</th>
-    <th style="text-align:left;">Cầu thủ</th>
-    <th style="width:40px;">Đội</th>
-    <th style="width:48px;">⚽</th>
-  </tr>`;
-
+  
+  // Render table below
+  let html = `
+    <tr>
+      <th style="width:36px;">XH</th>
+      <th style="text-align:left;">Cầu thủ</th>
+      <th style="width:40px;">Đội</th>
+      <th style="width:48px;">⚽</th>
+    </tr>
+  `;
+  
   displayScorers.forEach((entry, idx) => {
     let rankBadge = '<div class="rank-badge rank-other">' + (idx + 1) + '</div>';
     if (idx === 0) rankBadge = '<div class="rank-badge rank-1">1</div>';
     else if (idx === 1) rankBadge = '<div class="rank-badge rank-2">2</div>';
     else if (idx === 2) rankBadge = '<div class="rank-badge rank-3">3</div>';
+    
     html += '<tr>';
     html += '<td>' + rankBadge + '</td>';
-    html += '<td class="team-name-cell" style="font-weight:600;"><span style="white-space:nowrap;">' + entry.name + '</span></td>';
-    html += '<td style="font-size:0.75rem;color:var(--text-muted);" title="' + (teams[entry.teamId] || entry.teamId) + '">' + (teamEmojis[entry.teamId] || entry.teamId) + '</td>';
-    html += '<td style="font-weight:700;color:var(--accent);font-size:1rem;">' + entry.goals + '</td>';
+    html += '<td class="team-name-cell" style="font-weight:600;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">' + entry.name + '</div></td>';
+    html += '<td style="font-size:0.75rem; color:var(--text-muted);" title="' + (teams[entry.teamId] || entry.teamId) + '">' + (teamEmojis[entry.teamId] || entry.teamId) + '</td>';
+    html += '<td style="font-weight:700; color:var(--accent); font-size:1rem;">' + entry.goals + '</td>';
     html += '</tr>';
   });
+  
   tb.innerHTML = html;
-
-  // ── Toggle nút xem thêm ──────────────────────────────────────────────
+  
+  // Render Expand/Collapse toggle button
   const toggleWrap = document.getElementById('topScorersToggleWrap');
   if (toggleWrap) {
     if (scorers.length > 5) {
       toggleWrap.innerHTML = `
-        <button id="btnToggleScorers" style="background:var(--surface-a08);border:1px solid var(--border);color:var(--text);border-radius:16px;padding:6px 16px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s ease;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15);outline:none;">
+        <button id="btnToggleScorers" style="background:var(--surface-a08); border:1px solid var(--border); color:var(--text); border-radius:16px; padding:6px 16px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15); outline:none;">
           <span>${topScorersExpanded ? 'Thu gọn ▲' : `Xem thêm (${scorers.length - 5}) ▼`}</span>
-        </button>`;
+        </button>
+      `;
       const btn = document.getElementById('btnToggleScorers');
       if (btn) {
-        btn.addEventListener('mouseover', () => { btn.style.background='var(--surface-a16)'; btn.style.borderColor='var(--accent)'; });
-        btn.addEventListener('mouseout',  () => { btn.style.background='var(--surface-a08)'; btn.style.borderColor='var(--border)'; });
-        btn.onclick = () => { topScorersExpanded = !topScorersExpanded; renderTopScorers(); };
+        btn.addEventListener('mouseover', () => {
+          btn.style.background = 'var(--surface-a16)';
+          btn.style.borderColor = 'var(--accent)';
+          btn.style.boxShadow = '0 4px 12px rgba(197,248,81,0.2)';
+        });
+        btn.addEventListener('mouseout', () => {
+          btn.style.background = 'var(--surface-a08)';
+          btn.style.borderColor = 'var(--border)';
+          btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        });
+        btn.onclick = () => {
+          topScorersExpanded = !topScorersExpanded;
+          renderTopScorers();
+        };
       }
     } else {
       toggleWrap.innerHTML = '';

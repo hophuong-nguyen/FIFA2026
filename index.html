@@ -11,7 +11,17 @@
   --bg-deep:#20242d;--bg-card:#252a38;--bg-card2:#1c2030;--border:#2e3550;
   --accent:#c5f851;--accent2:#3145eb;--gold:#c5f851;--silver:#8fa3b8;--bronze:#3145eb;
   --green:#c5f851;--red:#eb4560;--text:#c5f851;--text-muted:#4f6080;
-  --glow:0 0 24px rgba(197,248,81,.12);
+  --glow:0 0 24px var(--accent-a12);
+  --accent-a06:var(--accent-a06);--accent-a10:rgba(197,248,81,.10);
+  --accent-a12:var(--accent-a12);--accent-a18:rgba(197,248,81,.18);
+  --accent-a30:rgba(197,248,81,.30);
+  --accent2-a10:rgba(49,69,235,.10);--accent2-a18:rgba(49,69,235,.18);
+  --accent2-a28:rgba(49,69,235,.28);--accent2-a35:rgba(49,69,235,.35);
+  --accent2-a40:rgba(49,69,235,.40);
+  --red-a08:var(--red-a08);--red-a16:var(--red-a16);
+  --bg-card-96:var(--bg-card-96);--header-bg:rgba(28,32,48,.92);
+  --surface-a04:var(--surface-a04);--surface-a05:var(--surface-a05);
+  --border-a50:rgba(46,53,80,.50);
 }
 html,body{height:100%;-webkit-text-size-adjust:100%;overflow-x:hidden;max-width:100%;}
 body{font-family:'Inter',sans-serif;background:#0d1a0a;color:var(--text);min-height:100vh;overflow-x:hidden;margin:0;padding:0;}
@@ -53,10 +63,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 @media (max-width: 480px) {
   .container { padding: 10px 10px 16px; }
 }
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding:14px 20px;background:rgba(28,32,48,.9);border-radius:16px;border:1px solid var(--border);box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,.04);position:relative;overflow:hidden;gap:12px;flex-wrap:wrap;backdrop-filter:blur(8px);}
-.header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49,#c5f851);opacity:.95;}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding:14px 20px;background:var(--header-bg);border-radius:16px;border:1px solid var(--border);box-shadow:var(--glow),inset 0 1px 0 var(--surface-a04);position:relative;overflow:hidden;gap:12px;flex-wrap:wrap;backdrop-filter:blur(8px);}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--bg-card),var(--accent));opacity:.95;}
 .header-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
-.header-logo{width:46px;height:46px;flex-shrink:0;position:relative;background:linear-gradient(135deg,#3145eb,#252a49);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 20px rgba(49,69,235,.4);}
+.header-logo{width:46px;height:46px;flex-shrink:0;position:relative;background:linear-gradient(135deg,var(--accent2),var(--bg-card));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 20px var(--accent2-a40);}
 .header-logo::after{content:'';position:absolute;inset:-2px;border-radius:13px;border:1.5px solid rgba(197,248,81,.25);animation:spin 8s linear infinite;border-top-color:var(--accent);}
 @keyframes spin{to{transform:rotate(360deg);}}
 .header-title h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.1rem,3vw,1.65rem);font-weight:700;letter-spacing:1px;line-height:1.1;color:var(--accent);}
@@ -79,16 +89,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 /* Buttons & Badges */
-.btn-flat{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--text-muted);font-size:.78rem;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
-.btn-flat:hover,.btn-flat:focus{background:rgba(197,248,81,.07);border-color:rgba(197,248,81,.3);color:var(--accent);outline:none;}
+.btn-flat{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-a04);color:var(--text-muted);font-size:.78rem;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.btn-flat:hover,.btn-flat:focus{background:rgba(197,248,81,.07);border-color:var(--accent-a30);color:var(--accent);outline:none;}
 .btn-flat:active{transform:scale(.96);}
 .btn-flat-danger{color:#f87171;}
 .btn-flat-danger:hover{background:rgba(232,0,77,.1);border-color:rgba(232,0,77,.4);color:var(--red);}
 .btn-flat-teal{color:#2dd4bf;}
 .btn-flat-teal:hover{background:rgba(0,214,143,.1);border-color:rgba(0,214,143,.4);color:var(--green);}
 .btn-sm{padding:5px 10px;font-size:.74rem;}
-.auth-badge{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--text-muted);font-size:.78rem;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
-.auth-badge:hover{border-color:rgba(0,173,239,.4);color:var(--accent);}
+.auth-badge{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-a04);color:var(--text-muted);font-size:.78rem;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.auth-badge:hover{border-color:var(--accent2-a40);color:var(--accent);}
 .auth-badge.logged-in{border-color:rgba(0,214,143,.3);color:var(--green);background:rgba(0,214,143,.06);}
 .auth-badge.logged-in:hover{background:rgba(232,0,77,.08);border-color:rgba(232,0,77,.3);color:#f87171;}
 .auth-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0;transition:all .3s;}
@@ -147,9 +157,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     max-height: none;
   }
 }
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--bg-card));}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--accent);letter-spacing:.3px;}
-.card-title .icon{width:30px;height:30px;border-radius:8px;background:rgba(0,173,239,.1);border:1px solid rgba(0,173,239,.2);display:flex;align-items:center;justify-content:center;font-size:15px;}
+.card-title .icon{width:30px;height:30px;border-radius:8px;background:var(--accent2-a10);border:1px solid var(--accent2-a18);display:flex;align-items:center;justify-content:center;font-size:15px;}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 
 @media(max-width:960px){.grid-2{grid-template-columns:1fr;}}
@@ -215,21 +225,21 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .matchday-block{margin-bottom:12px;}
 .matchday-header{display:flex;align-items:center;gap:10px;margin-bottom:7px;padding:0 2px;}
 .cal-tile{flex-shrink:0;width:62px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg-card2);box-shadow:0 2px 8px rgba(0,0,0,.3);}
-.cal-tile.today{border-color:var(--accent);box-shadow:0 0 10px rgba(0,173,239,.3);}
+.cal-tile.today{border-color:var(--accent);box-shadow:0 0 10px var(--accent2-a35);}
 .cal-tile.past{opacity:.55;}
-.cal-month{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;text-align:center;padding:3px 4px 2px;background:linear-gradient(135deg,#3145eb,#252a49);color:#c5f851;white-space:nowrap;}
+.cal-month{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;text-align:center;padding:3px 4px 2px;background:linear-gradient(135deg,var(--accent2),var(--bg-card));color:#c5f851;white-space:nowrap;}
 .cal-tile.past .cal-month{background:linear-gradient(135deg,#1c2030,#20242d);color:var(--silver);}
 .cal-day{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;text-align:center;padding:1px 2px;color:var(--text);line-height:1.1;}
 .cal-tile.today .cal-day{color:var(--accent);}
 .matchday-meta{flex:1;min-width:0;}
 .matchday-label{font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);letter-spacing:.1px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
 .md-badge{display:inline-block;padding:1px 6px;border-radius:5px;font-size:.65rem;border:1px solid;}
-.md-today-badge{background:rgba(0,173,239,.12);color:var(--accent);border-color:rgba(0,173,239,.3);}
+.md-today-badge{background:rgba(0,173,239,.12);color:var(--accent);border-color:var(--accent2-a35);}
 .md-past-badge{background:rgba(79,106,136,.1);color:var(--text-muted);border-color:rgba(79,106,136,.2);}
 .md-reserve-badge{background:rgba(79,106,136,.07);color:var(--text-muted);border-color:rgba(79,106,136,.15);}
 .matchday-count{font-size:.68rem;color:var(--text-muted);margin-top:2px;font-weight:400;}
 .matchday-drop-zone{min-height:6px;border-radius:7px;border:2px dashed transparent;transition:all .2s;margin:2px 0;}
-.matchday-drop-zone.drag-over-zone{border-color:var(--accent);background:rgba(0,173,239,.05);min-height:40px;}
+.matchday-drop-zone.drag-over-zone{border-color:var(--accent);background:var(--accent2-a10);min-height:40px;}
 /* Ép fixture-row thành 8 cột: trả lại kích thước chuẩn cho ô tỉ số và "vs." */
 .fixture-row{
   display:grid;
@@ -254,8 +264,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 .fixture-row:active{cursor:grabbing;}
 .fixture-row.dragging{opacity:.25;border-color:var(--accent);}
-.fixture-row.drag-over-row{border-color:var(--accent);background:rgba(0,173,239,.07);}
-.fixture-row:hover{border-color:rgba(0,173,239,.18);}
+.fixture-row.drag-over-row{border-color:var(--accent);background:var(--accent2-a10);}
+.fixture-row:hover{border-color:var(--accent2-a18);}
 .fixture-row.completed{border-left:3px solid var(--green);}
 /* fixture-num giữ nguyên width 44px như cột grid */
 .fixture-num {
@@ -379,7 +389,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   justify-content:center;
   border-radius:8px;
   border:1px solid rgba(197,248,81,.18);
-  background:rgba(197,248,81,.06);
+  background:var(--accent-a06);
   color:var(--accent);
   font-family:'Rajdhani',sans-serif;
   font-size:1.02rem;
@@ -439,7 +449,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 
 .card-stack.red .card-count{
-  background:rgba(235,69,96,.16);
+  background:var(--red-a16);
   color:#ff8a9e;
   border:1px solid rgba(235,69,96,.24);
 }
@@ -459,10 +469,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 .fixture-score{text-align:center;font-weight:700;font-size:.85rem;color:var(--accent);font-family:'Rajdhani',sans-serif;white-space:nowrap;}
 .result-pending{color:var(--gold);font-size:.65rem;}
-.empty-day{padding:9px 10px;border-radius:7px;text-align:center;border:2px dashed rgba(31,45,74,.7);color:var(--text-muted);font-size:.74rem;margin-bottom:3px;transition:all .2s;}
-.empty-day.drag-over-zone{border-color:var(--accent);background:rgba(0,173,239,.05);color:var(--accent);}
-.btn-icon{width:26px;height:26px;padding:0;border-radius:6px;background:rgba(0,173,239,.1);color:var(--accent);border:1px solid rgba(0,173,239,.2);font-size:12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
-.btn-icon:hover{background:rgba(0,173,239,.22);transform:scale(1.08);}
+.empty-day{padding:9px 10px;border-radius:7px;text-align:center;border:2px dashed var(--border-a50);color:var(--text-muted);font-size:.74rem;margin-bottom:3px;transition:all .2s;}
+.empty-day.drag-over-zone{border-color:var(--accent);background:var(--accent2-a10);color:var(--accent);}
+.btn-icon{width:26px;height:26px;padding:0;border-radius:6px;background:var(--accent2-a10);color:var(--accent);border:1px solid var(--accent2-a18);font-size:12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.btn-icon:hover{background:var(--accent2-a28);transform:scale(1.08);}
 .admin-lock{display:inline-flex;align-items:center;font-size:.65rem;color:var(--text-muted);vertical-align:middle;margin-left:3px;}
 
 /* Cột phải (Bảng xếp hạng) */
@@ -475,9 +485,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px;padding:8px 4px 0;}
 .podium-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;max-width:180px;min-width:0;}
 .podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative;flex-shrink:0;}
-.podium-item.p1 .podium-avatar{width:66px;height:66px;font-size:30px;box-shadow:0 0 0 3px #c5f851,0 0 28px rgba(197,248,81,.45);animation:pulse-gold 2s ease-in-out infinite;}
-@keyframes pulse-gold{0%,100%{box-shadow:0 0 0 3px #c5f851,0 0 28px rgba(197,248,81,.4);}50%{box-shadow:0 0 0 5px #c5f851,0 0 48px rgba(197,248,81,.65);}}
-.podium-item.p2 .podium-avatar{width:54px;height:54px;font-size:23px;box-shadow:0 0 0 2px #3145eb,0 0 14px rgba(49,69,235,.35);}
+.podium-item.p1 .podium-avatar{width:66px;height:66px;font-size:30px;box-shadow:0 0 0 3px #c5f851,0 0 28px var(--accent-a30);animation:pulse-gold 2s ease-in-out infinite;}
+@keyframes pulse-gold{0%,100%{box-shadow:0 0 0 3px #c5f851,0 0 28px var(--accent-a30);}50%{box-shadow:0 0 0 5px #c5f851,0 0 48px var(--accent-a30);}}
+.podium-item.p2 .podium-avatar{width:54px;height:54px;font-size:23px;box-shadow:0 0 0 2px var(--bronze),0 0 14px var(--accent2-a35);}
 .podium-item.p3 .podium-avatar{width:46px;height:46px;font-size:19px;box-shadow:0 0 0 2px #252a49,0 0 10px rgba(37,42,73,.5);}
 .podium-crown{font-size:1.3rem;animation:float 2s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
@@ -584,12 +594,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .c-draw { color: #00adef; font-weight: 600; } /* Xanh dương sáng */
 .c-lose { color: var(--red); font-weight: 600; }
 
-.standings-table td{padding:10px 10px;text-align:center;border-bottom:1px solid rgba(46,53,80,.5);font-size:.82rem;font-weight:400;transition:background .2s;}
-.standings-table tr:hover td{background:rgba(0,173,239,.04);}
+.standings-table td{padding:10px 10px;text-align:center;border-bottom:1px solid var(--border-a50);font-size:.82rem;font-weight:400;transition:background .2s;}
+.standings-table tr:hover td{background:var(--accent2-a10);}
 .standings-table tr:last-child td{border-bottom:none;padding-bottom:6px;}
 .rank-badge{width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;}
-.rank-1{background:linear-gradient(135deg,#c5f851,#9dcf1a);color:#20242d;}
-.rank-2{background:linear-gradient(135deg,#3145eb,#1e2fa0);color:#fff;}
+.rank-1{background:linear-gradient(135deg,var(--gold),var(--accent));color:var(--bg-deep);}
+.rank-2{background:linear-gradient(135deg,var(--accent2),var(--bronze));color:#fff;}
 .rank-3{background:linear-gradient(135deg,#252a49,#1c2030);color:#8fa3b8;border:1px solid #2e3550;}
 .rank-other{background:rgba(255,255,255,.07);color:var(--silver);}
 .team-name-cell {
@@ -608,22 +618,22 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Modals & Forms */
 .modal-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:12px;overflow-y:auto;}
 .modal-overlay.open{display:flex;}
-.modal-box{background:rgba(37,42,56,.96);border:1px solid var(--border);border-radius:18px;padding:22px;width:100%;max-width:640px;box-shadow:0 24px 80px rgba(0,0,0,.7),var(--glow);animation:slideUp .22s ease;position:relative;margin:auto;backdrop-filter:blur(12px);}
+.modal-box{background:var(--bg-card-96);border:1px solid var(--border);border-radius:18px;padding:22px;width:100%;max-width:640px;box-shadow:0 24px 80px rgba(0,0,0,.7),var(--glow);animation:slideUp .22s ease;position:relative;margin:auto;backdrop-filter:blur(12px);}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:18px 18px 0 0;background:linear-gradient(90deg,#3145eb,#c5f851,#252a49);}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:18px 18px 0 0;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--bg-card));}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
 .modal-title{font-family:'Rajdhani',sans-serif;font-size:1.15rem;font-weight:600;color:var(--accent);}
-.modal-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--silver);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;}
+.modal-close{width:32px;height:32px;border-radius:8px;background:var(--surface-a05);border:1px solid var(--border);color:var(--silver);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;}
 .modal-close:hover{background:rgba(232,0,77,.15);color:var(--red);border-color:var(--red);}
 .form-group{margin-bottom:13px;}
 .form-label{display:block;font-size:.7rem;color:var(--text-muted);margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase;font-weight:400;}
 .form-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-deep);color:var(--text);font-size:.88rem;font-family:'Inter',sans-serif;transition:border-color .2s,box-shadow .2s;}
-.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,173,239,.1);}
+.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent2-a10);}
 .form-select{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-deep);color:var(--text);font-size:.88rem;cursor:pointer;font-family:'Inter',sans-serif;}
 .form-select:focus{outline:none;border-color:var(--accent);}
 .score-cards-grid{display:grid;grid-template-columns:1fr 30px 1fr;gap:8px;align-items:start;}
 .score-col{display:flex;flex-direction:column;gap:6px;}
-.score-col-header{text-align:center;font-size:.78rem;font-weight:600;padding:5px 4px;border-radius:6px;background:rgba(255,255,255,.04);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.score-col-header{text-align:center;font-size:.78rem;font-weight:600;padding:5px 4px;border-radius:6px;background:var(--surface-a04);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .score-big{text-align:center;font-size:1.6rem;font-family:'Rajdhani',sans-serif;font-weight:700;}
 .card-input-wrap{display:flex;align-items:center;gap:4px;}
 .card-input-wrap .card-icon{font-size:.85rem;flex-shrink:0;width:16px;text-align:center;}
@@ -633,26 +643,26 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Team Settings Modal */
 .team-inputs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
 .team-entry{background:var(--bg-deep);border:1px solid var(--border);border-radius:11px;padding:12px;transition:border-color .2s;position:relative;}
-.team-entry:hover{border-color:rgba(0,173,239,.25);}
+.team-entry:hover{border-color:var(--accent2-a28);}
 .team-entry-header{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
 .emoji-trigger{width:42px;height:42px;border-radius:9px;border:2px solid var(--border);background:var(--bg-card2);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;position:relative;}
-.emoji-trigger:hover{border-color:var(--accent);box-shadow:0 0 10px rgba(0,173,239,.18);}
+.emoji-trigger:hover{border-color:var(--accent);box-shadow:0 0 10px var(--accent2-a18);}
 .emoji-trigger .change-hint{position:absolute;bottom:-5px;right:-5px;background:var(--accent);color:#000;border-radius:50%;width:14px;height:14px;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700;opacity:0;transition:opacity .2s;}
 .team-entry:hover .emoji-trigger .change-hint{opacity:1;}
 .team-entry-label{font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
 .emoji-picker{position:fixed;z-index:3000;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px;width:290px;box-shadow:0 20px 60px rgba(0,0,0,.75),var(--glow);animation:slideUp .16s ease;}
 .emoji-picker-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
 .emoji-picker-title{font-size:.75rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
-.emoji-picker-close{width:22px;height:22px;border-radius:5px;background:rgba(255,255,255,.05);border:none;color:var(--silver);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.emoji-picker-close{width:22px;height:22px;border-radius:5px;background:var(--surface-a05);border:none;color:var(--silver);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .emoji-picker-close:hover{color:var(--red);}
 .emoji-cats{display:flex;gap:3px;margin-bottom:9px;overflow-x:auto;padding-bottom:2px;}
-.emoji-cat-btn{padding:4px 8px;border-radius:6px;border:none;cursor:pointer;font-size:.7rem;font-weight:600;white-space:nowrap;background:rgba(255,255,255,.04);color:var(--text-muted);transition:all .13s;}
-.emoji-cat-btn:hover{background:rgba(0,173,239,.1);color:var(--accent);}
-.emoji-cat-btn.active{background:rgba(0,173,239,.14);color:var(--accent);border:1px solid rgba(0,173,239,.28);}
+.emoji-cat-btn{padding:4px 8px;border-radius:6px;border:none;cursor:pointer;font-size:.7rem;font-weight:600;white-space:nowrap;background:var(--surface-a04);color:var(--text-muted);transition:all .13s;}
+.emoji-cat-btn:hover{background:var(--accent2-a10);color:var(--accent);}
+.emoji-cat-btn.active{background:var(--accent2-a18);color:var(--accent);border:1px solid var(--accent2-a28);}
 .emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;max-height:190px;overflow-y:auto;}
 .emoji-btn{width:30px;height:30px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .13s;}
-.emoji-btn:hover{background:rgba(0,173,239,.13);transform:scale(1.18);}
-.emoji-btn.selected{background:rgba(0,173,239,.18);box-shadow:0 0 0 2px var(--accent);}
+.emoji-btn:hover{background:var(--accent2-a10);transform:scale(1.18);}
+.emoji-btn.selected{background:var(--accent2-a18);box-shadow:0 0 0 2px var(--accent);}
 .color-swatches{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);}
 .color-swatch{width:22px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;transition:all .13s;flex-shrink:0;}
 .color-swatch:hover{transform:scale(1.15);}
@@ -664,33 +674,33 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .auto-preview-row:last-child{border-bottom:none;}
 .reset-steps{display:flex;flex-direction:column;gap:10px;margin:16px 0;}
 .reset-step{padding:11px 13px;border-radius:9px;border:1px solid var(--border);background:var(--bg-deep);display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--text-muted);font-weight:400;}
-.reset-step.active{border-color:var(--red);background:rgba(235,69,96,.06);color:var(--text);}
+.reset-step.active{border-color:var(--red);background:var(--red-a08);color:var(--text);}
 .reset-step-num{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.74rem;font-weight:700;flex-shrink:0;}
 .reset-step.active .reset-step-num{border-color:var(--red);color:var(--red);}
 
 /* Datepicker Component */
 .dp-wrap{position:relative;display:inline-block;width:100%;}
 .dp-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-deep);color:var(--text);font-size:.88rem;font-family:'Inter',sans-serif;cursor:pointer;transition:border-color .2s,box-shadow .2s;caret-color:transparent;}
-.dp-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,173,239,.1);}
+.dp-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent2-a10);}
 .dp-popup{position:fixed;z-index:4000;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px;width:280px;box-shadow:0 20px 60px rgba(0,0,0,.75),var(--glow);animation:slideUp .16s ease;user-select:none;}
 .dp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
-.dp-nav{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .13s;}
-.dp-nav:hover{background:rgba(0,173,239,.13);border-color:var(--accent);color:var(--accent);}
+.dp-nav{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface-a04);color:var(--text);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .13s;}
+.dp-nav:hover{background:var(--accent2-a10);border-color:var(--accent);color:var(--accent);}
 .dp-month-label{font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;color:var(--accent);cursor:pointer;padding:3px 7px;border-radius:6px;transition:background .13s;}
-.dp-month-label:hover{background:rgba(0,173,239,.1);}
+.dp-month-label:hover{background:var(--accent2-a10);}
 .dp-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
 .dp-dow{text-align:center;font-size:.63rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;padding:2px 0;}
 .dp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
 .dp-day{width:34px;height:34px;border-radius:7px;border:none;background:transparent;color:var(--text);cursor:pointer;font-size:.82rem;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;transition:all .13s;margin:auto;}
 .dp-day:hover:not(.dp-day-empty):not(.dp-day-weekend){background:rgba(0,173,239,.12);color:var(--accent);}
 .dp-day-empty{cursor:default;}.dp-day-weekend{color:var(--text-muted);opacity:.38;cursor:not-allowed;}
-.dp-day-today{border:1px solid rgba(0,173,239,.4);color:var(--accent);}
+.dp-day-today{border:1px solid var(--accent2-a40);color:var(--accent);}
 .dp-day-selected{background:linear-gradient(135deg,var(--accent),#0077c8)!important;color:#fff!important;font-weight:700;}
 .dp-day-past{opacity:.45;}
 .dp-month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:4px 0;}
-.dp-month-btn{padding:7px 4px;border-radius:7px;border:none;background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font-size:.78rem;font-family:'Inter',sans-serif;transition:all .13s;text-align:center;}
-.dp-month-btn:hover{background:rgba(0,173,239,.1);color:var(--accent);}
-.dp-month-btn.dp-month-selected{background:rgba(0,173,239,.18);color:var(--accent);border:1px solid rgba(0,173,239,.3);}
+.dp-month-btn{padding:7px 4px;border-radius:7px;border:none;background:var(--surface-a04);color:var(--text);cursor:pointer;font-size:.78rem;font-family:'Inter',sans-serif;transition:all .13s;text-align:center;}
+.dp-month-btn:hover{background:var(--accent2-a10);color:var(--accent);}
+.dp-month-btn.dp-month-selected{background:var(--accent2-a18);color:var(--accent);border:1px solid var(--accent2-a35);}
 .dp-clear{width:100%;margin-top:9px;padding:5px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-size:.76rem;transition:all .13s;}
 .dp-clear:hover{border-color:var(--red);color:var(--red);}
 
@@ -715,7 +725,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   font-weight: 700;
   letter-spacing: 6px;
   color: var(--red);
-  background: rgba(235,69,96,.08);
+  background: var(--red-a08);
   border: 1.5px dashed rgba(235,69,96,.4);
   border-radius: 9px;
   padding: 5px 16px;
@@ -753,14 +763,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   padding: 2px 7px;
   border-radius: 5px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,.04);
+  background: var(--surface-a04);
   cursor: pointer;
   white-space: nowrap;
   transition: all .15s;
   flex-shrink: 0;
 }
 .past-collapse-toggle:hover {
-  border-color: rgba(197,248,81,.3);
+  border-color: var(--accent-a30);
   color: var(--accent);
 }
 
@@ -770,7 +780,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   border-radius: 11px;
   padding: 8px 8px 4px;
   background: rgba(197,248,81,.03);
-  box-shadow: 0 0 16px rgba(197,248,81,.06);
+  box-shadow: 0 0 16px var(--accent-a06);
   margin-bottom: 14px;
 }
 .matchday-block.is-last-played .matchday-label::after {
@@ -778,7 +788,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   font-size: .62rem;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(197,248,81,.12);
+  background: var(--accent-a12);
   color: var(--accent);
   border: 1px solid rgba(197,248,81,.25);
   margin-left: 6px;
@@ -789,7 +799,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 /* Today anchor */
 .matchday-block.is-today {
-  border: 1px solid rgba(0,173,239,.28);
+  border: 1px solid var(--accent2-a28);
   border-radius: 11px;
   padding: 8px 8px 4px;
   background: rgba(0,173,239,.03);
@@ -863,7 +873,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   text-shadow: 0 0 8px rgba(197,248,81,.25);
 }
 .fixture-team.is-winner .team-emoji{
-  filter: drop-shadow(0 0 5px rgba(197,248,81,.4));
+  filter: drop-shadow(0 0 5px var(--accent-a30));
 }
 .fixture-team.is-loser .tname{
   opacity: .45;
@@ -910,19 +920,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 .fixture-score-box.is-winner{
   background: rgba(197,248,81,.14);
-  border-color: rgba(197,248,81,.4);
+  border-color: var(--accent-a30);
   color: var(--accent);
-  box-shadow: 0 0 8px rgba(197,248,81,.12);
+  box-shadow: 0 0 8px var(--accent-a12);
 }
 .fixture-score-box.is-loser{
-  background: rgba(235,69,96,.06);
+  background: var(--red-a08);
   border-color: rgba(235,69,96,.2);
   color: var(--red);
   opacity: .7;
 }
 .fixture-score-box.is-draw{
   background: rgba(0,173,239,.08);
-  border-color: rgba(0,173,239,.25);
+  border-color: var(--accent2-a28);
   color: #00adef;
 }
 
@@ -945,7 +955,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   letter-spacing:.2px;
   white-space:nowrap;
   border:1px solid transparent;
-  background:rgba(255,255,255,.05);
+  background:var(--surface-a05);
   will-change:transform,opacity;
 }
 
@@ -1691,7 +1701,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   filter: grayscale(0.5);
 }
 .standings-table.is-filtered tr.team-row.selected-team {
-  background: rgba(197,248,81,.12);
+  background: var(--accent-a12);
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .standings-table tr.team-row {
@@ -1724,7 +1734,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   to   { transform: rotate(360deg) scale(1);    }
 }
 @keyframes icon-glow-pulse {
-  0%,100% { filter: drop-shadow(0 0 2px rgba(197,248,81,.3)); }
+  0%,100% { filter: drop-shadow(0 0 2px var(--accent-a30)); }
   50%     { filter: drop-shadow(0 0 10px rgba(197,248,81,.9)); }
 }
 
@@ -1787,7 +1797,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   justify-content:center;
   border-radius:8px;
   border:1px solid rgba(197,248,81,.18);
-  background:rgba(197,248,81,.06);
+  background:var(--accent-a06);
   color:var(--accent);
   font-family:'Rajdhani',sans-serif;
   font-size:1.02rem;
@@ -1965,11 +1975,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   <line x1="800" y1="50" x2="800" y2="850" stroke="rgba(197,248,81,.55)" stroke-width="2"/>
   <circle cx="800" cy="450" r="110" fill="none" stroke="rgba(197,248,81,.5)" stroke-width="2"/>
   <circle cx="800" cy="450" r="5" fill="rgba(197,248,81,.6)"/>
-  <rect x="60" y="300" width="140" height="300" fill="none" stroke="rgba(197,248,81,.45)" stroke-width="2"/>
-  <rect x="60" y="175" width="270" height="550" fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
+  <rect x="60" y="300" width="140" height="300" fill="none" stroke="var(--accent-a30)" stroke-width="2"/>
+  <rect x="60" y="175" width="270" height="550" fill="none" stroke="var(--accent-a30)" stroke-width="1.5"/>
   <circle cx="270" cy="450" r="4" fill="rgba(197,248,81,.5)"/>
-  <rect x="1400" y="300" width="140" height="300" fill="none" stroke="rgba(197,248,81,.45)" stroke-width="2"/>
-  <rect x="1270" y="175" width="270" height="550" fill="none" stroke="rgba(197,248,81,.3)" stroke-width="1.5"/>
+  <rect x="1400" y="300" width="140" height="300" fill="none" stroke="var(--accent-a30)" stroke-width="2"/>
+  <rect x="1270" y="175" width="270" height="550" fill="none" stroke="var(--accent-a30)" stroke-width="1.5"/>
   <circle cx="1330" cy="450" r="4" fill="rgba(197,248,81,.5)"/>
 </svg>
 
@@ -1996,7 +2006,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
       <button class="modal-close" onclick="closeModal('teamModal')">✕</button>
     </div>
     <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg-deep);border-radius:10px;padding:4px;border:1px solid var(--border);">
-      <button id="tab-teams" onclick="switchTeamTab('teams')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:rgba(197,248,81,.12);color:var(--accent);">🛡️ Danh sách đội</button>
+      <button id="tab-teams" onclick="switchTeamTab('teams')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:var(--accent-a12);color:var(--accent);">🛡️ Danh sách đội</button>
       <button id="tab-settings" onclick="switchTeamTab('settings')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:transparent;color:var(--text-muted);">🔒 Cài đặt giải đấu</button>
     </div>
     <div id="tab-content-teams">
@@ -2004,16 +2014,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         <div style="font-size:.78rem;color:var(--text-muted);">Click icon để đổi emoji & màu • Kéo để sắp xếp</div>
         <div style="display:flex;gap:6px;">
           <button class="btn-flat" id="btnRemoveTeam" onclick="requireAdmin(removeLastTeam)" style="color:var(--red);border-color:rgba(235,69,96,.3);">➖ Bớt đội</button>
-          <button class="btn-flat" id="btnAddTeam" onclick="requireAdmin(addNewTeam)" style="color:var(--accent);border-color:rgba(197,248,81,.3);">➕ Thêm đội</button>
+          <button class="btn-flat" id="btnAddTeam" onclick="requireAdmin(addNewTeam)" style="color:var(--accent);border-color:var(--accent-a30);">➕ Thêm đội</button>
         </div>
       </div>
-      <div id="teamChangeWarning" style="display:none;padding:10px 13px;border-radius:9px;background:rgba(235,69,96,.08);border:1px solid rgba(235,69,96,.3);color:#f87171;font-size:.78rem;margin-bottom:12px;line-height:1.6;"></div>
+      <div id="teamChangeWarning" style="display:none;padding:10px 13px;border-radius:9px;background:var(--red-a08);border:1px solid rgba(235,69,96,.3);color:#f87171;font-size:.78rem;margin-bottom:12px;line-height:1.6;"></div>
       <div class="team-inputs-grid" id="teamInputsGrid"></div>
       <div style="display:flex;gap:8px;margin-top:18px;justify-content:space-between;align-items:center;flex-wrap:wrap;">
         <div style="font-size:.75rem;color:var(--text-muted);" id="teamCountLabel"></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-flat" onclick="closeModal('teamModal')">Hủy</button>
-          <button class="btn-flat" style="border-color:rgba(197,248,81,.4);color:var(--accent);" onclick="saveTeamsModal()">💾 Lưu đội</button>
+          <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="saveTeamsModal()">💾 Lưu đội</button>
         </div>
       </div>
     </div>
@@ -2033,7 +2043,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
       </div>
       <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
         <button class="btn-flat" onclick="closeModal('teamModal')">Hủy</button>
-        <button class="btn-flat" style="border-color:rgba(197,248,81,.4);color:var(--accent);" onclick="saveLeagueConfig()">💾 Lưu cài đặt</button>
+        <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="saveLeagueConfig()">💾 Lưu cài đặt</button>
       </div>
     </div>
   </div>
@@ -2089,7 +2099,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap;">
       <button class="btn-flat btn-flat-danger" onclick="resetResultModal()">↩️ Hủy kết quả trận đấu</button>
       <button class="btn-flat" onclick="closeModal('resultModal')">Hủy</button>
-      <button class="btn-flat" style="border-color:rgba(197,248,81,.4);color:var(--accent);" onclick="saveResultModal()">💾 Lưu kết quả</button>
+      <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="saveResultModal()">💾 Lưu kết quả</button>
     </div>
   </div>
 </div>
@@ -2100,7 +2110,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div class="modal-header"><div class="modal-title">⚡ Tự động xếp lịch</div><button class="modal-close" onclick="closeModal('autoModal')">✕</button></div>
     <div class="form-group"><label class="form-label">Logic xếp lịch</label>
       <div style="display:flex;flex-direction:column;gap:7px;">
-        <label style="display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:9px;border:1px solid rgba(197,248,81,.45);background:var(--bg-deep);cursor:pointer;transition:border-color .18s;" id="logic-opt-A">
+        <label style="display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:9px;border:1px solid var(--accent-a30);background:var(--bg-deep);cursor:pointer;transition:border-color .18s;" id="logic-opt-A">
           <input type="radio" name="scheduleLogic" value="independent" checked style="margin-top:3px;accent-color:var(--accent);flex-shrink:0;" onchange="onLogicChange()">
           <div><div style="font-size:.83rem;font-weight:600;color:var(--text);">🔀 Các trận độc lập / ngày</div><div style="font-size:.72rem;color:var(--text-muted);margin-top:3px;line-height:1.5;">Hạn chế một đội phải đá 2 trận trong cùng 1 ngày.</div></div>
         </label>
@@ -2134,7 +2144,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div id="loginError" style="color:var(--red);font-size:.79rem;min-height:16px;margin-bottom:9px;"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button class="btn-flat" onclick="closeModal('loginModal')">Hủy</button>
-      <button class="btn-flat" style="border-color:rgba(197,248,81,.4);color:var(--accent);" onclick="doLogin()">🔐 Đăng nhập</button>
+      <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="doLogin()">🔐 Đăng nhập</button>
     </div>
   </div>
 </div>
@@ -2148,7 +2158,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div id="resetCodeWrap" style="margin:14px 0 4px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
         <label class="form-label" style="margin:0;">Nhập mã xác nhận</label>
-        <div id="resetCodeDisplay" style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:6px;color:var(--red);background:rgba(235,69,96,.08);border:1.5px dashed rgba(235,69,96,.4);border-radius:9px;padding:5px 16px;cursor:pointer;user-select:none;transition:all .2s;" title="Click để tạo mã mới" onclick="generateResetCode()"> -  -  -  -  -  - </div>
+        <div id="resetCodeDisplay" style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:6px;color:var(--red);background:var(--red-a08);border:1.5px dashed rgba(235,69,96,.4);border-radius:9px;padding:5px 16px;cursor:pointer;user-select:none;transition:all .2s;" title="Click để tạo mã mới" onclick="generateResetCode()"> -  -  -  -  -  - </div>
       </div>
       <div style="position:relative;">
         <input class="form-input" id="resetCodeInput" placeholder="Nhập 6 chữ số..." maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="letter-spacing:4px;font-size:1.1rem;font-family:'Rajdhani',sans-serif;font-weight:600;text-align:center;padding-right:40px;" oninput="onResetCodeInput()">
@@ -2993,7 +3003,7 @@ function groupBack2Back(pending, usedSlotsPerDay = {}) {
 }
 
 function getSelectedLogic() { const el = document.querySelector('input[name="scheduleLogic"]:checked'); return el ? el.value : 'independent'; }
-window.onLogicChange = () => { const val = getSelectedLogic(); document.getElementById('logic-opt-A').style.borderColor = val === 'independent' ? 'rgba(197,248,81,.45)' : 'var(--border)'; document.getElementById('logic-opt-B').style.borderColor = val === 'back2back' ? 'rgba(49,69,235,.55)' : 'var(--border)'; const iso = window._autoGetISO ? window._autoGetISO() : ''; if (iso) refreshAutoPreview(iso); };
+window.onLogicChange = () => { const val = getSelectedLogic(); document.getElementById('logic-opt-A').style.borderColor = val === 'independent' ? 'var(--accent-a30)' : 'var(--border)'; document.getElementById('logic-opt-B').style.borderColor = val === 'back2back' ? 'rgba(49,69,235,.55)' : 'var(--border)'; const iso = window._autoGetISO ? window._autoGetISO() : ''; if (iso) refreshAutoPreview(iso); };
 window.openAutoModal = function() {
   const suggested = nearestWorkday(todayISO());
   const dg = document.getElementById('autoDateGroup');
@@ -5089,7 +5099,7 @@ window.renderTeamModalInputs = () => {
         ${_tempTeamIds.length > MIN_TEAMS
           ? `<button onclick="removeTeamById('${id}')"
               style="width:22px;height:22px;border-radius:5px;border:1px solid rgba(235,69,96,.3);
-              background:rgba(235,69,96,.08);color:var(--red);cursor:pointer;font-size:11px;
+              background:var(--red-a08);color:var(--red);cursor:pointer;font-size:11px;
               display:flex;align-items:center;justify-content:center;flex-shrink:0;
               transition:all .15s;-webkit-tap-highlight-color:transparent;"
               title="${isAdmin ? 'Xóa đội này' : '🔒 Cần Admin'}">${isAdmin ? '✕' : '🔒'}</button>`
@@ -5197,7 +5207,7 @@ window.switchTeamTab = (tab) => {
   }
   ['teams', 'settings'].forEach(t => {
     const btn = document.getElementById(`tab-${t}`), content = document.getElementById(`tab-content-${t}`), active = t === tab;
-    if (btn) { btn.style.background = active ? 'rgba(197,248,81,.12)' : 'transparent'; btn.style.color = active ? 'var(--accent)' : 'var(--text-muted)'; }
+    if (btn) { btn.style.background = active ? 'var(--accent-a12)' : 'transparent'; btn.style.color = active ? 'var(--accent)' : 'var(--text-muted)'; }
     if (content) content.style.display = active ? 'block' : 'none';
   });
   if (tab === 'settings') renderLeagueConfigTab();
@@ -5415,7 +5425,7 @@ setTimeout(syncFixtureCardHeight, 500);
 
 // ── THEME SWITCHER ──────────────────────────────────────────────
 const THEMES = [
-  { name:'⚡ Pitch Night', body:'#0d1a0a', bg:'#20242d', card:'#252a38', card2:'#1c2030', border:'#2e3550', accent:'#c5f851', accent2:'#3145eb', text:'#c5f851', muted:'#4f6080', red:'#eb4560', gold:'#c5f851', silver:'#8fa3b8', bronze:'#3145eb', glow:'rgba(197,248,81,.12)' },
+  { name:'⚡ Pitch Night', body:'#0d1a0a', bg:'#20242d', card:'#252a38', card2:'#1c2030', border:'#2e3550', accent:'#c5f851', accent2:'#3145eb', text:'#c5f851', muted:'#4f6080', red:'#eb4560', gold:'#c5f851', silver:'#8fa3b8', bronze:'#3145eb', glow:'var(--accent-a12)' },
   { name:'🔥 El Clásico',  body:'#100b08', bg:'#1a1210', card:'#251815', card2:'#1a1210', border:'#3d2018', accent:'#f5a623', accent2:'#e02020', text:'#f5d98b', muted:'#6b4433', red:'#e02020', gold:'#f5a623', silver:'#c0a87a', bronze:'#9b3a20', glow:'rgba(245,166,35,.12)' },
   { name:'💙 Azzurri',     body:'#080f1a', bg:'#0f1b2d', card:'#152236', card2:'#0f1b2d', border:'#1e3a5f', accent:'#4fc3f7', accent2:'#1565c0', text:'#90caf9', muted:'#2c4a6e', red:'#ef5350', gold:'#4fc3f7', silver:'#78909c', bronze:'#1565c0', glow:'rgba(79,195,247,.12)' },
   { name:'🌿 Verde',       body:'#070f08', bg:'#0f1f12', card:'#162519', card2:'#0f1f12', border:'#1e3d24', accent:'#69f0ae', accent2:'#00897b', text:'#a5d6a7', muted:'#2e5035', red:'#ef5350', gold:'#69f0ae', silver:'#80cbc4', bronze:'#00897b', glow:'rgba(105,240,174,.12)' },
@@ -5431,6 +5441,12 @@ const THEME_KEY = 'fifa_theme';
 
 function applyTheme(t) {
   const r = document.documentElement.style;
+  function ha(hex, a) {
+    const h = hex.replace('#','');
+    const rv = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+    return `rgba(${rv},${g},${b},${a})`;
+  }
+  const dark = t.body <= '#181818';
   r.setProperty('--bg-deep',    t.bg);
   r.setProperty('--bg-card',    t.card);
   r.setProperty('--bg-card2',   t.card2);
@@ -5444,7 +5460,25 @@ function applyTheme(t) {
   r.setProperty('--red',        t.red);
   r.setProperty('--text',       t.text);
   r.setProperty('--text-muted', t.muted);
-  r.setProperty('--glow',       `0 0 24px ${t.glow}`);
+  r.setProperty('--glow',       `0 0 24px ${ha(t.accent,.12)}`);
+  // derived
+  r.setProperty('--accent-a06',  ha(t.accent,.06));
+  r.setProperty('--accent-a10',  ha(t.accent,.10));
+  r.setProperty('--accent-a12',  ha(t.accent,.12));
+  r.setProperty('--accent-a18',  ha(t.accent,.18));
+  r.setProperty('--accent-a30',  ha(t.accent,.30));
+  r.setProperty('--accent2-a10', ha(t.accent2,.10));
+  r.setProperty('--accent2-a18', ha(t.accent2,.18));
+  r.setProperty('--accent2-a28', ha(t.accent2,.28));
+  r.setProperty('--accent2-a35', ha(t.accent2,.35));
+  r.setProperty('--accent2-a40', ha(t.accent2,.40));
+  r.setProperty('--red-a08',     ha(t.red,.08));
+  r.setProperty('--red-a16',     ha(t.red,.16));
+  r.setProperty('--bg-card-96',  ha(t.card,.96));
+  r.setProperty('--header-bg',   ha(t.card2,.92));
+  r.setProperty('--surface-a04', dark ? 'var(--surface-a04)' : 'rgba(0,0,0,.04)');
+  r.setProperty('--surface-a05', dark ? 'var(--surface-a05)' : 'rgba(0,0,0,.05)');
+  r.setProperty('--border-a50',  ha(t.border,.50));
   document.body.style.background = t.body;
   localStorage.setItem(THEME_KEY, t.name);
 }

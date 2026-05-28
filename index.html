@@ -4773,38 +4773,34 @@ function drawScorersCanvas(state, width, height) {
     const py = cfg.topY;
     const pw = cfg.width;
     const ph = cfg.height;
-    
-    // Draw podium body with gradient
-    const grad = ctx.createLinearGradient(px, py, px, py + ph);
-    grad.addColorStop(0, cfg.gradColors[0]);
-    grad.addColorStop(1, cfg.gradColors[1]);
-    
+
+    // Flat fill — màu theo hạng giống CSS top 3 đội
+    const fillColor = cfg.rank === 1
+      ? 'rgba(197,248,81,.15)'
+      : cfg.rank === 2
+        ? 'rgba(49,69,235,.15)'
+        : 'rgba(37,42,73,.30)';
+    const borderColor = cfg.rank === 1
+      ? 'rgba(197,248,81,.35)'
+      : cfg.rank === 2
+        ? 'rgba(49,69,235,.35)'
+        : 'rgba(143,163,184,.20)';
+
     ctx.beginPath();
-    ctx.roundRect(px, py, pw, ph, 6);
-    ctx.fillStyle = grad;
+    ctx.roundRect(px, py, pw, ph, [7, 7, 0, 0]);
+    ctx.fillStyle = fillColor;
     ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = cfg.strokeColor;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = borderColor;
     ctx.stroke();
-    
-    // Top highlight line for Gold
-    if (cfg.rank === 1) {
-      ctx.strokeStyle = '#fef08a';
-      ctx.beginPath();
-      ctx.moveTo(px + 2, py + 1);
-      ctx.lineTo(px + pw - 2, py + 1);
-      ctx.stroke();
-    }
-    
-    // Rank Number
-    ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    ctx.font = 'bold 22px Rajdhani, sans-serif';
+
+    // Rank number
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(cfg.rank.toString(), cfg.x + 1.5, py + ph / 2 + 3);
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(cfg.rank.toString(), cfg.x, py + ph / 2 + 1);
+    ctx.font = 'bold 20px Rajdhani, sans-serif';
+    const numColor = cfg.rank === 1 ? '#c5f851' : cfg.rank === 2 ? '#3145eb' : '#8fa3b8';
+    ctx.fillStyle = numColor;
+    ctx.fillText(cfg.rank.toString(), cfg.x, py + ph / 2);
   });
   
   // Draw players standing on podiums

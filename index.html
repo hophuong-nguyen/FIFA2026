@@ -581,8 +581,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .standings-table th {
   padding: 10px;
   text-align: center;
-  color: #e2e8f0; /* Chữ sáng hơn */
-  background: rgba(255,255,255,.06); /* Nền sáng nhẹ */
+  color: var(--text);
+  background: var(--accent2-a10);
   font-size: .68rem;
   text-transform: uppercase;
   letter-spacing: .5px;
@@ -1530,12 +1530,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   animation: tname-pingpong 4s ease-in-out infinite alternate !important;
 }
 
-.sub-line.tiebreak  { color:#4f6080; font-style:italic; }
-.sub-line.gap-top   { color:#8fa3b8; }
-.sub-line.gap-top .sub-hl    { color:#c5f851; }
-.sub-line.draw-ctx  { color:#00adef; }
-.sub-line.draw-ctx .sub-hl   { color:#38bdf8; }
-.sub-line.pts-gained{ color:#4f6080; }
+.sub-line.tiebreak  { color:var(--text-muted); font-style:italic; }
+.sub-line.gap-top   { color:var(--silver); }
+.sub-line.gap-top .sub-hl    { color:var(--accent); }
+.sub-line.draw-ctx  { color:var(--accent2); }
+.sub-line.draw-ctx .sub-hl   { color:var(--accent2); }
+.sub-line.pts-gained{ color:var(--text-muted); }
 .sub-line.pts-gained .sub-hl { color:var(--green); }
 
 /* Separator dot */

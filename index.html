@@ -2243,7 +2243,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
       <div style="margin-top: 32px;"></div>
       <div class="card-title"><div class="icon">⚽</div>Vua phá lưới</div>
       <div id="scorerPodiumArea"></div>
-      <table class="standings-table" id="topScorersTable" style="margin-bottom: 24px;"></table>
+      <table class="standings-table" id="topScorersTable" style="margin-bottom: 12px;"></table>
+      <div id="topScorersToggleWrap" style="text-align:center; margin-bottom: 24px;"></div>
     </div>
   </div>
 </div>
@@ -4431,6 +4432,7 @@ if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D
 }
 
 let topScorersAnimState = null;
+let topScorersExpanded = false;
 
 function drawHair(ctx, x, y, name) {
   let hash = 0;
@@ -4471,7 +4473,10 @@ function drawHair(ctx, x, y, name) {
   }
 }
 
-function drawFaceDetails(ctx, x, y, isJumping) {
+function drawFaceDetails(ctx, x, y, isJumping, name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+
   if (isJumping) {
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1.5;
@@ -4497,17 +4502,48 @@ function drawFaceDetails(ctx, x, y, isJumping) {
     ctx.fillStyle = '#e11d48';
     ctx.fill();
   } else {
+    // Normal eyes
     ctx.fillStyle = '#1e293b';
     ctx.beginPath();
     ctx.arc(x - 3.5, y - 2, 1.2, 0, Math.PI * 2);
     ctx.arc(x + 3.5, y - 2, 1.2, 0, Math.PI * 2);
     ctx.fill();
     
+    // Focused determined eyebrows (competitive pro style)
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = 'round';
+    
+    // Left eyebrow: \
+    ctx.beginPath();
+    ctx.moveTo(x - 5.5, y - 5.5);
+    ctx.lineTo(x - 1.5, y - 4);
+    ctx.stroke();
+    
+    // Right eyebrow: /
+    ctx.beginPath();
+    ctx.moveTo(x + 5.5, y - 5.5);
+    ctx.lineTo(x + 1.5, y - 4);
+    ctx.stroke();
+    
+    // Smirk smile
     ctx.beginPath();
     ctx.arc(x, y + 1, 4.5, 0.1 * Math.PI, 0.9 * Math.PI);
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1.5;
     ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+  
+  // Pro athletic headband (drawn for players with even name hashes)
+  if (hash % 2 === 0) {
+    ctx.fillStyle = '#ffffff'; // Sporty white headband
+    ctx.beginPath();
+    ctx.roundRect(x - 9.5, y - 8.5, 19, 3.2, 1);
+    ctx.fill();
+    // Thin headband outline
+    ctx.strokeStyle = 'rgba(30, 41, 59, 0.12)';
+    ctx.lineWidth = 0.5;
     ctx.stroke();
   }
 }
@@ -4521,48 +4557,104 @@ function drawPlayer(ctx, player, time) {
   const teamId = player.entry.teamId;
   const primaryColor = teamColors[teamId] || '#ffffff';
   
-  // 1. Legs
+  // 1. Legs, knee socks, and boots (Soccer Pro Uniform)
   ctx.lineWidth = 3.5;
   ctx.lineCap = 'round';
-  ctx.strokeStyle = '#ffcbb4';
   
+  // Left leg skin above sock
+  ctx.strokeStyle = '#ffcbb4';
   ctx.beginPath();
   ctx.moveTo(x - 5, feetY - 15);
-  ctx.lineTo(x - 5, feetY - 3);
+  ctx.lineTo(x - 5, feetY - 12);
   ctx.stroke();
   
+  // Left high sock
+  ctx.strokeStyle = primaryColor;
+  ctx.beginPath();
+  ctx.moveTo(x - 5, feetY - 12);
+  ctx.lineTo(x - 5, feetY - 3.5);
+  ctx.stroke();
+  
+  // Left sock stripe
+  ctx.strokeStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(x - 5, feetY - 11);
+  ctx.lineTo(x - 5, feetY - 9.5);
+  ctx.stroke();
+  
+  // Right leg skin above sock
+  ctx.strokeStyle = '#ffcbb4';
   ctx.beginPath();
   ctx.moveTo(x + 5, feetY - 15);
-  ctx.lineTo(x + 5, feetY - 3);
+  ctx.lineTo(x + 5, feetY - 12);
   ctx.stroke();
   
-  // Boots (High-vis neon yellow)
-  ctx.fillStyle = '#c5f851';
+  // Right high sock
+  ctx.strokeStyle = primaryColor;
   ctx.beginPath();
-  ctx.roundRect(x - 8, feetY - 3, 5, 3, 1);
-  ctx.roundRect(x + 3, feetY - 3, 5, 3, 1);
+  ctx.moveTo(x + 5, feetY - 12);
+  ctx.lineTo(x + 5, feetY - 3.5);
+  ctx.stroke();
+  
+  // Right sock stripe
+  ctx.strokeStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(x + 5, feetY - 11);
+  ctx.lineTo(x + 5, feetY - 9.5);
+  ctx.stroke();
+  
+  // Sleek soccer cleats with neon accent studs
+  ctx.fillStyle = '#1e293b'; // Boot main body
+  ctx.beginPath();
+  ctx.roundRect(x - 8, feetY - 3.5, 5.5, 3.5, 1);
+  ctx.roundRect(x + 2.5, feetY - 3.5, 5.5, 3.5, 1);
   ctx.fill();
   
-  // Shorts (White)
+  ctx.fillStyle = '#c5f851'; // Neon yellow cleats/studs
+  ctx.fillRect(x - 7.5, feetY - 0.6, 4.5, 0.8);
+  ctx.fillRect(x + 3, feetY - 0.6, 4.5, 0.8);
+  
+  // 2. Dual-Opening Athletic Shorts
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
-  ctx.roundRect(x - 7, feetY - 18, 14, 5, 1);
+  ctx.roundRect(x - 9, feetY - 18, 8, 6, 1);
+  ctx.roundRect(x + 1, feetY - 18, 8, 6, 1);
   ctx.fill();
+  ctx.fillRect(x - 4, feetY - 18, 8, 2); // Connect top waist
   
-  // 2. Torso (Jersey)
+  // 3. Torso (Sport jersey with defined shoulders)
   ctx.fillStyle = primaryColor;
   ctx.beginPath();
-  ctx.roundRect(x - 8, feetY - 34, 16, 17, 2);
+  ctx.moveTo(x - 8, feetY - 34);
+  ctx.lineTo(x + 8, feetY - 34);
+  ctx.lineTo(x + 9.5, feetY - 18);
+  ctx.lineTo(x - 9.5, feetY - 18);
+  ctx.closePath();
   ctx.fill();
   
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-  ctx.fillRect(x - 1.5, feetY - 34, 3, 17);
+  // V-Neck collar contrast
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(x - 3, feetY - 34);
+  ctx.lineTo(x + 3, feetY - 34);
+  ctx.lineTo(x, feetY - 29);
+  ctx.closePath();
+  ctx.fill();
   
-  // 3. Arms
+  // Short sleeves
+  ctx.fillStyle = primaryColor;
+  ctx.beginPath();
+  ctx.roundRect(x - 12.5, feetY - 33.5, 4.5, 8, 1);
+  ctx.roundRect(x + 8, feetY - 33.5, 4.5, 8, 1);
+  ctx.fill();
+  
+  // 4. Arms (Skin forearms coming out of sleeves)
   ctx.strokeStyle = '#ffcbb4';
   ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
   
-  const shoulderY = feetY - 30;
+  const shoulderLeftY = feetY - 27;
+  const shoulderRightY = feetY - 27;
   const waveOffset = player.waveOffset;
   
   if (player.rank === 1) {
@@ -4570,7 +4662,7 @@ function drawPlayer(ctx, player, time) {
     const trophyHandX = x - 15;
     const trophyHandY = feetY - 34;
     ctx.beginPath();
-    ctx.moveTo(x - 8, shoulderY);
+    ctx.moveTo(x - 10.5, shoulderLeftY);
     ctx.lineTo(trophyHandX, trophyHandY);
     ctx.stroke();
     
@@ -4581,9 +4673,9 @@ function drawPlayer(ctx, player, time) {
     
     // Right arm waves or punches
     ctx.beginPath();
-    ctx.moveTo(x + 8, shoulderY);
+    ctx.moveTo(x + 10.5, shoulderRightY);
     if (isPunching) {
-      const handX = x + 11;
+      const handX = x + 12;
       const handY = feetY - 46 + Math.sin(time * 8) * 4;
       ctx.lineTo(handX, handY);
       ctx.stroke();
@@ -4594,52 +4686,52 @@ function drawPlayer(ctx, player, time) {
       ctx.fill();
     } else {
       const angle = -0.3 + Math.sin(time * 1.5 + waveOffset) * 0.5;
-      const handX = x + 8 + Math.cos(angle) * 11;
-      const handY = shoulderY + Math.sin(angle) * 11;
+      const handX = x + 9 + Math.cos(angle) * 11;
+      const handY = shoulderRightY + Math.sin(angle) * 11;
       ctx.lineTo(handX, handY);
       ctx.stroke();
     }
   } else {
     // Left arm waves
     ctx.beginPath();
-    ctx.moveTo(x - 8, shoulderY);
+    ctx.moveTo(x - 10.5, shoulderLeftY);
     const angleLeft = Math.PI + 0.3 + Math.sin(time * 1.2 + waveOffset) * 0.4;
-    const handLeftX = x - 8 + Math.cos(angleLeft) * 11;
-    const handLeftY = shoulderY + Math.sin(angleLeft) * 11;
+    const handLeftX = x - 9 + Math.cos(angleLeft) * 11;
+    const handLeftY = shoulderLeftY + Math.sin(angleLeft) * 11;
     ctx.lineTo(handLeftX, handLeftY);
     ctx.stroke();
     
     // Right arm waves or punches
     ctx.beginPath();
-    ctx.moveTo(x + 8, shoulderY);
+    ctx.moveTo(x + 10.5, shoulderRightY);
     if (isJumping && isPunching) {
-      const handX = x + 11;
+      const handX = x + 12;
       const handY = feetY - 46 + Math.sin(time * 8) * 4;
       ctx.lineTo(handX, handY);
       ctx.stroke();
     } else {
       const angleRight = -0.3 + Math.sin(time * 1.4 + waveOffset + 1) * 0.4;
-      const handRightX = x + 8 + Math.cos(angleRight) * 11;
-      const handRightY = shoulderY + Math.sin(angleRight) * 11;
+      const handRightX = x + 9 + Math.cos(angleRight) * 11;
+      const handRightY = shoulderRightY + Math.sin(angleRight) * 11;
       ctx.lineTo(handRightX, handRightY);
       ctx.stroke();
     }
   }
   
-  // 4. Head
+  // 5. Head
   const headY = feetY - 44;
   ctx.fillStyle = '#ffcbb4';
   ctx.beginPath();
   ctx.arc(x, headY, 10, 0, Math.PI * 2);
   ctx.fill();
   
-  // 5. Hair
+  // 6. Hair
   drawHair(ctx, x, headY, name);
   
-  // 6. Face Details
-  drawFaceDetails(ctx, x, headY, isJumping);
+  // 7. Face Details
+  drawFaceDetails(ctx, x, headY, isJumping, name);
   
-  // 7. floating crown
+  // 8. floating crown
   if (player.rank === 1) {
     ctx.font = '15px sans-serif';
     ctx.textAlign = 'center';
@@ -4828,6 +4920,8 @@ function renderTopScorers() {
     topScorersAnimState = null;
     pa.innerHTML = '';
     tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Chưa có cầu thủ nào ghi bàn</td></tr>';
+    const toggleWrap = document.getElementById('topScorersToggleWrap');
+    if (toggleWrap) toggleWrap.innerHTML = '';
     return;
   }
   
@@ -4904,6 +4998,9 @@ function renderTopScorers() {
   }
   topScorersAnimState.players = newPlayers;
   
+  // Truncate list if collapsed (topScorersExpanded is false)
+  const displayScorers = topScorersExpanded ? scorers : scorers.slice(0, 5);
+  
   // Render table below
   let html = `
     <tr>
@@ -4914,7 +5011,7 @@ function renderTopScorers() {
     </tr>
   `;
   
-  scorers.forEach((entry, idx) => {
+  displayScorers.forEach((entry, idx) => {
     let rankBadge = '<div class="rank-badge rank-other">' + (idx + 1) + '</div>';
     if (idx === 0) rankBadge = '<div class="rank-badge rank-1">1</div>';
     else if (idx === 1) rankBadge = '<div class="rank-badge rank-2">2</div>';
@@ -4929,6 +5026,37 @@ function renderTopScorers() {
   });
   
   tb.innerHTML = html;
+  
+  // Render Expand/Collapse toggle button
+  const toggleWrap = document.getElementById('topScorersToggleWrap');
+  if (toggleWrap) {
+    if (scorers.length > 5) {
+      toggleWrap.innerHTML = `
+        <button id="btnToggleScorers" style="background:var(--surface-a08); border:1px solid var(--border); color:var(--text); border-radius:16px; padding:6px 16px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15); outline:none;">
+          <span>${topScorersExpanded ? 'Thu gọn ▲' : `Xem thêm (${scorers.length - 5}) ▼`}</span>
+        </button>
+      `;
+      const btn = document.getElementById('btnToggleScorers');
+      if (btn) {
+        btn.addEventListener('mouseover', () => {
+          btn.style.background = 'var(--surface-a16)';
+          btn.style.borderColor = 'var(--accent)';
+          btn.style.boxShadow = '0 4px 12px rgba(197,248,81,0.2)';
+        });
+        btn.addEventListener('mouseout', () => {
+          btn.style.background = 'var(--surface-a08)';
+          btn.style.borderColor = 'var(--border)';
+          btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        });
+        btn.onclick = () => {
+          topScorersExpanded = !topScorersExpanded;
+          renderTopScorers();
+        };
+      }
+    } else {
+      toggleWrap.innerHTML = '';
+    }
+  }
 }
 
 function renderStats() {

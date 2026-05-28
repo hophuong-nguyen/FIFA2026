@@ -6138,16 +6138,21 @@ setTimeout(syncFixtureCardHeight, 500);
 
 // ── THEME SWITCHER ──────────────────────────────────────────────
 const THEMES = [
-  { name:'⚡ Pitch Night', body:'#0d1a0a', bg:'#20242d', card:'#252a38', card2:'#1c2030', border:'#2e3550', accent:'#c5f851', accent2:'#3145eb', text:'#c5f851', muted:'#4f6080', red:'#eb4560', gold:'#c5f851', silver:'#8fa3b8', bronze:'#3145eb', glow:'var(--accent-a12)' },
-  { name:'🔥 El Clásico',  body:'#100b08', bg:'#1a1210', card:'#251815', card2:'#1a1210', border:'#3d2018', accent:'#f5a623', accent2:'#e02020', text:'#f5d98b', muted:'#6b4433', red:'#e02020', gold:'#f5a623', silver:'#c0a87a', bronze:'#9b3a20', glow:'rgba(245,166,35,.12)' },
-  { name:'💙 Azzurri',     body:'#080f1a', bg:'#0f1b2d', card:'#152236', card2:'#0f1b2d', border:'#1e3a5f', accent:'#4fc3f7', accent2:'#1565c0', text:'#90caf9', muted:'#2c4a6e', red:'#ef5350', gold:'#4fc3f7', silver:'#78909c', bronze:'#1565c0', glow:'rgba(79,195,247,.12)' },
-  { name:'🌿 Verde',       body:'#070f08', bg:'#0f1f12', card:'#162519', card2:'#0f1f12', border:'#1e3d24', accent:'#69f0ae', accent2:'#00897b', text:'#a5d6a7', muted:'#2e5035', red:'#ef5350', gold:'#69f0ae', silver:'#80cbc4', bronze:'#00897b', glow:'rgba(105,240,174,.12)' },
-  { name:'👑 Gold Cup',    body:'#0f0d00', bg:'#1a1600', card:'#221d00', card2:'#1a1600', border:'#3d3400', accent:'#ffd600', accent2:'#ff6f00', text:'#ffe57f', muted:'#5c4f00', red:'#ff5252', gold:'#ffd600', silver:'#c6a700', bronze:'#ff6f00', glow:'rgba(255,214,0,.12)' },
-  { name:'🌸 Sakura',      body:'#120a0f', bg:'#1f1218', card:'#271520', card2:'#1f1218', border:'#3d1f30', accent:'#f48fb1', accent2:'#880e4f', text:'#f8bbd0', muted:'#5c2a40', red:'#e91e63', gold:'#f48fb1', silver:'#ce93d8', bronze:'#880e4f', glow:'rgba(244,143,177,.12)' },
-  { name:'🌫️ Concrete',   body:'#000000', bg:'#1c1c1e', card:'#2c2c2e', card2:'#1c1c1e', border:'#3a3a3c', accent:'#e0e0e0', accent2:'#6e6e73', text:'#e0e0e0', muted:'#48484a', red:'#ff453a', gold:'#e0e0e0', silver:'#8e8e93', bronze:'#6e6e73', glow:'rgba(224,224,224,.08)' },
-  { name:'🟣 Ultraviolet', body:'#0a0010', bg:'#13001f', card:'#1a002e', card2:'#13001f', border:'#2e0050', accent:'#ea80fc', accent2:'#7c4dff', text:'#e040fb', muted:'#4a0072', red:'#ff4081', gold:'#ea80fc', silver:'#b39ddb', bronze:'#7c4dff', glow:'rgba(234,128,252,.12)' },
-  { name:'☀️ White Kit',   body:'#f0f2f5', bg:'#ffffff', card:'#f7f8fa', card2:'#eef0f4', border:'#dde1ea', accent:'#1a56db', accent2:'#0e9f6e', text:'#1a1f2e', muted:'#9ba3b8', red:'#e02424', gold:'#d97706', silver:'#6b7280', bronze:'#0e9f6e', glow:'rgba(26,86,219,.10)' },
-  { name:'🌤️ Sand & Sky',  body:'#e8e0d4', bg:'#faf7f2', card:'#ffffff', card2:'#f0ebe2', border:'#d4c9b8', accent:'#c2410c', accent2:'#0369a1', text:'#1c1208', muted:'#a8967e', red:'#c2410c', gold:'#b45309', silver:'#78716c', bronze:'#0369a1', glow:'rgba(194,65,12,.10)' },
+  { name:'⚡ Pitch Night',  body:'#0d1a0a', bg:'#20242d', card:'#252a38', card2:'#1c2030', border:'#2e3550', accent:'#c5f851', accent2:'#3145eb', text:'#c5f851', muted:'#4f6080', red:'#eb4560', gold:'#c5f851', silver:'#8fa3b8', bronze:'#3145eb' },
+  { name:'🔥 El Clásico',   body:'#100b08', bg:'#1a1210', card:'#251815', card2:'#1a1210', border:'#3d2018', accent:'#f5a623', accent2:'#e02020', text:'#f5d98b', muted:'#6b4433', red:'#e02020', gold:'#f5a623', silver:'#c0a87a', bronze:'#9b3a20' },
+  { name:'💙 Azzurri',      body:'#080f1a', bg:'#0f1b2d', card:'#152236', card2:'#0f1b2d', border:'#1e3a5f', accent:'#4fc3f7', accent2:'#1565c0', text:'#90caf9', muted:'#2c4a6e', red:'#ef5350', gold:'#4fc3f7', silver:'#78909c', bronze:'#1565c0' },
+  { name:'🌿 Verde',        body:'#070f08', bg:'#0f1f12', card:'#162519', card2:'#0f1f12', border:'#1e3d24', accent:'#69f0ae', accent2:'#00897b', text:'#a5d6a7', muted:'#2e5035', red:'#ef5350', gold:'#69f0ae', silver:'#80cbc4', bronze:'#00897b' },
+  { name:'👑 Gold Cup',     body:'#0f0d00', bg:'#1a1600', card:'#221d00', card2:'#1a1600', border:'#3d3400', accent:'#ffd600', accent2:'#ff6f00', text:'#ffe57f', muted:'#5c4f00', red:'#ff5252', gold:'#ffd600', silver:'#c6a700', bronze:'#ff6f00' },
+  { name:'🌸 Sakura',       body:'#120a0f', bg:'#1f1218', card:'#271520', card2:'#1f1218', border:'#3d1f30', accent:'#f48fb1', accent2:'#880e4f', text:'#f8bbd0', muted:'#5c2a40', red:'#e91e63', gold:'#f48fb1', silver:'#ce93d8', bronze:'#880e4f' },
+  { name:'🌫️ Concrete',    body:'#000000', bg:'#1c1c1e', card:'#2c2c2e', card2:'#1c1c1e', border:'#3a3a3c', accent:'#e0e0e0', accent2:'#6e6e73', text:'#e0e0e0', muted:'#48484a', red:'#ff453a', gold:'#e0e0e0', silver:'#8e8e93', bronze:'#6e6e73' },
+  { name:'🟣 Ultraviolet',  body:'#0a0010', bg:'#13001f', card:'#1a002e', card2:'#13001f', border:'#2e0050', accent:'#ea80fc', accent2:'#7c4dff', text:'#e040fb', muted:'#4a0072', red:'#ff4081', gold:'#ea80fc', silver:'#b39ddb', bronze:'#7c4dff' },
+  // ── Theme sáng ─────────────────────────────────────────────────────────
+  { name:'☀️ White Kit',    body:'#f0f2f5', bg:'#ffffff', card:'#f7f8fa', card2:'#eef0f4', border:'#c8cdd8', accent:'#1a56db', accent2:'#0e9f6e', text:'#111827', muted:'#4b5563', red:'#dc2626', gold:'#b45309', silver:'#374151', bronze:'#0e9f6e' },
+  { name:'🌤️ Sand & Sky',   body:'#e8e0d4', bg:'#faf7f2', card:'#ffffff', card2:'#f0ebe2', border:'#c4b9a8', accent:'#c2410c', accent2:'#0369a1', text:'#1c1208', muted:'#5c4d3a', red:'#c2410c', gold:'#b45309', silver:'#44403c', bronze:'#0369a1' },
+  { name:'🏟️ Stadium Day',  body:'#e4eaf2', bg:'#f5f8fc', card:'#ffffff', card2:'#e8eef6', border:'#b8c8dc', accent:'#1d4ed8', accent2:'#15803d', text:'#0f172a', muted:'#475569', red:'#dc2626', gold:'#92400e', silver:'#334155', bronze:'#15803d' },
+  { name:'🌺 Valencia',     body:'#fdf0e8', bg:'#fff8f2', card:'#ffffff', card2:'#faeee0', border:'#e8c9ad', accent:'#c2410c', accent2:'#7c3aed', text:'#1a0a00', muted:'#6b4226', red:'#b91c1c', gold:'#92400e', silver:'#57534e', bronze:'#7c3aed' },
+  { name:'🧊 Ice Rink',     body:'#e8f4fb', bg:'#f5fbff', card:'#ffffff', card2:'#e0f0fa', border:'#b3d4ec', accent:'#0369a1', accent2:'#0891b2', text:'#0c2340', muted:'#3d6b8e', red:'#dc2626', gold:'#b45309', silver:'#1e4976', bronze:'#0891b2' },
+  { name:'🍋 Lemon Press',  body:'#f5f0d8', bg:'#fffdf0', card:'#ffffff', card2:'#f5f0dc', border:'#d4c878', accent:'#854d0e', accent2:'#166534', text:'#1a1400', muted:'#6b5a10', red:'#b91c1c', gold:'#854d0e', silver:'#4a4a2a', bronze:'#166534' },
 ];
 
 const THEME_KEY = 'fifa_theme';
@@ -6191,7 +6196,24 @@ function applyTheme(t) {
   r.setProperty('--header-bg',   ha(t.card2,.92));
   r.setProperty('--surface-a04', dark ? 'rgba(255,255,255,.04)' : 'rgba(0,0,0,.04)');
   r.setProperty('--surface-a05', dark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)');
+  r.setProperty('--surface-a08', dark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)');
+  r.setProperty('--surface-a16', dark ? 'rgba(255,255,255,.16)' : 'rgba(0,0,0,.10)');
   r.setProperty('--border-a50',  ha(t.border,.50));
+  // Theme sáng: tăng độ tương phản cho các opacity-based text/border
+  if (!dark) {
+    r.setProperty('--accent-a06',  ha(t.accent,.10));
+    r.setProperty('--accent-a10',  ha(t.accent,.15));
+    r.setProperty('--accent-a12',  ha(t.accent,.20));
+    r.setProperty('--accent-a18',  ha(t.accent,.28));
+    r.setProperty('--accent-a30',  ha(t.accent,.45));
+    r.setProperty('--accent2-a10', ha(t.accent2,.14));
+    r.setProperty('--accent2-a18', ha(t.accent2,.24));
+    r.setProperty('--accent2-a28', ha(t.accent2,.38));
+    r.setProperty('--accent2-a35', ha(t.accent2,.50));
+    r.setProperty('--accent2-a40', ha(t.accent2,.55));
+    r.setProperty('--red-a08',     ha(t.red,.14));
+    r.setProperty('--red-a16',     ha(t.red,.24));
+  }
   document.body.style.background = t.body;
   localStorage.setItem(THEME_KEY, t.name);
 }

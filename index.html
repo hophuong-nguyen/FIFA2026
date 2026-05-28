@@ -4862,20 +4862,38 @@ function drawScorersCanvas(state, width, height) {
     drawPlayer(ctx, player, state.time);
     
     // Draw name and score text below podiums
-    let dispName = player.entry.name;
-    if (dispName.length > 12) dispName = dispName.slice(0, 10) + '...';
-    
+    const fullName = player.entry.name;
+    const nameFont = 'bold 12px Inter, sans-serif';
+    ctx.font = nameFont;
+    const colWidth = width * 0.28; // chiều rộng mỗi cột ~28% canvas
+    const textW = ctx.measureText(fullName).width;
+
+    ctx.save();
+    // Clip vùng tên theo cột để không tràn sang cột khác
+    ctx.beginPath();
+    ctx.rect(player.x - colWidth / 2, 188, colWidth, 18);
+    ctx.clip();
+
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    
-    // Name shadow
+
+    let nameX = player.x;
+    if (textW > colWidth - 8) {
+      // Marquee ping-pong: scroll qua lại trong vùng cột
+      const overflow = textW - (colWidth - 8);
+      const period = 3000 + overflow * 18; // ms, tên càng dài scroll càng chậm
+      const t = (Date.now() % (period * 2));
+      const progress = t < period ? t / period : 2 - t / period; // 0→1→0
+      nameX = (player.x - colWidth / 2 + 4) + textW / 2 - overflow * progress;
+    }
+
     ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    ctx.font = 'bold 12px Inter, sans-serif';
-    ctx.fillText(dispName, player.x + 1, 203);
-    
-    // Name fill
+    ctx.font = nameFont;
+    ctx.fillText(fullName, nameX + 1, 203);
     ctx.fillStyle = textColor;
-    ctx.fillText(dispName, player.x, 202);
+    ctx.fillText(fullName, nameX, 202);
+
+    ctx.restore();
     
     // Goals text shadow
     ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';

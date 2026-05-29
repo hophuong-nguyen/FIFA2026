@@ -2348,29 +2348,26 @@ function updateAuthUI() {
   }
   if (fbReady) render();
 }
-window.handleAuthClick = () => {
+window.handleAuthClick = async () => {
   if (isAdmin) { await signOut(fbAuth); showToast('👋 Đã đăng xuất'); }
   else openModal('loginModal');
 };
-window.doLogin = () => {
-   const u = document.getElementById('loginUsername')?.value.trim();
-    const p = document.getElementById('loginPassword')?.value.trim();
-    if (!u || !p) { showToast('Nhập đủ thông tin', 'warn'); return; }
-    try {
-      await signInWithEmailAndPassword(fbAuth, u, p);
-      // isAdmin được set tự động qua onAuthStateChanged
+window.doLogin = async () => {
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value;
 
-    // ✅ Reset input & blur để tránh giữ focus
+  try {
+    await signInWithEmailAndPassword(fbAuth, u, p);
+    // isAdmin được set tự động qua onAuthStateChanged
+
+    // Reset input & blur
     const userInp = document.getElementById('loginUsername');
     const passInp = document.getElementById('loginPassword');
-    if (userInp) userInp.blur();
-    if (passInp) passInp.blur();
-
-    userInp.value = '';
-    passInp.value = '';
+    if (userInp) { userInp.value = ''; userInp.blur(); }
+    if (passInp) { passInp.value = ''; passInp.blur(); }
     document.getElementById('loginError').textContent = '';
 
-    // ✅ Đảm bảo modal đóng hoàn toàn
+    // Đóng modal
     const modal = document.getElementById('loginModal');
     if (modal) {
       modal.classList.remove('open');
@@ -2379,9 +2376,9 @@ window.doLogin = () => {
     }
 
     showToast('✅ Đăng nhập thành công!');
-  } else {
+  } catch (err) {
     document.getElementById('loginError').textContent =
-      '❌ Sai tên đăng nhập hoặc mật khẩu.';
+      '❌ Sai email hoặc mật khẩu.';
   }
 };
 window.requireAdmin = fn => {

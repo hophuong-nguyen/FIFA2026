@@ -5033,7 +5033,7 @@ function renderTopScorers() {
     
     html += '<tr>';
     html += '<td>' + rankBadge + '</td>';
-    html += '<td class="team-name-cell" style="font-weight:600;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">' + entry.name + '</div></td>';
+    html += '<td style="text-align:left;font-weight:600;padding-left:10px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">' + entry.name + '</div></td>';
     html += '<td style="font-size:0.75rem; color:var(--text-muted);" title="' + (teams[entry.teamId] || entry.teamId) + '">' + (teamEmojis[entry.teamId] || entry.teamId) + '</td>';
     html += '<td style="font-weight:700; color:var(--accent); font-size:1rem;">' + entry.goals + '</td>';
     html += '</tr>';

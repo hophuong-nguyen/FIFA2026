@@ -2690,7 +2690,6 @@ function persist() {
   pushToFirebase();
   render();
 }
-
 async function pushScheduleOnly() {
   setSyncState('syncing');
   try {
@@ -2702,6 +2701,18 @@ async function pushScheduleOnly() {
   }
 }
 function persistSchedule() { pushScheduleOnly(); render(); }
+
+async function pushTeamInfoOnly() {
+  setSyncState('syncing');
+  try {
+    await update(ref(db, `${ROOT}/state`), { teams, members, memberEmails, teamEmojis, teamColors });
+    setSyncState('connected');
+  } catch(e) {
+    setSyncState('offline');
+    showToast('⚠️ Lỗi lưu thông tin đội: ' + e.message, 'warn');
+  }
+}
+function persistTeamInfo() { pushTeamInfoOnly(); render(); }
 
 function subscribeFirebase() {
   onValue(dbRef('state'), snap => {

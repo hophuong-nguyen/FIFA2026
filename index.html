@@ -2252,7 +2252,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, increment, serverTimestamp, onDisconnect, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, fetchSignInMethodsForEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 /* ═══════════════════ FIREBASE CONFIG ═══════════════════ */
 const FIREBASE_CONFIG = {
@@ -2338,6 +2338,18 @@ onAuthStateChanged(fbAuth, user => {
   if (typeof updateAuthUI === 'function') updateAuthUI();
 });
 
+function getPlayerNameByEmail(email) {
+  if (!email) return null;
+  const e = email.trim().toLowerCase();
+  for (const teamId of Object.keys(memberEmails || {})) {
+    const emails = memberEmails[teamId] || [];
+    const names  = members[teamId]     || [];
+    const idx = emails.findIndex(x => (x||'').trim().toLowerCase() === e);
+    if (idx !== -1 && names[idx]) return names[idx];
+  }
+  return null;
+}
+
 function updateAuthUI() {
   const badge = document.getElementById('authBadge'), label = document.getElementById('authLabel');
   ['lockResult', 'lockAuto', 'lockReset', 'lockTeam'].forEach(id => {
@@ -2346,15 +2358,21 @@ function updateAuthUI() {
   });
   if (isAdmin) {
     badge.classList.add('logged-in'); label.textContent = '👤 Admin';
+  } else if (fbAuthUser) {
+    const name = getPlayerNameByEmail(fbAuthUser.email);
+    badge.classList.add('logged-in');
+    label.textContent = '⚽ ' + (name || fbAuthUser.email);
   } else {
     badge.classList.remove('logged-in'); label.textContent = 'Đăng nhập';
   }
   if (fbReady) render();
 }
+
 window.handleAuthClick = async () => {
-  if (isAdmin) { await signOut(fbAuth); showToast('👋 Đã đăng xuất'); }
+  if (fbAuthUser) { await signOut(fbAuth); showToast('👋 Đã đăng xuất'); }
   else openModal('loginModal');
 };
+
 window.doLogin = async () => {
   const u = document.getElementById('loginUsername').value.trim();
   const p = document.getElementById('loginPassword').value;
@@ -2407,6 +2425,14 @@ window.sendMagicLink = async () => {
   if (!getAllMemberEmails().has(email)) {
     errEl.textContent = '❌ Email này không có trong danh sách thành viên.'; return;
   }
+  // Chặn admin email dùng magic link
+  try {
+    const methods = await fetchSignInMethodsForEmail(fbAuth, email);
+    if (methods.includes('password')) {
+      errEl.textContent = '❌ Email này không hợp lệ để đăng nhập bằng link.'; return;
+    }
+  } catch(_) {}
+
   const btn = document.getElementById('btnSendMagicLink');
   btn.disabled = true;
   errEl.style.color = 'var(--text-muted)';
@@ -2431,6 +2457,7 @@ window.sendMagicLink = async () => {
 };
 
 // Xử lý khi user quay về app sau khi click magic link
+// Xử lý khi user quay về app sau khi click magic link
 if (isSignInWithEmailLink(fbAuth, window.location.href)) {
   let email = localStorage.getItem('magicLinkEmail');
   if (!email) email = window.prompt('Nhập lại email của bạn để xác nhận:');
@@ -2439,8 +2466,30 @@ if (isSignInWithEmailLink(fbAuth, window.location.href)) {
       .then(() => {
         localStorage.removeItem('magicLinkEmail');
         window.history.replaceState(null, '', window.location.pathname);
-        showToast('✅ Đăng nhập thành công!');
-        if (_pendingPlayerAction) { _pendingPlayerAction(); _pendingPlayerAction = null; }
+        // Nếu đang trên mobile (màn hình nhỏ), báo user quay lại tab desktop
+        if (window.innerWidth < 768) {
+          document.body.insertAdjacentHTML('afterbegin', `
+            <div style="
+              position:fixed;inset:0;z-index:99999;
+              background:#0d1a0a;display:flex;flex-direction:column;
+              align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;
+            ">
+              <div style="font-size:3rem">✅</div>
+              <div style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:#c5f851;">
+                Đăng nhập thành công!
+              </div>
+              <div style="font-size:.9rem;color:#8fa3b8;line-height:1.6;">
+                Quay lại tab trình duyệt desktop<br>để tiếp tục sử dụng.
+              </div>
+              <div style="font-size:.75rem;color:#4f6080;margin-top:8px;">
+                Trang này có thể đóng lại.
+              </div>
+            </div>
+          `);
+        } else {
+          showToast('✅ Đăng nhập thành công!');
+          if (_pendingPlayerAction) { _pendingPlayerAction(); _pendingPlayerAction = null; }
+        }
       })
       .catch(() => showToast('❌ Link không hợp lệ hoặc đã hết hạn.', 'warn'));
   }

@@ -2330,8 +2330,10 @@ const ADMIN_UID = 'H1ZS5K5ZGPSKZqQXZclIxMNld5L2';
 const fbAuth = getAuth(app);
 let isAdmin = false;
 let authReady = false;
+let fbAuthUser = null;
 onAuthStateChanged(fbAuth, user => {
-  isAdmin = !!user;
+  fbAuthUser = user;
+  isAdmin = !!(user && user.uid === ADMIN_UID);
   authReady = true;
   if (typeof updateAuthUI === 'function') updateAuthUI();
 });

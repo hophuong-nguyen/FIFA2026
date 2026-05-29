@@ -3924,7 +3924,8 @@ function onZoneDrop(e, targetDate, afterOrig) {
     ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
   }
   scheduleOrder.splice(ins, 0, src);
-  persist();
+  endDrag();
+  persistSchedule();
 }
 function onRowDragOver(e) { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
 function onRowDragLeave() { this.classList.remove('drag-over-row'); }

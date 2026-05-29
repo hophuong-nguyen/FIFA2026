@@ -2408,8 +2408,9 @@ window.sendMagicLink = async () => {
     errEl.textContent = '❌ Email này không có trong danh sách thành viên.'; return;
   }
   try {
+    const cleanUrl = window.location.origin + window.location.pathname;
     await sendSignInLinkToEmail(fbAuth, email, {
-      url: window.location.href,
+      url: cleanUrl,
       handleCodeInApp: true
     });
     localStorage.setItem('magicLinkEmail', email);

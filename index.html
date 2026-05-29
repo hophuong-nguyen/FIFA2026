@@ -2252,6 +2252,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getDatabase, ref, onValue, set, increment, serverTimestamp, onDisconnect, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 /* ═══════════════════ FIREBASE CONFIG ═══════════════════ */
 const FIREBASE_CONFIG = {
@@ -2325,8 +2326,15 @@ function updateVisitUI(total) {
 function dbRef(path) { return ref(db, `${ROOT}/${path}`); }
 
 /* ═══════════════════ AUTH ═══════════════════ */
-const ADMIN_USER = 'admin', ADMIN_PASS = 'admin@123';
+const ADMIN_UID = 'ADMIN_UID_CUA_BAN'; // UID từ Firebase Console
+const fbAuth = getAuth(app);
 let isAdmin = false;
+
+onAuthStateChanged(fbAuth, user => {
+  isAdmin = !!(user && user.uid === ADMIN_UID);
+  updateAuthUI();
+});
+
 function updateAuthUI() {
   const badge = document.getElementById('authBadge'), label = document.getElementById('authLabel');
   ['lockResult', 'lockAuto', 'lockReset', 'lockTeam'].forEach(id => {
@@ -2341,16 +2349,16 @@ function updateAuthUI() {
   if (fbReady) render();
 }
 window.handleAuthClick = () => {
-  if (isAdmin) { isAdmin = false; updateAuthUI(); showToast('👋 Đã đăng xuất'); }
+  if (isAdmin) { await signOut(fbAuth); showToast('👋 Đã đăng xuất'); }
   else openModal('loginModal');
 };
 window.doLogin = () => {
-  const u = document.getElementById('loginUsername').value.trim();
-  const p = document.getElementById('loginPassword').value;
-
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    isAdmin = true;
-    updateAuthUI();
+   const u = document.getElementById('loginUsername')?.value.trim();
+    const p = document.getElementById('loginPassword')?.value.trim();
+    if (!u || !p) { showToast('Nhập đủ thông tin', 'warn'); return; }
+    try {
+      await signInWithEmailAndPassword(fbAuth, u, p);
+      // isAdmin được set tự động qua onAuthStateChanged
 
     // ✅ Reset input & blur để tránh giữ focus
     const userInp = document.getElementById('loginUsername');

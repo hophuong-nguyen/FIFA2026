@@ -2329,12 +2329,11 @@ function dbRef(path) { return ref(db, `${ROOT}/${path}`); }
 const ADMIN_UID = 'H1ZS5K5ZGPSKZqQXZclIxMNld5L2';
 const fbAuth = getAuth(app);
 let isAdmin = false;
-let authReady = false; // flag chờ Firebase xác nhận trạng thái auth
-
+let authReady = false;
 onAuthStateChanged(fbAuth, user => {
-  isAdmin = !!(user && user.uid === ADMIN_UID);
+  isAdmin = !!user;
   authReady = true;
-  updateAuthUI();
+  if (typeof updateAuthUI === 'function') updateAuthUI();
 });
 
 function updateAuthUI() {
@@ -2357,38 +2356,27 @@ window.handleAuthClick = async () => {
 window.doLogin = async () => {
   const u = document.getElementById('loginUsername').value.trim();
   const p = document.getElementById('loginPassword').value;
-
   try {
     await signInWithEmailAndPassword(fbAuth, u, p);
-    // isAdmin được set tự động qua onAuthStateChanged
-
-    // Reset input & blur
     const userInp = document.getElementById('loginUsername');
     const passInp = document.getElementById('loginPassword');
     if (userInp) { userInp.value = ''; userInp.blur(); }
     if (passInp) { passInp.value = ''; passInp.blur(); }
     document.getElementById('loginError').textContent = '';
-
-    // Đóng modal
     const modal = document.getElementById('loginModal');
     if (modal) {
       modal.classList.remove('open');
       modal.style.display = 'none';
       setTimeout(() => modal.style.display = '', 10);
     }
-
     showToast('✅ Đăng nhập thành công!');
-  } catch (err) {
-    document.getElementById('loginError').textContent =
-      '❌ Sai email hoặc mật khẩu.';
+  } catch(err) {
+    document.getElementById('loginError').textContent = '❌ Sai email hoặc mật khẩu.';
   }
 };
+
 window.requireAdmin = fn => {
-  if (!authReady) {
-    // Firebase chưa xác nhận xong, chờ thêm chút
-    setTimeout(() => window.requireAdmin(fn), 200);
-    return;
-  }
+  if (!authReady) { setTimeout(() => window.requireAdmin(fn), 200); return; }
   if (isAdmin) fn(); else { openModal('loginModal'); showToast('🔒 Cần đăng nhập Admin', 'warn'); }
 };
 

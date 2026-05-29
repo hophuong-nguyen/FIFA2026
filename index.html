@@ -2252,7 +2252,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, increment, serverTimestamp, onDisconnect, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 /* ═══════════════════ FIREBASE CONFIG ═══════════════════ */
 const FIREBASE_CONFIG = {
@@ -2379,7 +2379,62 @@ window.requireAdmin = fn => {
   if (!authReady) { setTimeout(() => window.requireAdmin(fn), 200); return; }
   if (isAdmin) fn(); else { openModal('loginModal'); showToast('🔒 Cần đăng nhập Admin', 'warn'); }
 };
+// Lấy tất cả email đã đăng ký trong hệ thống
+function getAllMemberEmails() {
+  const all = new Set();
+  Object.values(memberEmails).forEach(arr => (arr||[]).forEach(e => { if (e) all.add(e.trim().toLowerCase()); }));
+  return all;
+}
 
+// Yêu cầu player đăng nhập trước khi thực hiện thao tác
+window.requirePlayer = fn => {
+  if (fbAuthUser) { fn(); return; } // đã đăng nhập
+  _pendingPlayerAction = fn;
+  document.getElementById('magicLinkError').textContent = '';
+  document.getElementById('magicLinkEmail').value = '';
+  openModal('magicLinkModal');
+};
+
+let _pendingPlayerAction = null;
+
+window.sendMagicLink = async () => {
+  const email = document.getElementById('magicLinkEmail').value.trim().toLowerCase();
+  const errEl = document.getElementById('magicLinkError');
+  if (!email) { errEl.textContent = '⚠️ Nhập email của bạn.'; return; }
+  if (!getAllMemberEmails().has(email)) {
+    errEl.textContent = '❌ Email này không có trong danh sách thành viên.'; return;
+  }
+  const actionCodeSettings = {
+    url: window.location.href,
+    handleCodeInApp: true
+  };
+  try {
+    await sendSignInLinkToEmail(fbAuth, email, actionCodeSettings);
+    localStorage.setItem('magicLinkEmail', email);
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = '✅ Đã gửi link vào email! Kiểm tra hộp thư và click link để đăng nhập.';
+    document.getElementById('btnSendMagicLink').disabled = true;
+  } catch(err) {
+    errEl.textContent = '❌ Lỗi: ' + err.message;
+  }
+};
+
+// Tự động xử lý khi user click magic link quay về app
+if (isSignInWithEmailLink(fbAuth, window.location.href)) {
+  let email = localStorage.getItem('magicLinkEmail');
+  if (!email) email = window.prompt('Nhập lại email của bạn để xác nhận:');
+  if (email) {
+    signInWithEmailLink(fbAuth, email, window.location.href)
+      .then(() => {
+        localStorage.removeItem('magicLinkEmail');
+        // Xóa query string khỏi URL
+        window.history.replaceState(null, '', window.location.pathname);
+        showToast('✅ Đăng nhập thành công!');
+        if (_pendingPlayerAction) { _pendingPlayerAction(); _pendingPlayerAction = null; }
+      })
+      .catch(err => showToast('❌ Link không hợp lệ hoặc đã hết hạn.', 'warn'));
+  }
+}
 /* ═══════════════════ CONSTANTS ═══════════════════ */
 const EMOJI_CATS = {
   '⚽ Bóng đá':     ['⚽','🥅','🏆','🥇','🎯','🏅','🎖️','🥈','🥉','🎽','👟','🧤','🧢','📣','🏟️','🎪','🎊','🎉','🏋️','🤸'],
@@ -2428,6 +2483,7 @@ function generateRoundRobin(ids, format = 'single') {
 let teamIds = ['A','B','C','D','E','F','G'];
 let teams = { A:'Team Alpha', B:'Team Beta', C:'Team Cobra', D:'Team Delta', E:'Team Eagle', F:'Team Fenix', G:'Team Ghost' };
 let members = { A:['P1','P2'], B:['P3','P4'], C:['P5','P6'], D:['P7','P8'], E:['P9','P10'], F:['P11','P12'], G:['P13','P14'] };
+let memberEmails = {}; // { teamId: ['email1', 'email2', ...] }
 let teamEmojis = Object.fromEntries(teamIds.map((id, i) => [id, DEFAULT_EMOJIS[i % DEFAULT_EMOJIS.length]]));
 let teamColors = Object.fromEntries(teamIds.map((id, i) => [id, DEFAULT_COLORS[i % DEFAULT_COLORS.length]]));
 let results = {};
@@ -2567,7 +2623,7 @@ function normalizeState(data) {
   else if (data.teams && typeof data.teams === 'object') teamIds = Object.keys(data.teams);
   if (!teamIds || teamIds.length < MIN_TEAMS) teamIds = ['A','B','C','D','E','F','G'];
   
-  teams = data.teams || teams; members = data.members || members; teamEmojis = data.teamEmojis || teamEmojis; teamColors = data.teamColors || teamColors;
+  teams = data.teams || teams; members = data.members || members; memberEmails = data.memberEmails || memberEmails; teamEmojis = data.teamEmojis || teamEmojis; teamColors = data.teamColors || teamColors;
   results = (data.results && typeof data.results === 'object') ? data.results : {};
   leagueConfig = { ...leagueConfig, ...(data.leagueConfig || {}) };
   
@@ -2602,7 +2658,7 @@ async function pushToFirebase() {
   setSyncState('syncing');
   try {
     await set(dbRef('state'), {
-      teamIds, teams, members, teamEmojis, teamColors, results,
+      teamIds, teams, members, memberEmails, teamEmojis, teamColors, results,
       matchDates, scheduleOrder, leagueConfig,
       rankMovement: rankMovementState,
       manualDates
@@ -2619,7 +2675,7 @@ async function pushToFirebase() {
 async function pushTeamInfoOnly() {
   setSyncState('syncing');
   try {
-    await update(dbRef('state'), { teams, members, teamEmojis, teamColors });
+    await update(dbRef('state'), { teams, members, memberEmails, teamEmojis, teamColors });
     setSyncState('connected');
   }
   catch(e) {
@@ -3911,12 +3967,12 @@ function onZoneDrop(e, targetDate, afterOrig) {
     const afterIdx = scheduleOrder.indexOf(after);
     ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
   }
-  scheduleOrder.splice(ins, 0, src);  
-  persistSchedule();
+  scheduleOrder.splice(ins, 0, src);
+  requirePlayer(() => persistSchedule());
 }
 function onRowDragOver(e) { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
 function onRowDragLeave() { this.classList.remove('drag-over-row'); }
-function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if (!dragData || dragData.origIdx === Number(targetOrigIdx)) return; const src = dragData.origIdx; matchDates[String(src)] = matchDates[String(targetOrigIdx)]; manualDates[String(src)] = matchDates[String(src)]; scheduleOrder = scheduleOrder.map(Number); const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); const di = scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di, 0, src); persistSchedule(); }
+function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if (!dragData || dragData.origIdx === Number(targetOrigIdx)) return; const src = dragData.origIdx; matchDates[String(src)] = matchDates[String(targetOrigIdx)]; manualDates[String(src)] = matchDates[String(src)]; scheduleOrder = scheduleOrder.map(Number); const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); const di = scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di, 0, src); requirePlayer(() => persistSchedule()); }
 
 function makeDateBlock(date, arr, today) {
   const isPast = date < today, isToday = date === today; const [, dm, dd] = date.split('-'); const dtObj = new Date(Date.UTC(...date.split('-').map(Number).map((v, i) => i === 1 ? v - 1 : v), 12)); const dowShort = DOWS_SHORT[dtObj.getUTCDay()], dowFull = DOWS_VI[dtObj.getUTCDay()]; const isReserve = arr === null; const done = isReserve ? 0 : arr.filter(i => { const r = getResult(i); return r && r.score1 !== undefined; }).length; const total = isReserve ? 0 : arr.length; const block = document.createElement('div'); block.className = 'matchday-block';
@@ -5739,13 +5795,14 @@ window.cancelConfirmCode = () => {
 /* ═══════════════════ MODAL: TEAM SETTINGS ═══════════════════ */
 
 // Bộ nhớ tạm khi edit trong modal - chỉ áp dụng khi nhấn "Lưu đội"
-let _tempTeamIds = [], _tempTeams = {}, _tempMembers = {};
+let _tempTeamIds = [], _tempTeams = {}, _tempMembers = {}, _tempMemberEmails = {};
 let _tempEmojis = {}, _tempColors = {};
 
 function cloneTeamState() {
   _tempTeamIds = [...teamIds];
   _tempTeams = { ...teams };
   _tempMembers = Object.fromEntries(Object.entries(members).map(([k, v]) => [k, [...v]]));
+  _tempMemberEmails = Object.fromEntries(Object.entries(memberEmails).map(([k, v]) => [k, [...(v||[])]]));
   _tempEmojis = { ...teamEmojis };
   _tempColors = { ...teamColors };
 }
@@ -5753,6 +5810,7 @@ function applyTempToReal() {
   teamIds = [..._tempTeamIds];
   teams = { ..._tempTeams };
   members = Object.fromEntries(Object.entries(_tempMembers).map(([k, v]) => [k, [...v]]));
+  memberEmails = Object.fromEntries(Object.entries(_tempMemberEmails).map(([k, v]) => [k, [...(v||[])]]));
   teamEmojis = { ..._tempEmojis };
   teamColors = { ..._tempColors };
 }
@@ -5847,11 +5905,20 @@ window.renderTeamModalInputs = () => {
       <div class="form-group" style="margin-bottom:7px">
         <input class="form-input" id="tname_${id}" value="${_tempTeams[id] || ''}" placeholder="Tên đội">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-        <input class="form-input" style="font-size:.76rem;padding:6px 8px" id="tmem1_${id}"
-          value="${(_tempMembers[id] || ['',''])[0]}" placeholder="Thành viên 1">
-        <input class="form-input" style="font-size:.76rem;padding:6px 8px" id="tmem2_${id}"
-          value="${(_tempMembers[id] || ['',''])[1]}" placeholder="Thành viên 2">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${(_tempMembers[id] || ['','']).map((name, mi) => `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;align-items:center">
+            <input class="form-input" style="font-size:.76rem;padding:6px 8px" 
+              id="tmem${mi+1}_${id}" value="${name}" placeholder="Thành viên ${mi+1}">
+            <input class="form-input" style="font-size:.76rem;padding:6px 8px;color:var(--text-muted)" 
+              id="tmail${mi+1}_${id}" value="${(_tempMemberEmails[id] || [])[mi] || ''}" 
+              placeholder="Email ${mi+1}" type="email">
+          </div>`).join('')}
+        <button onclick="addMemberToTeam('${id}')" 
+          style="font-size:.7rem;padding:4px 8px;background:var(--accent-a06);border:1px dashed var(--accent-a30);
+          color:var(--accent);border-radius:6px;cursor:pointer;text-align:left;margin-top:2px;">
+          ＋ Thêm thành viên
+        </button>
       </div>
     </div>`).join('');
   updateTeamCountLabel();
@@ -5882,10 +5949,11 @@ window.saveTeamsModal = () => {
   // Lưu tên + thành viên từ input vào _temp
   _tempTeamIds.forEach(id => {
     _tempTeams[id] = document.getElementById(`tname_${id}`)?.value || _tempTeams[id];
-    _tempMembers[id] = [
-      document.getElementById(`tmem1_${id}`)?.value || '',
-      document.getElementById(`tmem2_${id}`)?.value || ''
-    ];
+    const mCount = (_tempMembers[id] || ['','']).length;
+    _tempMembers[id] = Array.from({length: mCount}, (_, mi) =>
+      document.getElementById(`tmem${mi+1}_${id}`)?.value || '');
+    _tempMemberEmails[id] = Array.from({length: mCount}, (_, mi) =>
+      document.getElementById(`tmail${mi+1}_${id}`)?.value.trim().toLowerCase() || '');
   });
 
   const teamCountChanged = _tempTeamIds.length !== teamIds.length;
@@ -5898,7 +5966,7 @@ window.saveTeamsModal = () => {
       rebuildSchedule(true);
       persist();        // rebuild cần admin → ghi toàn bộ state
     } else {
-      persistTeamInfo(); // chỉ đổi tên/emoji/màu/thành viên → không cần auth
+      requirePlayer(() => persistTeamInfo()); // chỉ đổi tên/emoji/màu/thành viên → không cần auth
     }
     closeModal('teamModal');
     showToast('✅ Đã lưu thông tin đội!');
@@ -5952,6 +6020,19 @@ window.switchTeamTab = (tab) => {
     if (content) content.style.display = active ? 'block' : 'none';
   });
   if (tab === 'settings') renderLeagueConfigTab();
+};
+window.addMemberToTeam = (id) => {
+  _tempMembers[id] = [...(_tempMembers[id] || ['','']), ''];
+  _tempMemberEmails[id] = [...(_tempMemberEmails[id] || []), ''];
+  // Lưu giá trị input hiện tại trước khi re-render
+  const mCount = (_tempMembers[id] || []).length - 1;
+  Array.from({length: mCount}, (_, mi) => {
+    const nameEl = document.getElementById(`tmem${mi+1}_${id}`);
+    const mailEl = document.getElementById(`tmail${mi+1}_${id}`);
+    if (nameEl) _tempMembers[id][mi] = nameEl.value;
+    if (mailEl) _tempMemberEmails[id][mi] = mailEl.value.trim().toLowerCase();
+  });
+  renderTeamModalInputs();
 };
 
 function renderLeagueConfigTab() {
@@ -6631,6 +6712,25 @@ document.getElementById('btnAbout').addEventListener('click', () => {
       <button class="modal-close" onclick="closeModal('themeModal')">✕</button>
     </div>
     <div id="themeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:4px 0 8px"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="magicLinkModal">
+  <div class="modal-box" style="max-width:400px">
+    <h3 style="margin:0 0 8px;font-size:1.1rem;">🔐 Xác nhận danh tính</h3>
+    <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 16px;">
+      Nhập email đã đăng ký trong hệ thống. Chúng tôi sẽ gửi link đăng nhập vào email đó.
+    </p>
+    <input class="form-input" id="magicLinkEmail" type="email" placeholder="your@email.com"
+      style="margin-bottom:8px" onkeydown="if(event.key==='Enter') sendMagicLink()">
+    <div id="magicLinkError" style="font-size:.78rem;min-height:18px;margin-bottom:10px;color:var(--red)"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-flat" id="btnSendMagicLink" onclick="sendMagicLink()"
+        style="flex:1;background:var(--accent-a12);border-color:var(--accent-a30);color:var(--accent)">
+        📧 Gửi link đăng nhập
+      </button>
+      <button class="btn-flat" onclick="closeModal('magicLinkModal')" style="flex:0 0 auto">Hủy</button>
+    </div>
   </div>
 </div>
 </body>

@@ -2251,7 +2251,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, onValue, set, increment, serverTimestamp, onDisconnect, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, onValue, set, update, increment, serverTimestamp, onDisconnect, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 /* ═══════════════════ FIREBASE CONFIG ═══════════════════ */
@@ -2653,9 +2653,21 @@ async function pushTeamInfoOnly() {
   }
 }
 
-function persist()         { pushToFirebase();   render(); }
+function persist() {
+  pushToFirebase();
+  render();
+}
+async function pushScheduleOnly() {
+  setSyncState('syncing');
+  try {
+    await update(ref(db, `${ROOT}/state`), { scheduleOrder, matchDates, manualDates });
+    setSyncState('connected');
+  } catch(e) {
+    setSyncState('offline');
+    showToast('⚠️ Lỗi lưu lịch: ' + e.message, 'warn');
+  }
+}
 function persistSchedule() { pushScheduleOnly(); render(); }
-function persistTeamInfo() { pushTeamInfoOnly(); render(); }
 
 function subscribeFirebase() {
   onValue(dbRef('state'), snap => {

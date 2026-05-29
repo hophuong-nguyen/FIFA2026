@@ -2388,16 +2388,17 @@ function getAllMemberEmails() {
   return all;
 }
 
-// Yêu cầu player đăng nhập trước khi thực hiện thao tác
+let _pendingPlayerAction = null;
+
 window.requirePlayer = fn => {
-  if (fbAuthUser) { fn(); return; } // đã đăng nhập
+  if (fbAuthUser) { fn(); return; }
   _pendingPlayerAction = fn;
   document.getElementById('magicLinkError').textContent = '';
+  document.getElementById('magicLinkError').style.color = 'var(--red)';
   document.getElementById('magicLinkEmail').value = '';
+  document.getElementById('btnSendMagicLink').disabled = false;
   openModal('magicLinkModal');
 };
-
-let _pendingPlayerAction = null;
 
 window.sendMagicLink = async () => {
   const email = document.getElementById('magicLinkEmail').value.trim().toLowerCase();
@@ -2406,22 +2407,21 @@ window.sendMagicLink = async () => {
   if (!getAllMemberEmails().has(email)) {
     errEl.textContent = '❌ Email này không có trong danh sách thành viên.'; return;
   }
-  const actionCodeSettings = {
-    url: window.location.href,
-    handleCodeInApp: true
-  };
   try {
-    await sendSignInLinkToEmail(fbAuth, email, actionCodeSettings);
+    await sendSignInLinkToEmail(fbAuth, email, {
+      url: window.location.href,
+      handleCodeInApp: true
+    });
     localStorage.setItem('magicLinkEmail', email);
     errEl.style.color = 'var(--green)';
-    errEl.textContent = '✅ Đã gửi link vào email! Kiểm tra hộp thư và click link để đăng nhập.';
+    errEl.textContent = '✅ Đã gửi! Kiểm tra hộp thư và click link để đăng nhập.';
     document.getElementById('btnSendMagicLink').disabled = true;
   } catch(err) {
     errEl.textContent = '❌ Lỗi: ' + err.message;
   }
 };
 
-// Tự động xử lý khi user click magic link quay về app
+// Xử lý khi user quay về app sau khi click magic link
 if (isSignInWithEmailLink(fbAuth, window.location.href)) {
   let email = localStorage.getItem('magicLinkEmail');
   if (!email) email = window.prompt('Nhập lại email của bạn để xác nhận:');
@@ -2429,14 +2429,14 @@ if (isSignInWithEmailLink(fbAuth, window.location.href)) {
     signInWithEmailLink(fbAuth, email, window.location.href)
       .then(() => {
         localStorage.removeItem('magicLinkEmail');
-        // Xóa query string khỏi URL
         window.history.replaceState(null, '', window.location.pathname);
         showToast('✅ Đăng nhập thành công!');
         if (_pendingPlayerAction) { _pendingPlayerAction(); _pendingPlayerAction = null; }
       })
-      .catch(err => showToast('❌ Link không hợp lệ hoặc đã hết hạn.', 'warn'));
+      .catch(() => showToast('❌ Link không hợp lệ hoặc đã hết hạn.', 'warn'));
   }
 }
+
 /* ═══════════════════ CONSTANTS ═══════════════════ */
 const EMOJI_CATS = {
   '⚽ Bóng đá':     ['⚽','🥅','🏆','🥇','🎯','🏅','🎖️','🥈','🥉','🎽','👟','🧤','🧢','📣','🏟️','🎪','🎊','🎉','🏋️','🤸'],

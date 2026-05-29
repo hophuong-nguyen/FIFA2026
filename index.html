@@ -2673,19 +2673,6 @@ async function pushToFirebase() {
   }
 }
 
-// Chỉ ghi team info — không cần auth
-async function pushTeamInfoOnly() {
-  setSyncState('syncing');
-  try {
-    await update(dbRef('state'), { teams, members, memberEmails, teamEmojis, teamColors });
-    setSyncState('connected');
-  }
-  catch(e) {
-    setSyncState('offline');
-    showToast('⚠️ Lỗi lưu thông tin đội: ' + e.message, 'warn');
-  }
-}
-
 function persist() {
   pushToFirebase();
   render();

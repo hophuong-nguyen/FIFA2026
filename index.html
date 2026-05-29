@@ -2612,25 +2612,51 @@ function normalizeState(data) {
 
 async function pushToFirebase() {
   setSyncState('syncing');
-  try { 
-    await set(dbRef('state'), { 
-      teamIds, teams, members, teamEmojis, teamColors, results, 
+  try {
+    await set(dbRef('state'), {
+      teamIds, teams, members, teamEmojis, teamColors, results,
       matchDates, scheduleOrder, leagueConfig,
-      rankMovement: rankMovementState,  /* <-- CHỈ THÊM ĐÚNG DÒNG NÀY */
-      manualDates   // ← THÊM
-    }); 
-    setSyncState('connected'); 
+      rankMovement: rankMovementState,
+      manualDates
+    });
+    setSyncState('connected');
   }
-  catch(e) { 
-    setSyncState('offline'); 
-    showToast('⚠️ Lỗi lưu: ' + e.message, 'warn'); 
+  catch(e) {
+    setSyncState('offline');
+    showToast('⚠️ Lỗi lưu: ' + e.message, 'warn');
   }
 }
 
-function persist() { 
-  pushToFirebase(); 
-  render(); 
+// Chỉ ghi lịch — không cần auth
+async function pushScheduleOnly() {
+  setSyncState('syncing');
+  try {
+    await update(dbRef('state'), { scheduleOrder, matchDates, manualDates });
+    setSyncState('connected');
+  }
+  catch(e) {
+    setSyncState('offline');
+    showToast('⚠️ Lỗi lưu lịch: ' + e.message, 'warn');
+  }
 }
+
+// Chỉ ghi team info — không cần auth
+async function pushTeamInfoOnly() {
+  setSyncState('syncing');
+  try {
+    await update(dbRef('state'), { teams, members, teamEmojis, teamColors });
+    setSyncState('connected');
+  }
+  catch(e) {
+    setSyncState('offline');
+    showToast('⚠️ Lỗi lưu thông tin đội: ' + e.message, 'warn');
+  }
+}
+
+function persist()         { pushToFirebase();   render(); }
+function persistSchedule() { pushScheduleOnly(); render(); }
+function persistTeamInfo() { pushTeamInfoOnly(); render(); }
+
 function subscribeFirebase() {
   onValue(dbRef('state'), snap => {
     try {
@@ -2866,7 +2892,7 @@ function initTouchDrag(rowEl, origIdx) {
         }
         scheduleOrder.splice(ins, 0, src);
         endDrag();
-        persist();
+        persistSchedule();
 
       } else if (lastTarget.classList.contains('fixture-row')) {
         const ti = Number(lastTarget.dataset.orig);
@@ -2879,7 +2905,7 @@ function initTouchDrag(rowEl, origIdx) {
           const di = scheduleOrder.indexOf(ti);
           scheduleOrder.splice(di, 0, src);
           endDrag();
-          persist();
+          persistSchedule();
           return;
         }
       }
@@ -3902,7 +3928,7 @@ function onZoneDrop(e, targetDate, afterOrig) {
 }
 function onRowDragOver(e) { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
 function onRowDragLeave() { this.classList.remove('drag-over-row'); }
-function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if (!dragData || dragData.origIdx === Number(targetOrigIdx)) return; const src = dragData.origIdx; matchDates[String(src)] = matchDates[String(targetOrigIdx)]; manualDates[String(src)] = matchDates[String(src)]; scheduleOrder = scheduleOrder.map(Number); const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); const di = scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di, 0, src); persist(); }
+function onRowDrop(e, targetOrigIdx) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over-row'); if (!dragData || dragData.origIdx === Number(targetOrigIdx)) return; const src = dragData.origIdx; matchDates[String(src)] = matchDates[String(targetOrigIdx)]; manualDates[String(src)] = matchDates[String(src)]; scheduleOrder = scheduleOrder.map(Number); const si = scheduleOrder.indexOf(src); scheduleOrder.splice(si, 1); const di = scheduleOrder.indexOf(Number(targetOrigIdx)); scheduleOrder.splice(di, 0, src); persistSchedule(); }
 
 function makeDateBlock(date, arr, today) {
   const isPast = date < today, isToday = date === today; const [, dm, dd] = date.split('-'); const dtObj = new Date(Date.UTC(...date.split('-').map(Number).map((v, i) => i === 1 ? v - 1 : v), 12)); const dowShort = DOWS_SHORT[dtObj.getUTCDay()], dowFull = DOWS_VI[dtObj.getUTCDay()]; const isReserve = arr === null; const done = isReserve ? 0 : arr.filter(i => { const r = getResult(i); return r && r.score1 !== undefined; }).length; const total = isReserve ? 0 : arr.length; const block = document.createElement('div'); block.className = 'matchday-block';
@@ -5880,10 +5906,12 @@ window.saveTeamsModal = () => {
   const doSave = () => {
     closeEmojiPicker();
     applyTempToReal();
-    // Chỉ rebuild lịch khi số đội hoặc thứ tự thay đổi
-    // Đổi tên / emoji / màu / thành viên → KHÔNG rebuild, giữ nguyên kết quả
-    if (teamCountChanged || teamOrderChanged) rebuildSchedule(true);
-    persist();
+    if (teamCountChanged || teamOrderChanged) {
+      rebuildSchedule(true);
+      persist();        // rebuild cần admin → ghi toàn bộ state
+    } else {
+      persistTeamInfo(); // chỉ đổi tên/emoji/màu/thành viên → không cần auth
+    }
     closeModal('teamModal');
     showToast('✅ Đã lưu thông tin đội!');
   };

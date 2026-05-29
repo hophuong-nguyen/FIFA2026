@@ -2326,12 +2326,14 @@ function updateVisitUI(total) {
 function dbRef(path) { return ref(db, `${ROOT}/${path}`); }
 
 /* ═══════════════════ AUTH ═══════════════════ */
-const ADMIN_UID = 'ADMIN_UID_CUA_BAN'; // UID từ Firebase Console
+const ADMIN_UID = 'H1ZS5K5ZGPSKZqQXZclIxMNld5L2';
 const fbAuth = getAuth(app);
 let isAdmin = false;
+let authReady = false; // flag chờ Firebase xác nhận trạng thái auth
 
 onAuthStateChanged(fbAuth, user => {
   isAdmin = !!(user && user.uid === ADMIN_UID);
+  authReady = true;
   updateAuthUI();
 });
 
@@ -2382,6 +2384,11 @@ window.doLogin = async () => {
   }
 };
 window.requireAdmin = fn => {
+  if (!authReady) {
+    // Firebase chưa xác nhận xong, chờ thêm chút
+    setTimeout(() => window.requireAdmin(fn), 200);
+    return;
+  }
   if (isAdmin) fn(); else { openModal('loginModal'); showToast('🔒 Cần đăng nhập Admin', 'warn'); }
 };
 

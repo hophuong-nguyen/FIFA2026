@@ -3923,8 +3923,7 @@ function onZoneDrop(e, targetDate, afterOrig) {
     const afterIdx = scheduleOrder.indexOf(after);
     ins = afterIdx === -1 ? scheduleOrder.length : afterIdx + 1;
   }
-  scheduleOrder.splice(ins, 0, src);
-  endDrag();
+  scheduleOrder.splice(ins, 0, src);  
   persistSchedule();
 }
 function onRowDragOver(e) { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }

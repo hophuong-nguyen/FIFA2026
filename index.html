@@ -2407,18 +2407,26 @@ window.sendMagicLink = async () => {
   if (!getAllMemberEmails().has(email)) {
     errEl.textContent = '❌ Email này không có trong danh sách thành viên.'; return;
   }
+  const btn = document.getElementById('btnSendMagicLink');
+  btn.disabled = true;
+  errEl.style.color = 'var(--text-muted)';
+  errEl.textContent = '⏳ Đang gửi...';
   try {
     const cleanUrl = window.location.origin + window.location.pathname;
+    console.log('[MagicLink] sending to:', email, '| continueUrl:', cleanUrl);
     await sendSignInLinkToEmail(fbAuth, email, {
       url: cleanUrl,
       handleCodeInApp: true
     });
     localStorage.setItem('magicLinkEmail', email);
     errEl.style.color = 'var(--green)';
-    errEl.textContent = '✅ Đã gửi! Kiểm tra hộp thư và click link để đăng nhập.';
-    document.getElementById('btnSendMagicLink').disabled = true;
+    errEl.textContent = '✅ Đã gửi! Kiểm tra hộp thư (kể cả Spam) và click link để đăng nhập.';
+    console.log('[MagicLink] sendSignInLinkToEmail resolved OK');
   } catch(err) {
-    errEl.textContent = '❌ Lỗi: ' + err.message;
+    btn.disabled = false;
+    errEl.style.color = 'var(--red)';
+    errEl.textContent = '❌ ' + (err.code || '') + ': ' + err.message;
+    console.error('[MagicLink] error:', err.code, err.message, err);
   }
 };
 

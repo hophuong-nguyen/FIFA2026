@@ -2627,19 +2627,6 @@ async function pushToFirebase() {
   }
 }
 
-// Chỉ ghi lịch — không cần auth
-async function pushScheduleOnly() {
-  setSyncState('syncing');
-  try {
-    await update(dbRef('state'), { scheduleOrder, matchDates, manualDates });
-    setSyncState('connected');
-  }
-  catch(e) {
-    setSyncState('offline');
-    showToast('⚠️ Lỗi lưu lịch: ' + e.message, 'warn');
-  }
-}
-
 // Chỉ ghi team info — không cần auth
 async function pushTeamInfoOnly() {
   setSyncState('syncing');

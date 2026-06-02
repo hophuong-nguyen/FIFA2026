@@ -2235,16 +2235,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     </div>
     <div class="card">
       <div class="card-title"><div class="icon">🏆</div>Bảng xếp hạng</div>
-      <div id="podiumArea"></div>
-      <div class="stats-compact" id="statsCompact"></div>
-      <table class="standings-table" id="standingsTable"></table>
+      <div id="standingsScrollWrap" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">
+        <div id="podiumArea"></div>
+        <div class="stats-compact" id="statsCompact"></div>
+        <table class="standings-table" id="standingsTable"></table>
 
-      <!-- Thêm phần Vua phá lưới (Top Scorers) -->
-      <div style="margin-top: 32px;"></div>
-      <div class="card-title"><div class="icon">⚽</div>Vua phá lưới</div>
-      <div id="scorerPodiumArea"></div>
-      <table class="standings-table" id="topScorersTable" style="margin-bottom: 12px;"></table>
-      <div id="topScorersToggleWrap" style="text-align:center; margin-bottom: 24px;"></div>
+        <!-- Thêm phần Vua phá lưới (Top Scorers) -->
+        <div style="margin-top: 32px;"></div>
+        <div class="card-title"><div class="icon">⚽</div>Vua phá lưới</div>
+        <div id="scorerPodiumArea"></div>
+        <table class="standings-table" id="topScorersTable" style="margin-bottom: 12px;"></table>
+        <div id="topScorersToggleWrap" style="text-align:center; margin-bottom: 24px;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -6283,12 +6285,12 @@ function syncFixtureCardHeight() {
   card.style.height = availH + 'px';
   card.style.maxHeight = availH + 'px';
 
-  // Chiều cao bảng xếp hạng bằng card trái
+  // Chiều cao card BXH bằng card trái, nội dung scroll qua #standingsScrollWrap
   const rightCard = document.querySelector('.grid-2 .card:last-child');
   if (rightCard) {
     rightCard.style.height = availH + 'px';
     rightCard.style.maxHeight = availH + 'px';
-    rightCard.style.overflowY = 'auto';
+    rightCard.style.overflowY = 'hidden';
   }
 }
 

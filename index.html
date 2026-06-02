@@ -6284,11 +6284,12 @@ function syncFixtureCardHeight() {
   card.style.maxHeight = availH + 'px';
 
   // Chiều cao bảng xếp hạng bằng card trái
+  // Card BXH bên phải: để tự nhiên theo nội dung, không fix height
   const rightCard = document.querySelector('.grid-2 .card:last-child');
   if (rightCard) {
-    rightCard.style.height = availH + 'px';
-    rightCard.style.maxHeight = availH + 'px';
-    rightCard.style.overflowY = 'auto';
+    rightCard.style.height = 'auto';
+    rightCard.style.maxHeight = 'none';
+    rightCard.style.overflowY = 'visible';
   }
 }
 

@@ -35,7 +35,7 @@ body {
   background-image: radial-gradient(circle at 50% 20%, #102a10 0%, #060f06 60%);
 }
 
-/* HERO CHƠI HỆ ĐÈN LED MATRIX */
+/* HERO MATRIX EFFECTS */
 .hero {
   background: linear-gradient(180deg, rgba(19,38,19,0.8) 0%, rgba(11,26,11,0.95) 100%);
   padding: 3.5rem 15px 3rem;
@@ -58,7 +58,7 @@ body {
 .hero h1 span { color: var(--lime); text-shadow: 0 0 15px rgba(163,230,53,0.6); }
 .hero-sub { font-size: 13px; color: var(--text-dim); margin-top: 0.5rem; font-weight: 500; }
 
-/* STATS BADGES HOÀNH TRÁNG */
+/* STATS BADGES */
 .hero-stats { display: flex; justify-content: center; gap: 10px; margin-top: 2rem; flex-wrap: wrap; }
 .hstat { 
   background: rgba(19,38,19,0.7); padding: 0.8rem 1.5rem; border: 1px solid var(--border); border-radius: 12px; 
@@ -72,12 +72,12 @@ body {
 .hstat:nth-child(5) .hstat-n { color: var(--red); text-shadow: 0 0 10px rgba(239,68,68,0.4); }
 .hstat-l { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; font-weight: 700; }
 
-/* NAVIGATION DECORATION */
+/* NAVIGATION */
 .nav { display: flex; gap: 6px; padding: 0.8rem 15px; background: #091409; border-bottom: 1px solid var(--border); overflow-x: auto; max-width: 1400px; margin: 0 auto; }
 .nav a { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); text-decoration: none; padding: 6px 16px; border-radius: 6px; white-space: nowrap; transition: all 0.2s; border: 1px solid transparent; }
 .nav a:hover, .nav a.active { background: var(--lime-dim); color: var(--lime); border-color: var(--border); box-shadow: inset 0 0 8px rgba(163,230,53,0.1); }
 
-/* LAYOUT CHIẾN ĐẤU DÃN BIÊN */
+/* PAGE LAYOUT DÃN BIÊN */
 .page { max-width: 1400px; margin: 0 auto; padding: 2rem 15px; }
 .sec { margin-bottom: 3rem; background: rgba(11,26,11,0.4); padding: 20px; border-radius: 16px; border: 1px solid rgba(163,230,53,0.08); }
 .sec-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; }
@@ -91,16 +91,16 @@ body {
 .card-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lime); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
 .card-title::before { content: ''; display: inline-block; width: 4px; height: 12px; background: var(--lime); border-radius: 2px; }
 
-/* TIMELINE LỊCH THI ĐẤU */
+/* TIMELINE - FIX RESPONSIVE MOBILE */
 .timeline { position: relative; padding-left: 1.2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-@media (max-width: 768px) { .timeline { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .timeline { grid-template-columns: 1fr; gap: 1rem; } }
 .timeline::before { content: ''; position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, var(--lime), var(--surface2)); }
 .tl-day { margin-bottom: 0.5rem; break-inside: avoid; background: rgba(19,38,19,0.3); padding: 12px; border-radius: 10px; border: 1px solid rgba(163,230,53,0.05); }
 .tl-day-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #fff; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
 .tl-day-label::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--lime); border: 2px solid var(--bg); margin-left: -1.8rem; box-shadow: 0 0 8px var(--lime); flex-shrink: 0; }
 .tl-match-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
 .tl-match { background: var(--surface2); border: 1px solid rgba(163,230,53,0.1); border-radius: 8px; padding: 0.6rem 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
-.tl-team { flex: 1; font-weight: 600; font-size: 12.5px; color: #e2ffe2; }
+.tl-team { flex: 1; font-weight: 600; font-size: 12px; color: #e2ffe2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-team.r { text-align: right; }
 .tl-score { display: flex; gap: 4px; align-items: center; }
 .sc { font-weight: 900; font-size: 14px; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; min-width: 25px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
@@ -108,8 +108,13 @@ body {
 .sc.l { background: rgba(239,68,68,0.1); color: #ffaca8; border-color: rgba(239,68,68,0.2); }
 .sc.d { background: rgba(56,189,248,0.1); color: #bae6fd; border-color: rgba(56,189,248,0.2); }
 
-/* CALLOUTS HIGHLIGHTS ĐẬM ĐÀ MÀU SẮC */
-.callout { background: var(--surface); border-left: 4px solid var(--lime); border-radius: 4px 12px 12px 4px; padding: 0.9rem 1.2rem; margin-bottom: 0.8rem; border: 1px solid rgba(163,230,53,0.08); border-left: 4px solid var(--lime); box-shadow: 3px 3px 10px rgba(0,0,0,0.2); }
+@media (max-width: 768px) { 
+  .tl-day[style*="grid-column"] { grid-column: span 1 !important; }
+  .tl-day[style*="grid-column"] > div { grid-template-columns: 1fr !important; } 
+}
+
+/* CALLOUTS HIGHLIGHTS */
+.callout { background: var(--surface); border-left: 4px solid var(--lime); border-radius: 4px 12px 12px 4px; padding: 0.9rem 1.2rem; margin-bottom: 0.8rem; border: 1px solid rgba(163,230,53,0.08); box-shadow: 3px 3px 10px rgba(0,0,0,0.2); }
 .callout.gold { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(251,191,36,0.05) 0%, var(--surface) 100%); }
 .callout.red { border-left-color: var(--red); background: linear-gradient(90deg, rgba(239,68,68,0.05) 0%, var(--surface) 100%); }
 .callout.blue { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(56,189,248,0.05) 0%, var(--surface) 100%); }
@@ -121,18 +126,18 @@ body {
 .callout.blue .callout-title { color: var(--blue); }
 .callout.purple .callout-title { color: var(--purple); }
 
-/* DRAMA BOX ĐẬM CHẤT ĐIỆN ẢNH */
+/* DRAMA BOX */
 .drama { background: linear-gradient(135deg, #1f0b0b 0%, #171205 100%); border: 1px solid rgba(251,191,36,0.25); border-radius: 12px; padding: 1.2rem; margin-bottom: 0.8rem; box-shadow: inset 0 0 15px rgba(251,191,36,0.05); }
 .drama-title { font-weight: 900; color: var(--gold); font-size: 14px; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
 .drama p { font-size: 12.5px; color: #dfd5be; line-height: 1.7; }
 
-/* BẢNG XẾP HẠNG GAMING */
+/* STANDING TABLE */
 .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
 table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); }
 thead tr { background: linear-gradient(90deg, rgba(163,230,53,0.18) 0%, rgba(19,38,19,0.4) 100%); border-bottom: 2px solid var(--border); }
-th { padding: 0.8rem 0.6rem; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lime); font-weight: 800; text-align: center; }
+th { padding: 0.8rem 0.4rem; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lime); font-weight: 800; text-align: center; }
 th.tl { text-align: left; padding-left: 1rem; }
-td { padding: 0.75rem 0.6rem; text-align: center; border-bottom: 1px solid rgba(163,230,53,0.08); color: #fff; }
+td { padding: 0.75rem 0.4rem; text-align: center; border-bottom: 1px solid rgba(163,230,53,0.08); color: #fff; }
 td.tl { text-align: left; font-weight: 700; padding-left: 1rem; }
 tr.r1 { background: linear-gradient(90deg, rgba(251,191,36,0.1) 0%, rgba(0,0,0,0) 100%); }
 tr.r1 td.tl { color: var(--gold); }
@@ -145,13 +150,13 @@ tr:last-child td { border-bottom: none; }
 .pts { font-weight: 900; color: var(--lime); font-size: 14px; }
 .pos { color: #4ade80; font-weight: 700; }
 .neg { color: #f87171; font-weight: 700; }
-.pill { display: inline-block; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; vertical-align: middle; }
+.pill { display: inline-block; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; vertical-align: middle; }
 .pill-r { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
 .pill-y { background: rgba(251,191,36,0.2); color: var(--gold); border: 1px solid rgba(251,191,36,0.3); }
 
-/* VUA PHÁ LƯỚI HAI CỘT KHÉP LẠI KHÔNG GIAN */
+/* SCORER - FIX RESPONSIVE MOBILE */
 .scorer-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
-@media (max-width: 768px) { .scorer-container { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .scorer-container { grid-template-columns: 1fr; gap: 0.4rem; } }
 .scorer-list { display: flex; flex-direction: column; gap: 0.4rem; }
 .scorer-row { display: flex; align-items: center; gap: 0.8rem; background: var(--surface2); border-radius: 8px; padding: 0.5rem 0.8rem; border: 1px solid rgba(251,191,36,0.03); transition: all 0.2s; }
 .scorer-row:hover { border-color: rgba(163,230,53,0.2); transform: scale(1.01); background: linear-gradient(90deg, var(--surface2) 0%, rgba(163,230,53,0.04) 100%); }
@@ -159,12 +164,12 @@ tr:last-child td { border-bottom: none; }
 .sc-rank.t1 { color: var(--gold); text-shadow: 0 0 6px var(--gold); font-size: 14px; }
 .sc-rank.t2 { color: var(--silver); font-size: 13px; }
 .sc-rank.t3 { color: #cd7f32; }
-.sc-name { flex: 1; font-weight: 700; font-size: 13px; color: #fff; }
-.sc-team { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+.sc-name { flex: 1; font-weight: 700; font-size: 12.5px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-team { font-size: 10.5px; color: var(--text-dim); font-weight: 500; }
 .sc-goals { font-size: 1.1rem; font-weight: 900; color: var(--lime); min-width: 30px; text-align: right; text-shadow: 0 0 8px rgba(163,230,53,0.3); }
 .scorer-row.highlight-blue { border: 1px solid rgba(56,189,248,0.3); background: linear-gradient(90deg, var(--surface2) 0%, rgba(56,189,248,0.05) 100%); }
 
-/* GRID GIẢI THƯỞNG Ô CỜ PHÁT SÁNG */
+/* AWARDS GRID */
 .award-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
 @media (max-width: 992px) { .award-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px) { .award-grid { grid-template-columns: 1fr; } }
@@ -177,7 +182,7 @@ tr:last-child td { border-bottom: none; }
 .award.special-border { border-color: rgba(56,189,248,0.3); background: linear-gradient(135deg, var(--surface2) 0%, rgba(56,189,248,0.03) 100%); }
 .award.special-border-red { border-color: rgba(239,68,68,0.3); background: linear-gradient(135deg, var(--surface2) 0%, rgba(239,68,68,0.03) 100%); }
 
-/* VŨ KHÍ CHIẾN ĐẤU NGOÀI LỀ */
+/* MÚC NHAU NGOÀI LỀ */
 .diss-box { background: linear-gradient(180deg, #1a0505 0%, #110303 100%); border: 1px solid rgba(239,68,68,0.25); padding: 20px; border-radius: 12px; margin-top: 1.5rem; box-shadow: inset 0 0 20px rgba(239,68,68,0.05); }
 .diss-box h3 { color: #fca5a5; font-size: 13.5px; text-transform: uppercase; margin-bottom: 12px; font-weight: 900; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; text-shadow: 0 0 6px rgba(239,68,68,0.3); }
 .diss-box ul { padding-left: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; list-style-type: none; }
@@ -185,7 +190,7 @@ tr:last-child td { border-bottom: none; }
 .diss-box li { font-size: 12.5px; color: #ffcbd1; line-height: 1.6; position: relative; padding-left: 15px; }
 .diss-box li::before { content: '⚡'; position: absolute; left: 0; color: var(--gold); }
 
-/* FOOTER CHUẨN GAMING */
+/* FOOTER */
 footer { text-align: center; padding: 1.8rem 15px; background: #060d06; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); margin-top: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
 footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
 </style>
@@ -202,7 +207,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
     <div class="hstat"><div class="hstat-n">3.3</div><div class="hstat-l">Bàn/trận</div></div>
     <div class="hstat"><div class="hstat-n">11</div><div class="hstat-l">Thẻ vàng</div></div>
     <div class="hstat"><div class="hstat-n">6</div><div class="hstat-l">Thẻ đỏ</div></div>
-    <div class="hstat"><div class="hstat-n">14</div><div class="hstat-l">Chân sút nổ súng</div></div>
+    <div class="hstat"><div class="hstat-n">14</div><div class="hstat-l">Chiến thần nổ súng</div></div>
   </div>
 </div>
 
@@ -229,7 +234,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
       <div class="timeline">
 
         <div class="tl-day">
-          <div class="tl-day-label">T6 · 22/05 · Vòng khai màn nhiều "tiểu phẩm"</div>
+          <div class="tl-day-label">T6 · 22/05 · Vòng khai màn đầy "vô tri"</div>
           <div class="tl-match-wrap">
             <div class="tl-match">
               <span class="tl-team">Nam Nguyễn–Mạnh</span>

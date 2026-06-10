@@ -199,6 +199,167 @@ tr:last-child td { border-bottom: none; }
 /* FOOTER */
 footer { text-align: center; padding: 1.8rem 15px; background: #060d06; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); margin-top: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
 footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
+
+body::before{
+ content:'⚽';
+ position:fixed;
+ left:50%;
+ top:50%;
+ transform:translate(-50%,-50%);
+ font-size:500px;
+ opacity:0.015;
+ pointer-events:none;
+ z-index:0;
+}
+.hero::after{
+ content:'🏆';
+ position:absolute;
+ right:40px;
+ top:20px;
+ font-size:180px;
+ opacity:0.04;
+ pointer-events:none;
+}
+.sec{position:relative;}
+.sec::before{
+ content:'';position:absolute;top:8px;right:8px;width:40px;height:40px;
+ border-top:2px solid var(--lime);border-right:2px solid var(--lime);opacity:.4;
+}
+.sec::after{
+ content:'';position:absolute;bottom:8px;left:8px;width:40px;height:40px;
+ border-bottom:2px solid var(--lime);border-left:2px solid var(--lime);opacity:.4;
+}
+
+
+/* POSTER EDITION V2 */
+.hero{
+ background:
+ radial-gradient(circle at 50% 0%, rgba(163,230,53,.15), transparent 45%),
+ linear-gradient(180deg, rgba(19,38,19,.92), rgba(11,26,11,.98));
+}
+.hero h1{
+ text-shadow:0 0 20px rgba(163,230,53,.35),0 0 40px rgba(163,230,53,.15);
+}
+.sec{
+ backdrop-filter:blur(10px);
+ box-shadow:
+ 0 10px 40px rgba(0,0,0,.35),
+ inset 0 0 40px rgba(163,230,53,.03);
+}
+.sec-head{
+ padding-bottom:10px;
+ border-bottom:1px solid rgba(163,230,53,.08);
+}
+.sec-title{
+ text-shadow:0 0 12px rgba(163,230,53,.2);
+}
+#bxh::before,#vpl::before,#giai-thuong::before,#dien-bien::before{
+ font-size:80px;
+ opacity:.08;
+ width:auto;height:auto;border:none;
+ top:15px;right:20px;
+}
+#dien-bien::before{content:'⚽';}
+#bxh::before{content:'🏆';}
+#vpl::before{content:'🎯';}
+#giai-thuong::before{content:'⭐';}
+
+.r1{
+ box-shadow: inset 4px 0 0 #fbbf24;
+}
+.r2{
+ box-shadow: inset 4px 0 0 #cbd5e1;
+}
+.r3{
+ box-shadow: inset 4px 0 0 #cd7f32;
+}
+
+.scorer-row:nth-child(-n+3){
+ background:linear-gradient(90deg, rgba(251,191,36,.08), var(--surface2));
+ border-color:rgba(251,191,36,.15);
+}
+
+.award{
+ overflow:hidden;
+}
+.award::after{
+ content:'';
+ position:absolute;
+ inset:0;
+ background:linear-gradient(135deg, transparent 0%, rgba(255,255,255,.03) 40%, transparent 80%);
+ pointer-events:none;
+}
+
+footer{
+ background:
+ linear-gradient(180deg,#060d06,#030703);
+}
+
+</style>
+
+<style>
+@media print{
+ @page { size: A4 landscape; margin: 10mm; }
+ body{zoom:0.9;}
+}
+.hero{
+ min-height:520px;
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ background:
+ linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.55)),
+ radial-gradient(circle at center, rgba(163,230,53,.18), transparent 40%),
+ url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?fit=crop&w=1600&q=80');
+ background-size:cover;
+ background-position:center;
+}
+.hero h1{
+ font-size:5rem;
+ letter-spacing:.08em;
+}
+.champion-banner{
+ margin:20px auto;
+ max-width:1200px;
+ border:2px solid rgba(251,191,36,.5);
+ border-radius:24px;
+ padding:30px;
+ text-align:center;
+ background:linear-gradient(135deg,#2a2005,#0f1408);
+ box-shadow:0 0 50px rgba(251,191,36,.15);
+}
+.champion-cup{
+ font-size:120px;
+ line-height:1;
+ filter:drop-shadow(0 0 20px rgba(251,191,36,.4));
+}
+.mvp-card{
+ max-width:500px;
+ margin:25px auto;
+ background:linear-gradient(135deg,#111,#1a2a1a);
+ border:1px solid rgba(163,230,53,.25);
+ border-radius:20px;
+ padding:20px;
+ text-align:center;
+}
+.mvp-avatar{
+ width:140px;height:140px;border-radius:50%;
+ margin:auto;
+ background:radial-gradient(circle,#a3e635 0%,#203020 60%,#111 100%);
+ display:flex;align-items:center;justify-content:center;
+ font-size:70px;
+ box-shadow:0 0 30px rgba(163,230,53,.25);
+}
+.medal3d{
+ display:inline-block;
+ padding:6px 12px;
+ border-radius:999px;
+ font-weight:bold;
+ box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 6px 12px rgba(0,0,0,.3);
+}
+.gold3d{background:linear-gradient(#ffd95c,#d39c00);color:#111;}
+.silver3d{background:linear-gradient(#f3f4f6,#94a3b8);color:#111;}
+.bronze3d{background:linear-gradient(#e7a46a,#a8571f);color:#111;}
 </style>
 </head>
 <body>
@@ -226,6 +387,20 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
 </div>
 
 <div class="page">
+<div class="champion-banner">
+<div class="champion-cup">🏆</div>
+<h2>CHAMPION 2026</h2>
+<h1 style="font-size:3rem;color:#fbbf24">CA SĨ KHÁNH PHƯƠNG</h1>
+<p>Bất bại • 14 điểm • Nhà vô địch mùa giải</p>
+</div>
+
+<div class="mvp-card">
+<div class="mvp-avatar">👤</div>
+<h2>MVP OF THE SEASON</h2>
+<h3>Phương Nguyễn 8</h3>
+<p>Đầu tàu của nhà vô địch, trung tâm lối chơi và nhân tố quyết định chức vô địch.</p>
+</div>
+
 
 <div class="sec" id="dien-bien">
   <div class="sec-head">
@@ -240,7 +415,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
       <div class="timeline">
 
         <div class="tl-day">
-          <div class="tl-day-label">T6 · 22/05 · Vòng khai màn đầy "vô tri"</div>
+          <div class="tl-day-label">T6 · 22/05 · Vòng khai màn</div>
           <div class="tl-match-wrap">
             <div class="tl-match">
               <span class="tl-team">Nam Nguyễn–Mạnh</span>
@@ -402,7 +577,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
     </div>
 
     <div>
-      <div class="card-title" style="margin-bottom:0.75rem;">🔥 Những Chiếc Trend "Xịt Keo" Toàn Giải</div>
+      <div class="card-title" style="margin-bottom:0.75rem;">🔥 Những Điểm Nhấn Đáng Chú Ý</div>
 
       <div class="callout blue">
         <div class="callout-title">Quân – Phương 6 và quỹ từ thiện điểm số</div>
@@ -456,7 +631,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
           </thead>
           <tbody>
             <tr class="r1">
-              <td>🥇</td>
+              <td><span class="medal3d gold3d">🥇</span></td>
               <td class="tl">Ca sĩ Khánh Phương</td>
               <td class="pts">14</td>
               <td>4</td><td>2</td><td>0</td>
@@ -464,7 +639,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
               <td>0</td><td>0</td>
             </tr>
             <tr class="r2">
-              <td>🥈</td>
+              <td><span class="medal3d silver3d">🥈</span></td>
               <td class="tl">Nam Nguyễn–Mạnh</td>
               <td class="pts">11</td>
               <td>3</td><td>2</td><td>1</td>
@@ -472,7 +647,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
               <td>1</td><td>0</td>
             </tr>
             <tr class="r3">
-              <td>🥉</td>
+              <td><span class="medal3d bronze3d">🥉</span></td>
               <td class="tl">Nam Lê–Thin</td>
               <td class="pts">11</td>
               <td>3</td><td>2</td><td>1</td>
@@ -519,15 +694,15 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
 
     <div style="display:flex;flex-direction:column;gap:0.3rem;">
       <div class="callout gold">
-        <div class="callout-title">🥇 1. Ca sĩ Khánh Phương — Sơ đồ chiến thuật "Một người lo bằng kho người làm"</div>
+        <div class="callout-title"><span class="medal3d gold3d">🥇</span> 1. Ca sĩ Khánh Phương — Sơ đồ chiến thuật "Một người lo bằng kho người làm"</div>
         Một mình Phương Nguyễn 8 làm chủ cuộc chơi, gánh vác toàn bộ map đấu để đưa người bạn Khánh Võ lên đỉnh vinh quang. Danh hiệu Fair Play (0 thẻ) chứng minh đẳng cấp out trình, đối phương còn chưa kịp va chạm thì bóng đã nằm gọn trong lưới. Khánh Võ vô địch xong nhớ bao anh Phương bữa lẩu voi để bù đắp lại năng lượng nhé.
       </div>
       <div class="callout silver">
-        <div class="callout-title">🥈 2. Nam Nguyễn–Mạnh — Hàng công dạt dào sức mạnh</div>
+        <div class="callout-title"><span class="medal3d silver3d">🥈</span> 2. Nam Nguyễn–Mạnh — Hàng công dạt dào sức mạnh</div>
         Ghi nhiều bàn nhất giải (16 bàn) nhưng chiếc cúp vô địch lại ngoảnh mặt đầy cay đắng. Một mình Nam Nguyễn cày cuốc tận 11 bàn (gánh gần 70% hỏa lực), nghĩa là Mạnh Vũ chỉ cần chắt chiu thêm đúng một pha bóng nữa ở trận hòa 3-3 là hai anh em đã vô địch. Mạnh Vũ hôm nay nhớ tự giác rót nước phục vụ chân sút chủ lực nhé.
       </div>
       <div class="callout bronze" style="border-color:#cd7f32;">
-        <div class="callout-title">🥉 3. Nam Lê–Thin — Bản lĩnh và những chiếc đầu nóng "ét o ét"</div>
+        <div class="callout-title"><span class="medal3d bronze3d">🥉</span> 3. Nam Lê–Thin — Bản lĩnh và những chiếc đầu nóng "ét o ét"</div>
         Lối đá cuốn bậc nhất nhưng tâm lý thi đấu lại đầy "tiểu phẩm". Thắng hủy diệt 6-1 cực bay nhưng lại dính liền 2 chiếc thẻ đỏ đi vào lòng đất. Đá game bằng tay cầm mà các khứa căng thẳng như đang đấu võ đài tự do. Chính sự thiếu kiềm chế này đã làm bay màu lợi thế hiệu số, dâng vị trí Á quân cho nhà Nam Nguyễn.
       </div>
       <div class="callout blue">
@@ -565,10 +740,10 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
         <div class="scorer-row highlight-blue"><div class="sc-rank" style="color:var(--blue)">7</div><div><div class="sc-name">Tiến Lê <span style="font-size:10px;color:var(--blue)">💤→🔥</span></div><div class="sc-team">Dũng Tiến khao giải</div></div><div class="sc-goals" style="color:var(--blue)">5</div></div>
       </div>
       <div class="scorer-list">
-        <div class="scorer-row" style="border: 1px solid var(--blue);"><div class="sc-rank" style="color:var(--blue);">8</div><div><div class="sc-name">Phương Nguyễn 6</div><div class="sc-team">Quân–Phương 6</div></div><div class="sc-goals" style="color:var(--blue);">4</div></div>
+        <div class="scorer-row" ><div class="sc-rank" >8</div><div><div class="sc-name">Phương Nguyễn 6</div><div class="sc-team">Quân–Phương 6</div></div><div class="sc-goals" >4</div></div>
         <div class="scorer-row"><div class="sc-rank">9</div><div><div class="sc-name">Khánh Võ</div><div class="sc-team">Ca sĩ Khánh Phương</div></div><div class="sc-goals">4</div></div>
         <div class="scorer-row"><div class="sc-rank">10</div><div><div class="sc-name">Vũ Nguyễn</div><div class="sc-team">Tâm–Vũ</div></div><div class="sc-goals">3</div></div>
-        <div class="scorer-row" style="border: 1px solid var(--blue);"><div class="sc-rank" style="color:var(--blue);">11</div><div><div class="sc-name">Quân Phạm</div><div class="sc-team">Quân–Phương 6</div></div><div class="sc-goals" style="color:var(--blue);">3</div></div>
+        <div class="scorer-row" ><div class="sc-rank" style="color:var(--blue);">11</div><div><div class="sc-name">Quân Phạm</div><div class="sc-team">Quân–Phương 6</div></div><div class="sc-goals" >3</div></div>
         <div class="scorer-row"><div class="sc-rank">12</div><div><div class="sc-name">Dũng Nguyễn 4</div><div class="sc-team">Dũng Tiến khao giải</div></div><div class="sc-goals">2</div></div>
         <div class="scorer-row"><div class="sc-rank">13</div><div><div class="sc-name">Trung Vương</div><div class="sc-team">Trung–Huy</div></div><div class="sc-goals">1</div></div>
         <div class="scorer-row"><div class="sc-rank">14</div><div><div class="sc-name">Tâm Nguyễn <span style="color:var(--lime);font-size:10px;">★ Quả chốt bom!</span></div><div class="sc-team">Tâm–Vũ</div></div><div class="sc-goals">1</div></div>
@@ -577,7 +752,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
 
     <div style="display:flex;flex-direction:column;gap:0.4rem;">
       <div class="callout gold">
-        <div class="callout-title">👑 Nam Nguyễn (11 bàn) & Mạnh Vũ (5 bàn): Sát thủ cô độc và sự vô tri</div>
+        <div class="callout-title">👑 Nam Nguyễn (11 bàn) & Mạnh Vũ (5 bàn): Sát thủ cô độc và cơ hội bị bỏ lỡ</div>
         Nam Nguyễn gánh tới **69% hiệu suất ghi bàn** của đội, đá như một cái máy hủy diệt nhưng đành ngậm ngùi làm Á quân. Hãy nhìn sang Mạnh Vũ, ghi được 5 bàn nghe có vẻ oai, nhưng check-var kỹ lại thì sút trượt ở những khoảnh khắc quyết định nhiều không đếm xuể. Chỉ cần Mạnh Vũ bớt "vô tri" đi đúng một nhịp ở trận hòa 3-3 lịch sử kia là hai anh em đã được nâng cúp bạt ngàn rồi!
       </div>
 
@@ -625,7 +800,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
     <div class="award">
       <div class="award-ico">🏆</div>
       <div class="award-lbl">Vô Địch</div>
-      <div class="award-name">Ca sĩ Khánh Phương</div>
+      <div class="award-name">👑 Ca sĩ Khánh Phương</div>
       <div class="award-desc">14 điểm · bất bại · chỉ nhận 2 bàn thua, Phương Nguyễn 8 gánh Khánh Võ muốn gãy toàn bộ đốt sống cổ.</div>
     </div>
     <div class="award" style="border-color: var(--blue);">

@@ -91,7 +91,7 @@ body {
 .card-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lime); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
 .card-title::before { content: ''; display: inline-block; width: 4px; height: 12px; background: var(--lime); border-radius: 2px; }
 
-/* TIMELINE - FIX RESPONSIVE MOBILE */
+/* TIMELINE - FIX TRIỆT ĐỂ LỖI TRÀN CHỮ */
 .timeline { position: relative; padding-left: 1.2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 @media (max-width: 768px) { .timeline { grid-template-columns: 1fr; gap: 1rem; } }
 .timeline::before { content: ''; position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, var(--lime), var(--surface2)); }
@@ -102,15 +102,21 @@ body {
 .tl-match { background: var(--surface2); border: 1px solid rgba(163,230,53,0.1); border-radius: 8px; padding: 0.6rem 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
 .tl-team { flex: 1; font-weight: 600; font-size: 12px; color: #e2ffe2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-team.r { text-align: right; }
-.tl-score { display: flex; gap: 4px; align-items: center; }
+.tl-score { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
 .sc { font-weight: 900; font-size: 14px; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; min-width: 25px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
 .sc.w { background: var(--lime); color: #000; border-color: var(--lime); }
 .sc.l { background: rgba(239,68,68,0.1); color: #ffaca8; border-color: rgba(239,68,68,0.2); }
 .sc.d { background: rgba(56,189,248,0.1); color: #bae6fd; border-color: rgba(56,189,248,0.2); }
 
+/* Màn hình rộng: Ép 2 dòng cuối dãn ngang nhưng không dùng grid cứng để tránh tràn */
+.tl-day-wide { grid-column: span 2; }
+.tl-grid-3 { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.tl-grid-3 .tl-match { flex: 1; min-width: 200px; }
+
 @media (max-width: 768px) { 
-  .tl-day[style*="grid-column"] { grid-column: span 1 !important; }
-  .tl-day[style*="grid-column"] > div { grid-template-columns: 1fr !important; } 
+  .tl-day-wide { grid-column: span 1 !important; }
+  .tl-grid-3 { flex-direction: column; }
+  .tl-grid-3 .tl-match { min-width: 100%; }
 }
 
 /* CALLOUTS HIGHLIGHTS */
@@ -154,7 +160,7 @@ tr:last-child td { border-bottom: none; }
 .pill-r { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
 .pill-y { background: rgba(251,191,36,0.2); color: var(--gold); border: 1px solid rgba(251,191,36,0.3); }
 
-/* SCORER - FIX RESPONSIVE MOBILE */
+/* SCORER */
 .scorer-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
 @media (max-width: 768px) { .scorer-container { grid-template-columns: 1fr; gap: 0.4rem; } }
 .scorer-list { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -362,9 +368,9 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
           </div>
         </div>
 
-        <div class="tl-day" style="grid-column: span 2;">
+        <div class="tl-day tl-day-wide">
           <div class="tl-day-label">T5 · 04/06</div>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+          <div class="tl-grid-3">
             <div class="tl-match">
               <span class="tl-team">Tâm–Vũ</span>
               <div class="tl-score"><span class="sc d">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc d">1</span></div>
@@ -383,7 +389,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
           </div>
         </div>
 
-        <div class="tl-day" style="grid-column: span 2;">
+        <div class="tl-day tl-day-wide">
           <div class="tl-day-label" style="color:var(--gold);">T4 · 10/06 · Màn hạ màn "ngỡ ngàng ngơ ngác" 🔚</div>
           <div class="tl-match" style="border-color:rgba(251,191,36,0.3);">
             <span class="tl-team">Dũng Tiến</span>
@@ -408,7 +414,7 @@ footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
         <strong>Tâm–Vũ 1–6 Nam Lê–Thin (01/06)</strong> — 7 bàn thắng. Nam Lê bật chế độ "out trình" nã liền 5 quả trong 1 hiệp. Tâm–Vũ ngày đầu debut tự tin bao nhiêu thì nhận về cái kết "ngỡ ngàng ngơ ngác bật ngửa" bấy nhiêu. Đúng là kiếp nạn khó qua.
       </div>
 
-      <div class="callout gold">
+      <div class="gold callout">
         <div class="callout-title">Nội chiến gia tộc: Hơn thua từng milimet</div>
         <strong>Nam Nguyễn 3–3 Nam Lê (04/06)</strong> — Trận chiến tóe lửa dập tắt luôn hy vọng chiếm vị trí số 2 của Nam Lê. Hai anh em kìm chân nhau đầy căng thẳng để nhà vô địch đứng ngoài ung dung "flex" nhẹ chiếc cúp.
       </div>

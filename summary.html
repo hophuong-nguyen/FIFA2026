@@ -3,24 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tổng Kết Mùa Giải FIFA 2026</title>
+<title>Tổng Kết Mùa Giải FIFA 2026 - Cyberpunk Esports Edition</title>
 <style>
 :root {
-  --bg: #0d1f0d;
-  --surface: #132613;
-  --surface2: #1a3320;
-  --border: rgba(163,230,53,0.15);
+  --bg: #060f06;
+  --surface: #0b1a0b;
+  --surface2: #122a12;
+  --border: rgba(163,230,53,0.25);
   --lime: #a3e635;
   --lime2: #84cc16;
-  --lime-dim: rgba(163,230,53,0.12);
+  --lime-dim: rgba(163,230,53,0.15);
   --gold: #fbbf24;
-  --silver: #94a3b8;
-  --bronze: #b45309;
+  --silver: #cbd5e1;
+  --bronze: #f97316;
   --red: #ef4444;
-  --blue: #60a5fa;
+  --blue: #38bdf8;
+  --purple: #c084fc;
   --text: #e2ffe2;
-  --text-dim: #6b9b6b;
+  --text-dim: #84b384;
   --text-muted: #4d7a4d;
+  --neon-glow: 0 0 10px rgba(163,230,53,0.3), 0 0 20px rgba(163,230,53,0.1);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }
@@ -30,185 +32,177 @@ body {
   color: var(--text);
   font-size: 13.5px;
   line-height: 1.6;
+  background-image: radial-gradient(circle at 50% 20%, #102a10 0%, #060f06 60%);
 }
 
-/* HERO */
+/* HERO CHƠI HỆ ĐÈN LED MATRIX */
 .hero {
-  background: linear-gradient(160deg, #0a1f0a 0%, #1a3a1a 60%, #0d2a0d 100%);
-  padding: 2.5rem 15px 2rem;
+  background: linear-gradient(180deg, rgba(19,38,19,0.8) 0%, rgba(11,26,11,0.95) 100%);
+  padding: 3.5rem 15px 3rem;
   text-align: center;
-  border-bottom: 2px solid var(--lime);
+  border-bottom: 3px solid var(--lime);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5), inset 0 0 40px rgba(163,230,53,0.1);
 }
-.hero::after {
-  content: '⚽';
-  position: absolute; right: 2rem; top: 1rem;
-  font-size: 5rem; opacity: 0.05;
+.hero::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(rgba(163,230,53,0.03) 50%, rgba(0,0,0,0) 50%), linear-gradient(90deg, rgba(163,230,53,0.03) 50%, rgba(0,0,0,0) 50%);
+  background-size: 4px 4px;
 }
-.hero-eye { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--lime); margin-bottom: 0.5rem; }
-.hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; color: #fff; letter-spacing: -0.01em; }
-.hero h1 span { color: var(--lime); }
-.hero-sub { font-size: 12px; color: var(--text-dim); margin-top: 0.4rem; }
-.hero-stats { display: flex; justify-content: center; gap: 0; margin-top: 1.5rem; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: inline-flex; }
-.hstat { padding: 0.6rem 1.2rem; border-right: 1px solid var(--border); text-align: center; }
-.hstat:last-child { border-right: none; }
-.hstat-n { font-size: 1.4rem; font-weight: 800; color: var(--lime); line-height: 1; }
-.hstat-l { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+.hero-eye { 
+  font-size: 10px; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; color: var(--lime); 
+  margin-bottom: 0.8rem; text-shadow: 0 0 8px var(--lime);
+}
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 900; color: #fff; letter-spacing: -0.02em; text-transform: uppercase; }
+.hero h1 span { color: var(--lime); text-shadow: 0 0 15px rgba(163,230,53,0.6); }
+.hero-sub { font-size: 13px; color: var(--text-dim); margin-top: 0.5rem; font-weight: 500; }
 
-/* NAV */
-.nav { display: flex; gap: 4px; padding: 0.75rem 15px; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
-.nav a { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); text-decoration: none; padding: 5px 12px; border-radius: 4px; white-space: nowrap; transition: all 0.15s; }
-.nav a:hover, .nav a.active { background: var(--lime-dim); color: var(--lime); }
+/* STATS BADGES HOÀNH TRÁNG */
+.hero-stats { display: flex; justify-content: center; gap: 10px; margin-top: 2rem; flex-wrap: wrap; }
+.hstat { 
+  background: rgba(19,38,19,0.7); padding: 0.8rem 1.5rem; border: 1px solid var(--border); border-radius: 12px; 
+  text-align: center; min-width: 110px; backdrop-filter: blur(5px); transition: all 0.3s;
+}
+.hstat:hover { border-color: var(--lime); transform: translateY(-3px); box-shadow: var(--neon-glow); }
+.hstat-n { font-size: 1.8rem; font-weight: 900; color: #fff; line-height: 1.1; }
+.hstat:nth-child(1) .hstat-n { color: var(--blue); text-shadow: 0 0 10px rgba(56,189,248,0.4); }
+.hstat:nth-child(2) .hstat-n { color: var(--lime); text-shadow: 0 0 10px rgba(163,230,53,0.4); }
+.hstat:nth-child(4) .hstat-n { color: var(--gold); text-shadow: 0 0 10px rgba(251,191,36,0.4); }
+.hstat:nth-child(5) .hstat-n { color: var(--red); text-shadow: 0 0 10px rgba(239,68,68,0.4); }
+.hstat-l { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; font-weight: 700; }
 
-/* PAGE */
-.page { max-width: 1400px; margin: 0 auto; padding: 1.5rem 15px; }
+/* NAVIGATION DECORATION */
+.nav { display: flex; gap: 6px; padding: 0.8rem 15px; background: #091409; border-bottom: 1px solid var(--border); overflow-x: auto; max-width: 1400px; margin: 0 auto; }
+.nav a { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); text-decoration: none; padding: 6px 16px; border-radius: 6px; white-space: nowrap; transition: all 0.2s; border: 1px solid transparent; }
+.nav a:hover, .nav a.active { background: var(--lime-dim); color: var(--lime); border-color: var(--border); box-shadow: inset 0 0 8px rgba(163,230,53,0.1); }
 
-/* SECTION */
-.sec { margin-bottom: 2rem; }
-.sec-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
-.sec-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--lime); color: var(--bg); padding: 2px 8px; border-radius: 3px; }
-.sec-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
-.sec-rule { flex: 1; height: 1px; background: var(--border); }
+/* LAYOUT CHIẾN ĐẤU DÃN BIÊN */
+.page { max-width: 1400px; margin: 0 auto; padding: 2rem 15px; }
+.sec { margin-bottom: 3rem; background: rgba(11,26,11,0.4); padding: 20px; border-radius: 16px; border: 1px solid rgba(163,230,53,0.08); }
+.sec-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; }
+.sec-tag { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; background: var(--lime); color: #000; padding: 3px 10px; border-radius: 5px; box-shadow: 0 0 10px rgba(163,230,53,0.4); }
+.sec-title { font-size: 1.3rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.03em; }
+.sec-rule { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
 
-/* LAYOUT */
-.two-col { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem; }
+.two-col { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2rem; }
 @media (max-width: 992px) { .two-col { grid-template-columns: 1fr; } }
 
-/* CARD */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.9rem 1rem;
-}
-.card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--lime); margin-bottom: 0.6rem; }
+.card-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lime); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
+.card-title::before { content: ''; display: inline-block; width: 4px; height: 12px; background: var(--lime); border-radius: 2px; }
 
-/* TIMELINE DIỄN BIẾN */
-.timeline { position: relative; padding-left: 1.2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+/* TIMELINE LỊCH THI ĐẤU */
+.timeline { position: relative; padding-left: 1.2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 @media (max-width: 768px) { .timeline { grid-template-columns: 1fr; } }
-.timeline::before { content: ''; position: absolute; left: 4px; top: 0; bottom: 0; width: 1px; background: var(--border); }
-.tl-day { margin-bottom: 0.5rem; break-inside: avoid; }
-.tl-day-label {
-  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--lime); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;
-}
-.tl-day-label::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); margin-left: -1.4rem; margin-right: 0.6rem; flex-shrink: 0; }
-.tl-match {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.45rem 0.65rem;
-  margin-bottom: 0.35rem;
-  display: flex; align-items: center; gap: 0.4rem;
-  font-size: 12.5px;
-}
-.tl-team { flex: 1; font-weight: 600; font-size: 12px; }
+.timeline::before { content: ''; position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, var(--lime), var(--surface2)); }
+.tl-day { margin-bottom: 0.5rem; break-inside: avoid; background: rgba(19,38,19,0.3); padding: 12px; border-radius: 10px; border: 1px solid rgba(163,230,53,0.05); }
+.tl-day-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #fff; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+.tl-day-label::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--lime); border: 2px solid var(--bg); margin-left: -1.8rem; box-shadow: 0 0 8px var(--lime); flex-shrink: 0; }
+.tl-match-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
+.tl-match { background: var(--surface2); border: 1px solid rgba(163,230,53,0.1); border-radius: 8px; padding: 0.6rem 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+.tl-team { flex: 1; font-weight: 600; font-size: 12.5px; color: #e2ffe2; }
 .tl-team.r { text-align: right; }
-.tl-score { display: flex; gap: 3px; align-items: center; }
-.sc { font-weight: 800; font-size: 13px; background: rgba(255,255,255,0.08); padding: 1px 7px; border-radius: 3px; min-width: 22px; text-align: center; }
-.sc.w { background: var(--lime); color: var(--bg); }
-.sc.l { background: rgba(255,255,255,0.06); color: var(--text-dim); }
-.sc.d { background: rgba(255,255,255,0.1); }
-.tl-note { font-size: 11px; color: var(--text-dim); font-style: italic; padding: 0.2rem 0.4rem 0 0; grid-column: 1/-1; }
-.tl-note.hot { color: var(--lime); font-style: normal; font-weight: 600; }
-.tl-match-wrap { display: flex; flex-direction: column; flex: 1; }
+.tl-score { display: flex; gap: 4px; align-items: center; }
+.sc { font-weight: 900; font-size: 14px; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; min-width: 25px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+.sc.w { background: var(--lime); color: #000; border-color: var(--lime); }
+.sc.l { background: rgba(239,68,68,0.1); color: #ffaca8; border-color: rgba(239,68,68,0.2); }
+.sc.d { background: rgba(56,189,248,0.1); color: #bae6fd; border-color: rgba(56,189,248,0.2); }
 
-@media (max-width: 768px) { 
-  .tl-day[style*="grid-column"] > div { grid-template-columns: 1fr !important; } 
-}
+/* CALLOUTS HIGHLIGHTS ĐẬM ĐÀ MÀU SẮC */
+.callout { background: var(--surface); border-left: 4px solid var(--lime); border-radius: 4px 12px 12px 4px; padding: 0.9rem 1.2rem; margin-bottom: 0.8rem; border: 1px solid rgba(163,230,53,0.08); border-left: 4px solid var(--lime); box-shadow: 3px 3px 10px rgba(0,0,0,0.2); }
+.callout.gold { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(251,191,36,0.05) 0%, var(--surface) 100%); }
+.callout.red { border-left-color: var(--red); background: linear-gradient(90deg, rgba(239,68,68,0.05) 0%, var(--surface) 100%); }
+.callout.blue { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(56,189,248,0.05) 0%, var(--surface) 100%); }
+.callout.purple { border-left-color: var(--purple); background: linear-gradient(90deg, rgba(192,132,252,0.05) 0%, var(--surface) 100%); }
+.callout-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 5px; }
+.callout strong { color: #fff; }
+.callout.gold .callout-title { color: var(--gold); }
+.callout.red .callout-title { color: #ffaca8; }
+.callout.blue .callout-title { color: var(--blue); }
+.callout.purple .callout-title { color: var(--purple); }
 
-/* HIGHLIGHT PILL */
-.pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; margin-right: 3px; vertical-align: middle; }
-.pill-g { background: rgba(163,230,53,0.2); color: var(--lime); }
-.pill-r { background: rgba(239,68,68,0.2); color: #fca5a5; }
-.pill-y { background: rgba(251,191,36,0.2); color: var(--gold); }
+/* DRAMA BOX ĐẬM CHẤT ĐIỆN ẢNH */
+.drama { background: linear-gradient(135deg, #1f0b0b 0%, #171205 100%); border: 1px solid rgba(251,191,36,0.25); border-radius: 12px; padding: 1.2rem; margin-bottom: 0.8rem; box-shadow: inset 0 0 15px rgba(251,191,36,0.05); }
+.drama-title { font-weight: 900; color: var(--gold); font-size: 14px; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
+.drama p { font-size: 12.5px; color: #dfd5be; line-height: 1.7; }
 
-/* CALLOUT */
-.callout { background: var(--surface2); border-left: 3px solid var(--lime); border-radius: 0 6px 6px 0; padding: 0.7rem 0.9rem; margin: 0.5rem 0; font-size: 12.5px; }
-.callout.gold { border-color: var(--gold); }
-.callout.red { border-color: var(--red); }
-.callout.blue { border-color: var(--blue); }
-.callout.silver { border-color: var(--silver); }
-.callout.bronze { border-color: #cd7f32; }
-.callout-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.3rem; }
-.callout strong { color: var(--lime); }
-.callout.gold strong { color: var(--gold); }
-.callout.red strong { color: #fca5a5; }
-.callout.blue strong { color: var(--blue); }
-
-/* STANDING TABLE */
-.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-thead tr { background: rgba(163,230,53,0.12); }
-th { padding: 0.5rem 0.5rem; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--lime); font-weight: 700; text-align: center; white-space: nowrap; }
-th.tl { text-align: left; }
-td { padding: 0.45rem 0.5rem; text-align: center; border-bottom: 1px solid var(--border); }
-td.tl { text-align: left; font-weight: 600; }
+/* BẢNG XẾP HẠNG GAMING */
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); }
+thead tr { background: linear-gradient(90deg, rgba(163,230,53,0.18) 0%, rgba(19,38,19,0.4) 100%); border-bottom: 2px solid var(--border); }
+th { padding: 0.8rem 0.6rem; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lime); font-weight: 800; text-align: center; }
+th.tl { text-align: left; padding-left: 1rem; }
+td { padding: 0.75rem 0.6rem; text-align: center; border-bottom: 1px solid rgba(163,230,53,0.08); color: #fff; }
+td.tl { text-align: left; font-weight: 700; padding-left: 1rem; }
+tr.r1 { background: linear-gradient(90deg, rgba(251,191,36,0.1) 0%, rgba(0,0,0,0) 100%); }
+tr.r1 td.tl { color: var(--gold); }
+tr.r2 { background: linear-gradient(90deg, rgba(203,213,225,0.06) 0%, rgba(0,0,0,0) 100%); }
+tr.r2 td.tl { color: #e2e8f0; }
+tr.r3 { background: linear-gradient(90deg, rgba(249,115,22,0.06) 0%, rgba(0,0,0,0) 100%); }
+tr.r3 td.tl { color: #ffedd5; }
+tr.rl { background: rgba(239,68,68,0.03); }
 tr:last-child td { border-bottom: none; }
-.r1 { background: rgba(251,191,36,0.08); }
-.r2 { background: rgba(148,163,184,0.06); }
-.r3 { background: rgba(180,83,9,0.07); }
-.rl { background: rgba(239,68,68,0.06); }
-.pts { font-weight: 800; color: var(--lime); }
-.pos { color: #4ade80; }
-.neg { color: #f87171; }
+.pts { font-weight: 900; color: var(--lime); font-size: 14px; }
+.pos { color: #4ade80; font-weight: 700; }
+.neg { color: #f87171; font-weight: 700; }
+.pill { display: inline-block; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; vertical-align: middle; }
+.pill-r { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+.pill-y { background: rgba(251,191,36,0.2); color: var(--gold); border: 1px solid rgba(251,191,36,0.3); }
 
-/* SCORER */
-.scorer-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+/* VUA PHÁ LƯỚI HAI CỘT KHÉP LẠI KHÔNG GIAN */
+.scorer-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
 @media (max-width: 768px) { .scorer-container { grid-template-columns: 1fr; } }
-.scorer-list { display: flex; flex-direction: column; gap: 0.35rem; }
-.scorer-row { display: flex; align-items: center; gap: 0.6rem; background: var(--surface2); border-radius: 5px; padding: 0.4rem 0.7rem; }
-.sc-rank { font-size: 11px; font-weight: 800; color: var(--text-muted); width: 18px; text-align: center; }
-.sc-rank.t1 { color: var(--gold); }
-.sc-rank.t2 { color: var(--silver); }
+.scorer-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.scorer-row { display: flex; align-items: center; gap: 0.8rem; background: var(--surface2); border-radius: 8px; padding: 0.5rem 0.8rem; border: 1px solid rgba(251,191,36,0.03); transition: all 0.2s; }
+.scorer-row:hover { border-color: rgba(163,230,53,0.2); transform: scale(1.01); background: linear-gradient(90deg, var(--surface2) 0%, rgba(163,230,53,0.04) 100%); }
+.sc-rank { font-size: 12px; font-weight: 900; color: var(--text-muted); width: 20px; text-align: center; }
+.sc-rank.t1 { color: var(--gold); text-shadow: 0 0 6px var(--gold); font-size: 14px; }
+.sc-rank.t2 { color: var(--silver); font-size: 13px; }
 .sc-rank.t3 { color: #cd7f32; }
-.sc-name { flex: 1; font-weight: 600; font-size: 12.5px; }
-.sc-team { font-size: 11px; color: var(--text-dim); }
-.sc-goals { font-size: 1rem; font-weight: 800; color: var(--lime); min-width: 28px; text-align: right; }
+.sc-name { flex: 1; font-weight: 700; font-size: 13px; color: #fff; }
+.sc-team { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+.sc-goals { font-size: 1.1rem; font-weight: 900; color: var(--lime); min-width: 30px; text-align: right; text-shadow: 0 0 8px rgba(163,230,53,0.3); }
+.scorer-row.highlight-blue { border: 1px solid rgba(56,189,248,0.3); background: linear-gradient(90deg, var(--surface2) 0%, rgba(56,189,248,0.05) 100%); }
 
-/* AWARDS */
-.award-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+/* GRID GIẢI THƯỞNG Ô CỜ PHÁT SÁNG */
+.award-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
 @media (max-width: 992px) { .award-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px) { .award-grid { grid-template-columns: 1fr; } }
-.award { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 0.75rem 0.85rem; }
-.award-ico { font-size: 1.4rem; margin-bottom: 0.3rem; }
-.award-lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.15rem; }
-.award-name { font-weight: 700; font-size: 13px; color: #fff; }
-.award-desc { font-size: 11px; color: var(--text-dim); margin-top: 0.2rem; }
+.award { background: var(--surface2); border: 1px solid rgba(163,230,53,0.08); border-radius: 12px; padding: 1rem; position: relative; transition: all 0.3s; }
+.award:hover { border-color: var(--lime); transform: translateY(-3px); box-shadow: var(--neon-glow); }
+.award-ico { font-size: 1.8rem; margin-bottom: 0.4rem; filter: drop-shadow(0 0 6px rgba(255,255,255,0.2)); }
+.award-lbl { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 0.2rem; }
+.award-name { font-weight: 800; font-size: 14px; color: #fff; }
+.award-desc { font-size: 11.5px; color: var(--text-dim); margin-top: 0.3rem; line-height: 1.5; }
+.award.special-border { border-color: rgba(56,189,248,0.3); background: linear-gradient(135deg, var(--surface2) 0%, rgba(56,189,248,0.03) 100%); }
+.award.special-border-red { border-color: rgba(239,68,68,0.3); background: linear-gradient(135deg, var(--surface2) 0%, rgba(239,68,68,0.03) 100%); }
 
-/* DRAMA BOX */
-.drama { background: linear-gradient(135deg, #1a0d0d 0%, #1f1a0d 100%); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 1rem 1.1rem; margin: 0.5rem 0; }
-.drama-title { font-weight: 800; color: var(--gold); font-size: 13.5px; margin-bottom: 0.5rem; }
-.drama p { font-size: 12.5px; color: #d1c4a0; line-height: 1.65; }
-
-/* COUNTER SECTION */
-.diss-box { background: #220505; border: 1px solid #551111; padding: 15px; border-radius: 8px; margin-top: 1rem; }
-.diss-box h3 { color: var(--red); font-size: 14px; text-transform: uppercase; margin-bottom: 10px; }
-.diss-box ul { padding-left: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+/* VŨ KHÍ CHIẾN ĐẤU NGOÀI LỀ */
+.diss-box { background: linear-gradient(180deg, #1a0505 0%, #110303 100%); border: 1px solid rgba(239,68,68,0.25); padding: 20px; border-radius: 12px; margin-top: 1.5rem; box-shadow: inset 0 0 20px rgba(239,68,68,0.05); }
+.diss-box h3 { color: #fca5a5; font-size: 13.5px; text-transform: uppercase; margin-bottom: 12px; font-weight: 900; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; text-shadow: 0 0 6px rgba(239,68,68,0.3); }
+.diss-box ul { padding-left: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; list-style-type: none; }
 @media (max-width: 768px) { .diss-box ul { grid-template-columns: 1fr; } }
-.diss-box li { font-size: 12.5px; color: #ffcccc; }
+.diss-box li { font-size: 12.5px; color: #ffcbd1; line-height: 1.6; position: relative; padding-left: 15px; }
+.diss-box li::before { content: '⚡'; position: absolute; left: 0; color: var(--gold); }
 
-/* FOOTER */
-footer { text-align: center; padding: 1.5rem 15px; background: var(--surface); border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); margin-top: 2rem; }
-footer strong { color: var(--lime); }
+/* FOOTER CHUẨN GAMING */
+footer { text-align: center; padding: 1.8rem 15px; background: #060d06; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); margin-top: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
+footer strong { color: var(--lime); text-shadow: 0 0 5px rgba(163,230,53,0.3); }
 </style>
 </head>
 <body>
 
 <div class="hero">
-  <div class="hero-eye">FIFA League Manager Pro · Tài Liệu Check-Var Không Che</div>
+  <div class="hero-eye">FIFA League Manager Pro · Bản Leak Check-Var Không Che</div>
   <h1>Mùa Giải <span>2026</span></h1>
-  <div class="hero-sub">7 đội · 21 trận · Phanh phui toàn bộ tiểu phẩm và hệ điều hành của giải đấu</div>
-  <div style="margin-top: 1.25rem;">
-    <div class="hero-stats">
-      <div class="hstat"><div class="hstat-n">21</div><div class="hstat-l">Trận</div></div>
-      <div class="hstat"><div class="hstat-n">69</div><div class="hstat-l">Bàn thắng</div></div>
-      <div class="hstat"><div class="hstat-n">3.3</div><div class="hstat-l">Bàn/trận</div></div>
-      <div class="hstat"><div class="hstat-n">11</div><div class="hstat-l">Thẻ vàng</div></div>
-      <div class="hstat"><div class="hstat-n">6</div><div class="hstat-l">Thẻ đỏ</div></div>
-      <div class="hstat"><div class="hstat-n">14</div><div class="hstat-l">Chiến thần báo danh</div></div>
-    </div>
+  <div class="hero-sub">7 đội · 21 trận · Phanh phui toàn bộ hệ điều hành và tiểu phẩm nội bộ</div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-n">21</div><div class="hstat-l">Trận đấu</div></div>
+    <div class="hstat"><div class="hstat-n">69</div><div class="hstat-l">Bàn thắng</div></div>
+    <div class="hstat"><div class="hstat-n">3.3</div><div class="hstat-l">Bàn/trận</div></div>
+    <div class="hstat"><div class="hstat-n">11</div><div class="hstat-l">Thẻ vàng</div></div>
+    <div class="hstat"><div class="hstat-n">6</div><div class="hstat-l">Thẻ đỏ</div></div>
+    <div class="hstat"><div class="hstat-n">14</div><div class="hstat-l">Chân sút nổ súng</div></div>
   </div>
 </div>
 
@@ -225,17 +219,17 @@ footer strong { color: var(--lime); }
 <div class="sec" id="dien-bien">
   <div class="sec-head">
     <div class="sec-tag">01</div>
-    <div class="sec-title">Biên Bản Hiện Trường & Những Pha "Tự Hủy" Khét Lẹt</div>
+    <div class="sec-title">Biên Bản Hiện Trường & Những Pha Lật Kèo Khét Lẹt</div>
     <div class="sec-rule"></div>
   </div>
 
   <div class="two-col">
     <div>
-      <div class="card-title">📅 Nhật ký những ngày chịu đựng tiểu phẩm</div>
+      <div class="card-title">📅 Chi tiết hành trình thi đấu theo ngày</div>
       <div class="timeline">
 
         <div class="tl-day">
-          <div class="tl-day-label">T6 · 22/05 · Vòng khai màn đầy "vô tri"</div>
+          <div class="tl-day-label">T6 · 22/05 · Vòng khai màn nhiều "tiểu phẩm"</div>
           <div class="tl-match-wrap">
             <div class="tl-match">
               <span class="tl-team">Nam Nguyễn–Mạnh</span>
@@ -323,7 +317,7 @@ footer strong { color: var(--lime); }
         </div>
 
         <div class="tl-day">
-          <div class="tl-day-label">T2 · 01/06 · Kiếp nạn ập xuống</div>
+          <div class="tl-day-label">T2 · 01/06 · Kiếp nạn chính thức bắt đầu</div>
           <div class="tl-match-wrap">
             <div class="tl-match">
               <span class="tl-team">Ca sĩ Khánh Phương</span>
@@ -385,11 +379,11 @@ footer strong { color: var(--lime); }
         </div>
 
         <div class="tl-day" style="grid-column: span 2;">
-          <div class="tl-day-label" style="color:var(--gold);">T4 · 10/06 · Cú lừa thế kỷ phút chót 🔚</div>
+          <div class="tl-day-label" style="color:var(--gold);">T4 · 10/06 · Màn hạ màn "ngỡ ngàng ngơ ngác" 🔚</div>
           <div class="tl-match" style="border-color:rgba(251,191,36,0.3);">
             <span class="tl-team">Dũng Tiến</span>
             <div class="tl-score"><span class="sc w" style="background:var(--gold);color:#000;">5</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">1</span></div>
-            <span class="tl-team r">Tâm–Vũ <span class="pill pill-y">Tiến Lê 5 bàn gỡ gạc thể diện</span></span>
+            <span class="tl-team r">Tâm–Vũ</span>
           </div>
         </div>
 
@@ -397,7 +391,7 @@ footer strong { color: var(--lime); }
     </div>
 
     <div>
-      <div class="card-title" style="margin-bottom:0.75rem;">🔥 Những "Hệ Tư Tưởng" Khiến Anh Em Xịt Keo</div>
+      <div class="card-title" style="margin-bottom:0.75rem;">🔥 Những Chiếc Trend "Xịt Keo" Toàn Giải</div>
 
       <div class="callout blue">
         <div class="callout-title">Quân – Phương 6 và quỹ từ thiện điểm số</div>
@@ -405,18 +399,18 @@ footer strong { color: var(--lime); }
       </div>
 
       <div class="callout">
-        <div class="callout-title">Rổ trứng của giải đấu</div>
-        <strong>Tâm–Vũ 1–6 Nam Lê–Thin</strong> — 7 bàn thắng. Nam Lê bật chế độ "out trình" nã liền 5 quả trong 1 hiệp. Tâm–Vũ ngày đầu debut hăng máu bao nhiêu thì nhận về cái kết "ngỡ ngàng ngơ ngác bật ngửa" bấy nhiêu. Đúng là kiếp nạn khó qua.
+        <div class="callout-title">Cơn ác mộng "Xịt keo"</div>
+        <strong>Tâm–Vũ 1–6 Nam Lê–Thin (01/06)</strong> — 7 bàn thắng. Nam Lê bật chế độ "out trình" nã liền 5 quả trong 1 hiệp. Tâm–Vũ ngày đầu debut tự tin bao nhiêu thì nhận về cái kết "ngỡ ngàng ngơ ngác bật ngửa" bấy nhiêu. Đúng là kiếp nạn khó qua.
       </div>
 
       <div class="callout gold">
         <div class="callout-title">Nội chiến gia tộc: Hơn thua từng milimet</div>
-        <strong>Nam Nguyễn 3–3 Nam Lê</strong> — Trận chiến tóe lửa dập tắt luôn hy vọng chiếm vị trí số 2 của Nam Lê. Hai anh em kìm chân nhau đầy căng thẳng để nhà vô địch đứng ngoài ung dung "flex" nhẹ chiếc cúp.
+        <strong>Nam Nguyễn 3–3 Nam Lê (04/06)</strong> — Trận chiến tóe lửa dập tắt luôn hy vọng chiếm vị trí số 2 của Nam Lê. Hai anh em kìm chân nhau đầy căng thẳng để nhà vô địch đứng ngoài ung dung "flex" nhẹ chiếc cúp.
       </div>
 
       <div class="callout red">
         <div class="callout-title">Tiểu phẩm quay xe phút chót</div>
-        <strong>Tiến Lê — 5 trận đầu tịt ngòi, trận cuối tỉnh giấc đóng 5 bàn!</strong> Suốt cả mùa giải lướt sân như một bóng ma, bóng chạm chân là mất khiến Dũng Nguyễn 4 gánh muốn trầm cảm. Đến trận cuối khi không còn gì để mất, khứa này bỗng dưng quay xe "cook game" nã liền 5 quả vào lưới Tâm-Vũ để giật lại spotlight, xóa sạch dấu vết mờ nhạt trước đó.
+        <strong>Tiến Lê — 5 trận đầu tịt ngòi, trận cuối tỉnh giấc đóng 5 bàn!</strong> Suốt cả mùa giải lướt sân như một bóng ma, bóng chạm chân là mất khiến Dũng Nguyễn 4 gánh muốn trầm cảm. Đến trận cuối khi không còn gì để mất, khứa này bỗng dưng quay xe "cook game" nã liền 5 quả vào lưới Tâm-Vũ để giật lại spotlight, xóa sạch dấu vết mờ nhạt trước đó một cách hợp pháp.
       </div>
 
       <div class="drama">
@@ -492,7 +486,7 @@ footer strong { color: var(--lime); }
             </tr>
             <tr class="rl">
               <td>6</td>
-              <td class="tl">Tâm–Vũ</td>
+              <td class="tl">Tâm–Vũ <span class="pill pill-y">Áp Chót</span></td>
               <td class="pts">5</td>
               <td>1</td><td>2</td><td>3</td>
               <td>5</td><td class="neg">−11</td>
@@ -512,7 +506,7 @@ footer strong { color: var(--lime); }
       <div style="font-size:11px;color:var(--text-muted);margin-top:0.4rem;">* Nhì/Ba bằng điểm (11), cay đắng check-var hơn kém nhau đúng 1 bàn thắng hiệu số để lấy ngôi Á quân.</div>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:0.2rem;">
+    <div style="display:flex;flex-direction:column;gap:0.3rem;">
       <div class="callout gold">
         <div class="callout-title">🥇 1. Ca sĩ Khánh Phương — Sơ đồ chiến thuật "Một người lo bằng kho người làm"</div>
         Một mình Phương Nguyễn 8 làm chủ cuộc chơi, gánh vác toàn bộ map đấu để đưa người bạn Khánh Võ lên đỉnh vinh quang. Danh hiệu Fair Play (0 thẻ) chứng minh đẳng cấp out trình, đối phương còn chưa kịp va chạm thì bóng đã nằm gọn trong lưới. Khánh Võ vô địch xong nhớ bao anh Phương bữa lẩu voi để bù đắp lại năng lượng nhé.
@@ -533,7 +527,7 @@ footer strong { color: var(--lime); }
         <div class="callout-title">🪵 5. Trung–Huy — Khi Huy Phạm gánh vác cả giang sơn</div>
         Huy Phạm thể hiện hiệu suất đáng nể khi một mình cân tới 87.5% số bàn thắng của cả đội (7/8 bàn). Ngược lại, Trung Vương có một mùa giải khá thong thả khi chỉ chạy dạo mát dạo sân và đóng góp đúng... 1 bàn danh dự để check-in giải đấu. Huy Phạm đá muốn tụt huyết áp, còn Trung Vương lên phỏng vấn vẫn tự hào "đội tôi hạng 5". Đề nghị hủy cặp gấp.
       </div>
-      <div class="callout red">
+      <div class="callout purple">
         <div class="callout-title">🤡 6 & 7. Tâm-Vũ vs Dũng Tiến — Những pha va chạm đầy bất ổn</div>
         Tâm-Vũ sở hữu phong cách thi đấu sặc mùi gangster, đá thì muộn, thắng thì ít nhưng sưu tập hẳn 6 vàng, 3 đỏ. Trong khi đó, Dũng Tiến đổi tên thành "Khao giải" khi chưa đá trận nào — một sự tự tin hơi sớm dẫn đến kết quả đứng đáy bảng. May nhờ có Tiến Lê trận cuối tỏa sáng nã 5 bàn gỡ gạc lại danh dự rách.
       </div>
@@ -557,7 +551,7 @@ footer strong { color: var(--lime); }
         <div class="scorer-row"><div class="sc-rank">4</div><div><div class="sc-name">Thin Hoàng</div><div class="sc-team">Nam Lê–Thin</div></div><div class="sc-goals">6</div></div>
         <div class="scorer-row"><div class="sc-rank">5</div><div><div class="sc-name">Phương Nguyễn 8</div><div class="sc-team">Ca sĩ Khánh Phương</div></div><div class="sc-goals">6</div></div>
         <div class="scorer-row"><div class="sc-rank">6</div><div><div class="sc-name">Mạnh Vũ</div><div class="sc-team">Nam Nguyễn–Mạnh</div></div><div class="sc-goals">5</div></div>
-        <div class="scorer-row"><div class="sc-rank">7</div><div><div class="sc-name">Tiến Lê</div><div class="sc-team">Dũng Tiến khao giải</div></div><div class="sc-goals">5</div></div>
+        <div class="scorer-row highlight-blue"><div class="sc-rank" style="color:var(--blue)">7</div><div><div class="sc-name">Tiến Lê <span style="font-size:10px;color:var(--blue)">💤→🔥</span></div><div class="sc-team">Dũng Tiến khao giải</div></div><div class="sc-goals" style="color:var(--blue)">5</div></div>
       </div>
       <div class="scorer-list">
         <div class="scorer-row" style="border: 1px solid var(--blue);"><div class="sc-rank" style="color:var(--blue);">8</div><div><div class="sc-name">Phương Nguyễn 6</div><div class="sc-team">Quân–Phương 6</div></div><div class="sc-goals" style="color:var(--blue);">4</div></div>
@@ -566,7 +560,7 @@ footer strong { color: var(--lime); }
         <div class="scorer-row" style="border: 1px solid var(--blue);"><div class="sc-rank" style="color:var(--blue);">11</div><div><div class="sc-name">Quân Phạm</div><div class="sc-team">Quân–Phương 6</div></div><div class="sc-goals" style="color:var(--blue);">3</div></div>
         <div class="scorer-row"><div class="sc-rank">12</div><div><div class="sc-name">Dũng Nguyễn 4</div><div class="sc-team">Dũng Tiến khao giải</div></div><div class="sc-goals">2</div></div>
         <div class="scorer-row"><div class="sc-rank">13</div><div><div class="sc-name">Trung Vương</div><div class="sc-team">Trung–Huy</div></div><div class="sc-goals">1</div></div>
-        <div class="scorer-row"><div class="sc-rank">14</div><div><div class="sc-name">Tâm Nguyễn</div><div class="sc-team">Tâm–Vũ</div></div><div class="sc-goals">1</div></div>
+        <div class="scorer-row"><div class="sc-rank">14</div><div><div class="sc-name">Tâm Nguyễn <span style="color:var(--lime);font-size:10px;">★ Quả chốt bom!</span></div><div class="sc-team">Tâm–Vũ</div></div><div class="sc-goals">1</div></div>
       </div>
     </div>
 
@@ -596,14 +590,14 @@ footer strong { color: var(--lime); }
         Tiến Lê xứng danh diễn viên hài của năm. Suốt 5 trận đầu bật chế độ "ngủ đông", di chuyển như bóng ma vật vờ trên sân khiến Dũng Nguyễn 4 gánh muốn tụt huyết áp (ghi 2 bàn). Đến trận cuối cùng khi giải đấu chuẩn bị hạ màn, khứa Tiến Lê bỗng dưng quay xe "lên đồng" nã liên tù tì 5 quả vào lưới Tâm-Vũ để giật lại spotlight, xóa sạch mọi dấu vết ăn hại trước đó một cách hợp pháp.
       </div>
 
-      <div class="callout">
+      <div class="callout blue">
         <div class="callout-title">🎭 Phương Nguyễn 8 (6 bàn) & Khánh Võ (4 bàn): Siêu nhân gánh tạ showbiz</div>
         Nhà vô địch mang phong cách thực dụng tối đa. Phương Nguyễn 8 làm chủ hoàn toàn bản đồ, điều tiết lối chơi và ghi 6 bàn then chốt. Trong khi đó, Khánh Võ chỉ cần đứng đúng chỗ để bóng đập trúng người bay vào lưới 4 lần, nghiễm nhiên ăn theo chiếc cúp vô địch và danh hiệu Fair Play một cách ngơ ngác.
       </div>
 
       <div class="callout red" style="background:#2a0f0f; border-color:var(--red);">
         <div class="callout-title">🤡 Vũ Nguyễn (3 bàn) & Tâm Nguyễn (1 bàn): Bạo chúa ăn thẻ phạt</div>
-        Vũ Nguyễn cày cuốc được 3 bàn, Tâm Nguyễn làm được 1 pha lập công để đời để kể với cả họ. Thế nhưng, đóng góp lớn nhất của cặp đôi gangster này cho giải đấu không phải là bàn thắng, mà là bộ sưu tập **6 thẻ vàng, 3 thẻ đỏ** cùng 200k tiền phạt trận cuối để nuôi sống Ban tổ chức.
+        Vũ Nguyễn cày cuốc được 3 bàn, Tâm Nguyễn làm được 1 pha lập công để đời để kể với cả họ (cũng chính là bàn đầu tiên và duy nhất của khứa này). Thế nhưng, đóng góp lớn nhất của cặp đôi gangster này cho giải đấu không phải là bàn thắng, mà là bộ sưu tập **6 thẻ vàng, 3 thẻ đỏ** cùng 200k tiền phạt trận cuối để nuôi sống Ban tổ chức.
       </div>
     </div>
   </div>
@@ -612,7 +606,7 @@ footer strong { color: var(--lime); }
 <div class="sec" id="giai-thuong">
   <div class="sec-head">
     <div class="sec-tag">04</div>
-    <div class="sec-title">Giải Thưởng Mang Đậm Tính Giải Trí</div>
+    <div class="sec-title">Giải Thưởng Vinh Danh Những Tiểu Phẩm</div>
     <div class="sec-rule"></div>
   </div>
 
@@ -621,7 +615,7 @@ footer strong { color: var(--lime); }
       <div class="award-ico">🏆</div>
       <div class="award-lbl">Vô Địch</div>
       <div class="award-name">Ca sĩ Khánh Phương</div>
-      <div class="award-desc">Chiến thắng thuyết phục nhờ sự tỏa sáng gánh vác toàn map của Phương Nguyễn 8.</div>
+      <div class="award-desc">14 điểm · bất bại · chỉ nhận 2 bàn thua, Phương Nguyễn 8 gánh Khánh Võ muốn gãy toàn bộ đốt sống cổ.</div>
     </div>
     <div class="award" style="border-color: var(--blue);">
       <div class="award-ico">🏹</div>
@@ -629,29 +623,29 @@ footer strong { color: var(--lime); }
       <div class="award-name">Quân – Phương 6</div>
       <div class="award-desc">Chuyên gia lấy điểm của các ông lớn đem phân phát cứu tế cho các đội nhóm dưới.</div>
     </div>
-    <div class="award" style="border-color: var(--red);">
+    <div class="award special-border-red">
       <div class="award-ico">💸</div>
       <div class="award-lbl">Nhà Tài Trợ Kim Cương</div>
       <div class="award-name">600,000đ Tiền Phạt</div>
-      <div class="award-desc">Tổng đóng góp cho 6 vàng, 3 đỏ toàn giải. Riêng Tâm-Vũ cúng nóng 200k ở trận cuối để làm tròn số.</div>
+      <div class="award-desc">Tổng đóng góp cho 11 vàng, 6 đỏ toàn giải. Riêng Tâm-Vũ cúng nóng 200k ở trận cuối để làm tròn số.</div>
     </div>
     <div class="award">
       <div class="award-ico">💪</div>
       <div class="award-lbl">Doanh Nghiệp 1 Thành Viên</div>
       <div class="award-name">Huy Phạm</div>
-      <div class="award-desc">Ghi 87.5% số bàn thắng, tạo điều kiện cho Trung Vương thong thả đi dạo ngắm cảnh trên sân.</div>
+      <div class="award-desc">Ghi 87.5% số bàn thắng (7/8 bàn), tạo điều kiện cho Trung Vương thong thả đi dạo ngắm cảnh trên sân.</div>
     </div>
-    <div class="award">
+    <div class="award special-border">
       <div class="award-ico">😴</div>
       <div class="award-lbl">Bật Mood Quay Xe</div>
       <div class="award-name">Tiến Lê</div>
-      <div class="award-desc">Ngủ đông suốt 5 trận đầu liên tiếp, trận cuối bất ngờ tỉnh dậy nã liền 5 bàn để lấy lại spotlight.</div>
+      <div class="award-desc">Ngủ đông suốt 5 trận đầu liên tiếp (0 bàn), trận cuối bất ngờ tỉnh dậy nã liền 5 bàn để lấy lại spotlight.</div>
     </div>
     <div class="award">
       <div class="award-ico">🙃</div>
       <div class="award-lbl">Tự Tin Sớm Quy Trình</div>
       <div class="award-name">Dũng Tiến khao giải</div>
-      <div class="award-desc">Chưa đá trận nào đã đổi tên đòi khao giải và cái kết giữ vững vị trí đáy bảng.</div>
+      <div class="award-desc">Chưa đá trận nào đã đổi tên đòi khao giải và cái kết giữ vững vị trí đáy bảng (3đ, 5 trận thua).</div>
     </div>
   </div>
 </div>
@@ -665,7 +659,7 @@ footer strong { color: var(--lime); }
 
   <div class="callout" style="border-color:var(--lime);font-size:13px;line-height:1.75;">
     <div class="callout-title">🏁 Tổng kết mùa giải 2026</div>
-    Một mùa giải thành công rực rỡ và tràn ngập tiếng cười: Ca sĩ Khánh Phương thống trị nhờ chủ lực gánh đội; Nam Nguyễn ôm hận vì đồng đội thiếu đúng 1 bàn thắng; Nam Lê-Thin đá bóng kiêm biểu diễn võ thuật; Quân-Phương 6 làm từ thiện phát điểm bừa bãi; Huy Phạm lẻ bóng cô đơn; Tâm-Vũ đóng thuế thân nuôi giải và Dũng Tiến khép lại cuộc chơi với màn bùng nổ phút bù giờ của Tiến Lê.
+    Một mùa giải thành công rực rỡ và tràn ngập tiếng cười: 21 trận · 69 bàn · tất cả 14 cầu thủ đều ghi bàn, dàn đều từ 1 đến 11 bàn. Ca sĩ Khánh Phương thống trị nhờ chủ lực gánh đội; Nam Nguyễn ôm hận vì đồng đội thiếu đúng 1 bàn thắng; Nam Lê-Thin đá bóng kiêm biểu diễn võ thuật; Quân-Phương 6 làm từ thiện phát điểm bừa bãi; Huy Phạm lẻ bóng cô đơn; Tâm-Vũ đóng thuế thân nuôi giải và Dũng Tiến khép lại cuộc chơi với màn bùng nổ phút bù giờ của Tiến Lê. **Hẹn gặp lại mùa sau — và đừng khao giải trước khi có giải nhé!**
   </div>
 </div>
 

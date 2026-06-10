@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tổng Kết Mùa Giải FIFA 2026</title>
+<style>
+:root {
+  --bg: #0d1f0d;
+  --surface: #132613;
+  --surface2: #1a3320;
+  --border: rgba(163,230,53,0.15);
+  --lime: #a3e635;
+  --lime2: #84cc16;
+  --lime-dim: rgba(163,230,53,0.12);
+  --gold: #fbbf24;
+  --silver: #94a3b8;
+  --bronze: #b45309;
+  --red: #ef4444;
+  --blue: #60a5fa;
+  --text: #e2ffe2;
+  --text-dim: #6b9b6b;
+  --text-muted: #4d7a4d;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', 'Aptos', 'Arial', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(160deg, #0a1f0a 0%, #1a3a1a 60%, #0d2a0d 100%);
+  padding: 2.5rem 1.5rem 2rem;
+  text-align: center;
+  border-bottom: 2px solid var(--lime);
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '⚽';
+  position: absolute; right: 2rem; top: 1rem;
+  font-size: 5rem; opacity: 0.05;
+}
+.hero-eye { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--lime); margin-bottom: 0.5rem; }
+.hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+.hero h1 span { color: var(--lime); }
+.hero-sub { font-size: 12px; color: var(--text-dim); margin-top: 0.4rem; }
+.hero-stats { display: flex; justify-content: center; gap: 0; margin-top: 1.5rem; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: inline-flex; }
+.hstat { padding: 0.6rem 1.2rem; border-right: 1px solid var(--border); text-align: center; }
+.hstat:last-child { border-right: none; }
+.hstat-n { font-size: 1.4rem; font-weight: 800; color: var(--lime); line-height: 1; }
+.hstat-l { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+/* NAV */
+.nav { display: flex; gap: 4px; padding: 0.75rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
+.nav a { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); text-decoration: none; padding: 5px 12px; border-radius: 4px; white-space: nowrap; transition: all 0.15s; }
+.nav a:hover, .nav a.active { background: var(--lime-dim); color: var(--lime); }
+
+/* PAGE */
+.page { max-width: 900px; margin: 0 auto; padding: 1.5rem 1.25rem; }
+
+/* SECTION */
+.sec { margin-bottom: 2rem; }
+.sec-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
+.sec-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--lime); color: var(--bg); padding: 2px 8px; border-radius: 3px; }
+.sec-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.sec-rule { flex: 1; height: 1px; background: var(--border); }
+
+/* TWO-COL LAYOUT */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
+@media (max-width: 640px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+/* CARD */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+.card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--lime); margin-bottom: 0.6rem; }
+
+/* MATCH LIST — compact timeline */
+.timeline { position: relative; padding-left: 1.2rem; }
+.timeline::before { content: ''; position: absolute; left: 4px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+.tl-day { margin-bottom: 1rem; }
+.tl-day-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--lime); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.tl-day-label::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); margin-left: -1.4rem; margin-right: 0.6rem; flex-shrink: 0; }
+.tl-match {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.45rem 0.65rem;
+  margin-bottom: 0.35rem;
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 12.5px;
+}
+.tl-team { flex: 1; font-weight: 600; font-size: 12px; }
+.tl-team.r { text-align: right; }
+.tl-score { display: flex; gap: 3px; align-items: center; }
+.sc { font-weight: 800; font-size: 13px; background: rgba(255,255,255,0.08); padding: 1px 7px; border-radius: 3px; min-width: 22px; text-align: center; }
+.sc.w { background: var(--lime); color: var(--bg); }
+.sc.l { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+.sc.d { background: rgba(255,255,255,0.1); }
+.tl-note { font-size: 11px; color: var(--text-dim); font-style: italic; padding: 0.2rem 0.4rem 0 0; grid-column: 1/-1; }
+.tl-note.hot { color: var(--lime); font-style: normal; font-weight: 600; }
+.tl-match-wrap { display: flex; flex-direction: column; flex: 1; }
+
+/* HIGHLIGHT PILL */
+.pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; margin-right: 3px; vertical-align: middle; }
+.pill-g { background: rgba(163,230,53,0.2); color: var(--lime); }
+.pill-r { background: rgba(239,68,68,0.2); color: #fca5a5; }
+.pill-y { background: rgba(251,191,36,0.2); color: var(--gold); }
+
+/* CALLOUT */
+.callout { background: var(--surface2); border-left: 3px solid var(--lime); border-radius: 0 6px 6px 0; padding: 0.7rem 0.9rem; margin: 0.75rem 0; font-size: 12.5px; }
+.callout.gold { border-color: var(--gold); }
+.callout.red { border-color: var(--red); }
+.callout.blue { border-color: var(--blue); }
+.callout.silver { border-color: var(--silver); }
+.callout.bronze { border-color: #cd7f32; }
+.callout-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.3rem; }
+.callout strong { color: var(--lime); }
+.callout.gold strong { color: var(--gold); }
+.callout.red strong { color: #fca5a5; }
+.callout.blue strong { color: var(--blue); }
+
+/* STANDING TABLE */
+.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead tr { background: rgba(163,230,53,0.12); }
+th { padding: 0.5rem 0.5rem; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--lime); font-weight: 700; text-align: center; white-space: nowrap; }
+th.tl { text-align: left; }
+td { padding: 0.45rem 0.5rem; text-align: center; border-bottom: 1px solid var(--border); }
+td.tl { text-align: left; font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+.r1 { background: rgba(251,191,36,0.08); }
+.r2 { background: rgba(148,163,184,0.06); }
+.r3 { background: rgba(180,83,9,0.07); }
+.rl { background: rgba(239,68,68,0.06); }
+.pts { font-weight: 800; color: var(--lime); }
+.pos { color: #4ade80; }
+.neg { color: #f87171; }
+.medal-ico { font-size: 1rem; }
+
+/* SCORER */
+.scorer-list { display: flex; flex-direction: column; gap: 0.35rem; }
+.scorer-row { display: flex; align-items: center; gap: 0.6rem; background: var(--surface2); border-radius: 5px; padding: 0.4rem 0.7rem; }
+.sc-rank { font-size: 11px; font-weight: 800; color: var(--text-muted); width: 18px; text-align: center; }
+.sc-rank.t1 { color: var(--gold); }
+.sc-rank.t2 { color: var(--silver); }
+.sc-rank.t3 { color: #cd7f32; }
+.sc-name { flex: 1; font-weight: 600; font-size: 12.5px; }
+.sc-team { font-size: 11px; color: var(--text-dim); }
+.sc-goals { font-size: 1rem; font-weight: 800; color: var(--lime); min-width: 28px; text-align: right; }
+
+/* AWARDS */
+.award-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+.award { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 0.75rem 0.85rem; }
+.award-ico { font-size: 1.4rem; margin-bottom: 0.3rem; }
+.award-lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.15rem; }
+.award-name { font-weight: 700; font-size: 13px; color: #fff; }
+.award-desc { font-size: 11px; color: var(--text-dim); margin-top: 0.2rem; }
+
+/* INSIGHT BADGE */
+.insight { background: rgba(163,230,53,0.07); border: 1px solid var(--border); border-radius: 7px; padding: 0.75rem 0.9rem; margin: 0.5rem 0; font-size: 12.5px; }
+.insight-head { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--lime); font-weight: 700; margin-bottom: 0.3rem; }
+
+/* DRAMA BOX */
+.drama { background: linear-gradient(135deg, #1a0d0d 0%, #1f1a0d 100%); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 1rem 1.1rem; margin: 0.75rem 0; }
+.drama-title { font-weight: 800; color: var(--gold); font-size: 13.5px; margin-bottom: 0.5rem; }
+.drama p { font-size: 12.5px; color: #d1c4a0; line-height: 1.65; }
+
+/* FOOTER */
+footer { text-align: center; padding: 1.5rem 1rem; background: var(--surface); border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); margin-top: 2rem; }
+footer strong { color: var(--lime); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eye">FIFA League Manager Pro · Tổng Kết Chính Thức</div>
+  <h1>Mùa Giải <span>2026</span></h1>
+  <div class="hero-sub">7 đội · 21 trận · Kết thúc 10/06/2026</div>
+  <div style="margin-top: 1.25rem;">
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">21</div><div class="hstat-l">Trận</div></div>
+      <div class="hstat"><div class="hstat-n">69</div><div class="hstat-l">Bàn thắng</div></div>
+      <div class="hstat"><div class="hstat-n">3.3</div><div class="hstat-l">Bàn/trận</div></div>
+      <div class="hstat"><div class="hstat-n">11</div><div class="hstat-l">Thẻ vàng</div></div>
+      <div class="hstat"><div class="hstat-n">6</div><div class="hstat-l">Thẻ đỏ</div></div>
+      <div class="hstat"><div class="hstat-n">14</div><div class="hstat-l">Cầu thủ ghi bàn</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="#dien-bien" class="active">Diễn Biến</a>
+  <a href="#bxh">Bảng Xếp Hạng</a>
+  <a href="#vpl">Vua Phá Lưới</a>
+  <a href="#giai-thuong">Giải Thưởng</a>
+  <a href="#ket">Lời Kết</a>
+</div>
+
+<div class="page">
+
+<!-- ====== PHẦN 1: DIỄN BIẾN ====== -->
+<div class="sec" id="dien-bien">
+  <div class="sec-head">
+    <div class="sec-tag">01</div>
+    <div class="sec-title">Diễn Biến Mùa Giải</div>
+    <div class="sec-rule"></div>
+  </div>
+
+  <!-- 2 cột: Timeline trái, Highlights phải -->
+  <div class="two-col">
+    <div>
+      <div class="card-title">📅 Lịch thi đấu theo ngày</div>
+      <div class="timeline">
+
+        <div class="tl-day">
+          <div class="tl-day-label">T6 · 22/05 · 4 trận <span style="color:var(--text-muted);font-weight:400;font-size:10px;">Ngày khai mạc</span></div>
+          <div class="tl-match-wrap">
+            <div class="tl-match">
+              <span class="tl-team">Nam Nguyễn–Mạnh</span>
+              <div class="tl-score"><span class="sc d">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc d">1</span></div>
+              <span class="tl-team r">Trung–Huy</span>
+            </div>
+            <div class="tl-match">
+              <span class="tl-team">Ca sĩ Khánh Phương</span>
+              <div class="tl-score"><span class="sc d">0</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc d">0</span></div>
+              <span class="tl-team r">Nam Lê–Thin</span>
+            </div>
+            <div class="tl-match">
+              <span class="tl-team">Ca sĩ Khánh Phương</span>
+              <div class="tl-score"><span class="sc w">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">0</span></div>
+              <span class="tl-team r">Trung–Huy</span>
+            </div>
+            <div class="tl-match">
+              <span class="tl-team">Dũng Tiến khao giải</span>
+              <div class="tl-score"><span class="sc l">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc w">4</span></div>
+              <span class="tl-team r">Nam Lê–Thin <span class="pill pill-g">4 bàn</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T2 · 25/05 · 3 trận</div>
+          <div class="tl-match">
+            <span class="tl-team">Quân–Phương 6</span>
+            <div class="tl-score"><span class="sc l">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc w">4</span></div>
+            <span class="tl-team r">Nam Nguyễn–Mạnh</span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Ca sĩ Khánh Phương</span>
+            <div class="tl-score"><span class="sc w">4</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">0</span></div>
+            <span class="tl-team r">Dũng Tiến <span class="pill pill-g">4-0!</span></span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Nam Lê–Thin</span>
+            <div class="tl-score"><span class="sc l">0</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc w">1</span></div>
+            <span class="tl-team r">Quân–Phương 6</span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T3 · 26/05 · 2 trận</div>
+          <div class="tl-match">
+            <span class="tl-team">Quân–Phương 6</span>
+            <div class="tl-score"><span class="sc w">3</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">1</span></div>
+            <span class="tl-team r">Dũng Tiến</span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Ca sĩ Khánh Phương</span>
+            <div class="tl-score"><span class="sc w">2</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">0</span></div>
+            <span class="tl-team r">Quân–Phương 6</span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T4 · 27/05 · 2 trận</div>
+          <div class="tl-match">
+            <span class="tl-team">Nam Lê–Thin</span>
+            <div class="tl-score"><span class="sc w">2</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">1</span></div>
+            <span class="tl-team r">Trung–Huy</span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Trung–Huy</span>
+            <div class="tl-score"><span class="sc w">3</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">0</span></div>
+            <span class="tl-team r">Dũng Tiến <span class="pill pill-g">Hat-trick Huy!</span></span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T5 · 28/05 · 1 trận <span style="color:var(--text-muted);font-weight:400;font-size:10px;">Ngày ít nhất</span></div>
+          <div class="tl-match">
+            <span class="tl-team">Trung–Huy</span>
+            <div class="tl-score"><span class="sc d">2</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc d">2</span></div>
+            <span class="tl-team r">Quân–Phương 6</span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T2 · 01/06 · 2 trận <span style="color:var(--gold);font-weight:700;font-size:10px;">★ Tâm–Vũ xuất hiện</span></div>
+          <div class="tl-match">
+            <span class="tl-team">Ca sĩ Khánh Phương</span>
+            <div class="tl-score"><span class="sc d">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc d">1</span></div>
+            <span class="tl-team r">Tâm–Vũ</span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Tâm–Vũ</span>
+            <div class="tl-score"><span class="sc l">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc w">6</span></div>
+            <span class="tl-team r">Nam Lê–Thin <span class="pill pill-g">7 bàn!</span></span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T3 · 02/06 · 1 trận</div>
+          <div class="tl-match">
+            <span class="tl-team">Tâm–Vũ</span>
+            <div class="tl-score"><span class="sc w">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">0</span></div>
+            <span class="tl-team r">Quân–Phương 6</span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T4 · 03/06 · 2 trận</div>
+          <div class="tl-match">
+            <span class="tl-team">Nam Nguyễn–Mạnh</span>
+            <div class="tl-score"><span class="sc w">3</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">0</span></div>
+            <span class="tl-team r">Tâm–Vũ</span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Ca sĩ Khánh Phương</span>
+            <div class="tl-score"><span class="sc w">2</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">1</span></div>
+            <span class="tl-team r">Nam Nguyễn–Mạnh <span class="pill pill-y">Đại chiến đỉnh bảng</span></span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label">T5 · 04/06 · 3 trận</div>
+          <div class="tl-match">
+            <span class="tl-team">Tâm–Vũ</span>
+            <div class="tl-score"><span class="sc d">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc d">1</span></div>
+            <span class="tl-team r">Trung–Huy</span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Nam Nguyễn–Mạnh</span>
+            <div class="tl-score"><span class="sc d">3</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc d">3</span></div>
+            <span class="tl-team r">Nam Lê–Thin <span class="pill pill-g">6 bàn · nội chiến!</span></span>
+          </div>
+          <div class="tl-match">
+            <span class="tl-team">Dũng Tiến</span>
+            <div class="tl-score"><span class="sc l">1</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc w">4</span></div>
+            <span class="tl-team r">Nam Nguyễn–Mạnh</span>
+          </div>
+        </div>
+
+        <div class="tl-day">
+          <div class="tl-day-label" style="color:var(--gold);">T4 · 10/06 · Trận cuối mùa 🔚</div>
+          <div class="tl-match" style="border-color:rgba(251,191,36,0.3);">
+            <span class="tl-team">Dũng Tiến</span>
+            <div class="tl-score"><span class="sc w" style="background:var(--gold);color:#000;">5</span><span style="color:var(--text-muted);font-size:10px">–</span><span class="sc l">1</span></div>
+            <span class="tl-team r">Tâm–Vũ <span class="pill pill-y">Tiến Lê 5 bàn!</span></span>
+          </div>
+        </div>
+
+      </div><!-- end timeline -->
+    </div>
+
+    <!-- CỘT PHẢI: HIGHLIGHTS -->
+    <div>
+      <div class="card-title" style="margin-bottom:0.75rem;">🔥 Trận Đáng Nhớ & Insights</div>
+
+      <div class="callout">
+        <div class="callout-title">Trận nhiều bàn nhất</div>
+        <strong>Tâm–Vũ 1–6 Nam Lê–Thin (01/06)</strong> — 7 bàn. Nam Lê một mình ghi 5 bàn trong 1 hiệp. Tâm–Vũ mới ra mắt 1 trận, sung lắm — rồi nhận liền 6 bàn. Cảm xúc hỗn hợp.
+      </div>
+
+      <div class="callout gold">
+        <div class="callout-title">Trận kịch tính nhất</div>
+        <strong>Nam Nguyễn 3–3 Nam Lê (04/06)</strong> — Nội chiến họ Nam! 6 bàn, 4 cầu thủ ghi bàn. Trận hòa này ảnh hưởng trực tiếp đến cuộc đua ngôi Nhì.
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Trận quyết định ngôi vô địch</div>
+        <strong>Ca sĩ Khánh Phương 2–1 Nam Nguyễn (03/06)</strong> — Thắng đối thủ trực tiếp, đóng đinh chức vô địch trước 1 vòng. Không thể phủ nhận.
+      </div>
+
+      <div class="callout blue">
+        <div class="callout-title">Màn ngủ đông vĩ đại nhất mùa giải</div>
+        <strong>Tiến Lê — 0 bàn suốt 5 trận, rồi nổ 5 bàn trận cuối!</strong> Đây không phải phong độ lên xuống, đây là nghỉ đông theo đúng nghĩa đen rồi bùng cháy đúng trận bế mạc.
+      </div>
+
+      <div class="drama">
+        <div class="drama-title">🎭 Drama Cuối Mùa: Cuộc Chiến Áp Chót</div>
+        <p>Trận Dũng Tiến vs Tâm–Vũ ngày 10/6 là <strong>trận đáng xem nhất về mặt drama</strong> dù không ai công nhận: Tâm–Vũ thắng → lên hạng 4, mất giải áp chót; Dũng Tiến thắng → rửa mặt nhưng tước cơ hội áp chót của đối phương. Còn nếu hòa kiểu... 10–10? Hai đội ẵm luôn cả hai giải và Tiến Lê có thể thành Vua phá lưới bất đắc dĩ. Kết cục: <strong>5–1, Tiến Lê ghi 5 bàn, Tâm Nguyễn ghi 1 bàn đầu tiên và duy nhất</strong>, Tâm–Vũ vẫn áp chót, mọi người đều có quà — kể cả ban tổ chức với 200k tiền phạt thẻ.</p>
+      </div>
+
+      <div class="insight">
+        <div class="insight-head">📊 Ngày nhiều trận / ít trận</div>
+        <strong style="color:var(--lime);">22/05 & 04/06:</strong> 4 trận và 3 trận — ngày bận nhất. <strong style="color:var(--text-dim);">28/05 & 02/06:</strong> 1 trận/ngày — ngày nhàn nhất. Lịch không đều nhưng không đội nào phải đá 2 trận cùng ngày.
+      </div>
+
+      <div class="insight">
+        <div class="insight-head">🏅 Format đội: A gánh D · B+C</div>
+        Mỗi đội ghép cặp theo hạng kỹ năng. <strong style="color:var(--lime);">Đội Khánh Phương:</strong> Phương Nguyễn 8 (hạng S/A — "ông chú FIFA" nhiều giờ nhất) gánh Khánh Võ (D). Kết quả? Vô địch + Fair play. <strong style="color:var(--lime);">Đội Nam Nguyễn–Mạnh:</strong> Hai người cân bằng, phối hợp đều hơn nhưng không có "siêu nhân" như Phương 8.
+      </div>
+
+    </div>
+  </div><!-- end two-col -->
+</div>
+
+<!-- ====== PHẦN 2: BẢNG XẾP HẠNG ====== -->
+<div class="sec" id="bxh">
+  <div class="sec-head">
+    <div class="sec-tag">02</div>
+    <div class="sec-title">Bảng Xếp Hạng & Phán Quyết</div>
+    <div class="sec-rule"></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:30px;">XH</th>
+              <th class="tl">Đội</th>
+              <th>Điểm</th>
+              <th>T</th><th>H</th><th>B</th>
+              <th>BT</th><th>HS</th>
+              <th>🟨</th><th>🟥</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="r1">
+              <td>🥇</td>
+              <td class="tl">Ca sĩ Khánh Phương</td>
+              <td class="pts">14</td>
+              <td>4</td><td>2</td><td>0</td>
+              <td>10</td><td class="pos">+8</td>
+              <td>0</td><td>0</td>
+            </tr>
+            <tr class="r2">
+              <td>🥈</td>
+              <td class="tl">Nam Nguyễn–Mạnh</td>
+              <td class="pts">11</td>
+              <td>3</td><td>2</td><td>1</td>
+              <td>16</td><td class="pos">+8</td>
+              <td>1</td><td>0</td>
+            </tr>
+            <tr class="r3">
+              <td>🥉</td>
+              <td class="tl">Nam Lê–Thin</td>
+              <td class="pts">11</td>
+              <td>3</td><td>2</td><td>1</td>
+              <td>15</td><td class="pos">+8</td>
+              <td>1</td><td>2</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="tl">Quân–Phương 6</td>
+              <td class="pts">7</td>
+              <td>2</td><td>1</td><td>3</td>
+              <td>7</td><td class="neg">−3</td>
+              <td>2</td><td>1</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="tl">Trung–Huy</td>
+              <td class="pts">6</td>
+              <td>1</td><td>3</td><td>2</td>
+              <td>8</td><td class="pos">+1</td>
+              <td>1</td><td>0</td>
+            </tr>
+            <tr class="rl">
+              <td>6</td>
+              <td class="tl">Tâm–Vũ <span class="pill pill-y">Áp chót</span></td>
+              <td class="pts">5</td>
+              <td>1</td><td>2</td><td>3</td>
+              <td>5</td><td class="neg">−11</td>
+              <td>6</td><td>3</td>
+            </tr>
+            <tr class="rl">
+              <td>7</td>
+              <td class="tl">Dũng Tiến khao giải</td>
+              <td class="pts">3</td>
+              <td>1</td><td>0</td><td>5</td>
+              <td>8</td><td class="neg">−11</td>
+              <td>0</td><td>0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:0.4rem;">* Nhì/Ba đồng điểm (11), phân cách bởi bàn thắng (16 vs 15)</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+      <div class="callout">
+        <div class="callout-title">🏆 Nhất — Ca sĩ Khánh Phương</div>
+        Bất bại, 14 điểm, <strong>0 thẻ</strong>. "Ông chú FIFA" Phương Nguyễn 8 gánh đồng đội Khánh Võ (hạng D) như gánh bông. Thủ chắc chỉ nhận <strong>2 bàn thua cả mùa</strong> — đội nào vào sân đấu Khánh Phương cũng biết mình làm khách.
+      </div>
+      <div class="callout silver">
+        <div class="callout-title">🥈 Nhì — Nam Nguyễn–Mạnh (11đ · sát nút)</div>
+        Hai người cân bằng kỹ năng, phối hợp đồng đều, <strong>ghi nhiều bàn nhất giải (16)</strong>. Chật vật giữ ngôi nhì trước Nam Lê–Thin vì đồng điểm sát nút — chỉ hơn 1 bàn thắng. Kịch tính đến phút cuối.
+      </div>
+      <div class="callout bronze" style="border-color:#cd7f32;">
+        <div class="callout-title">🥉 Ba — Nam Lê–Thin (11đ · ngựa ô)</div>
+        Đội ngựa ô của giải — thắng những trận không ai ngờ (<strong>6–1 Tâm–Vũ</strong>), nhưng cũng thua khi không ai ngờ. 2 thẻ đỏ là điểm trừ lớn. Thiếu chút ổn định là đủ lên Nhì.
+      </div>
+      <div class="callout gold">
+        <div class="callout-title">🪑 Áp Chót — Tâm–Vũ (5đ · 6🟨 3🟥)</div>
+        Đến muộn, đá hăng, thẻ nhiều nhất giải. Cầm hòa nhà vô địch trận đầu rồi nhận 6 bàn trận sau — đúng chất Tâm–Vũ. <strong>Giải áp chót xứng đáng</strong>, cộng thêm đóng góp đáng kể vào quỹ phạt thẻ ban tổ chức.
+      </div>
+      <div class="callout red">
+        <div class="callout-title">⚰️ Bét Bảng — Dũng Tiến khao giải (3đ)</div>
+        Tên đội là "khao giải" — nhưng đã khao gì chưa thì cần xem lại. 5 trận thua, 1 thắng, 0 hòa. Điểm son: <strong>Tiến Lê thức dậy trận cuối ghi 5 bàn</strong>. Ra đi với style — và nụ cười.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PHẦN 3: VUA PHÁ LƯỚI ====== -->
+<div class="sec" id="vpl">
+  <div class="sec-head">
+    <div class="sec-tag">03</div>
+    <div class="sec-title">Vua Phá Lưới</div>
+    <div class="sec-rule"></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="scorer-list">
+        <div class="scorer-row">
+          <div class="sc-rank t1">1</div>
+          <div><div class="sc-name">Nam Nguyễn</div><div class="sc-team">Nam Nguyễn–Mạnh</div></div>
+          <div class="sc-goals">11</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank t2">2</div>
+          <div><div class="sc-name">Nam Lê</div><div class="sc-team">Nam Lê–Thin</div></div>
+          <div class="sc-goals">9</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank t3">3</div>
+          <div><div class="sc-name">Huy Phạm</div><div class="sc-team">Trung–Huy</div></div>
+          <div class="sc-goals">7</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">4</div>
+          <div><div class="sc-name">Thin Hoàng</div><div class="sc-team">Nam Lê–Thin</div></div>
+          <div class="sc-goals">6</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">5</div>
+          <div><div class="sc-name">Phương Nguyễn 8</div><div class="sc-team">Ca sĩ Khánh Phương <span style="color:var(--gold);font-size:10px;">★ Ông chú FIFA</span></div></div>
+          <div class="sc-goals">6</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">6</div>
+          <div><div class="sc-name">Mạnh Vũ</div><div class="sc-team">Nam Nguyễn–Mạnh</div></div>
+          <div class="sc-goals">5</div>
+        </div>
+        <div class="scorer-row" style="border:1px solid rgba(251,191,36,0.3);">
+          <div class="sc-rank" style="color:var(--gold);">7</div>
+          <div><div class="sc-name">Tiến Lê <span style="font-size:10px;color:var(--gold);">💤→🔥</span></div><div class="sc-team">Dũng Tiến khao giải</div></div>
+          <div class="sc-goals" style="color:var(--gold);">5</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">8</div>
+          <div><div class="sc-name">Phương Nguyễn 6</div><div class="sc-team">Quân–Phương 6</div></div>
+          <div class="sc-goals">4</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">9</div>
+          <div><div class="sc-name">Khánh Võ</div><div class="sc-team">Ca sĩ Khánh Phương</div></div>
+          <div class="sc-goals">4</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">10</div>
+          <div><div class="sc-name">Vũ Nguyễn</div><div class="sc-team">Tâm–Vũ</div></div>
+          <div class="sc-goals">3</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">11</div>
+          <div><div class="sc-name">Quân Phạm</div><div class="sc-team">Quân–Phương 6</div></div>
+          <div class="sc-goals">3</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">12</div>
+          <div><div class="sc-name">Dũng Nguyễn 4</div><div class="sc-team">Dũng Tiến khao giải</div></div>
+          <div class="sc-goals">2</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">13</div>
+          <div><div class="sc-name">Trung Vương</div><div class="sc-team">Trung–Huy</div></div>
+          <div class="sc-goals">1</div>
+        </div>
+        <div class="scorer-row">
+          <div class="sc-rank">14</div>
+          <div><div class="sc-name">Tâm Nguyễn</div><div class="sc-team">Tâm–Vũ <span style="color:var(--lime);font-size:10px;">★ Bàn đầu tiên!</span></div></div>
+          <div class="sc-goals">1</div>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;font-size:11px;color:var(--text-muted);">✅ Tất cả 14 cầu thủ đều ghi bàn — dàn đều 1–11 bàn. Mùa giải ai cũng có kỷ niệm.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+      <div class="callout">
+        <div class="callout-title">⚽ Vua phá lưới — Nam Nguyễn (11 bàn)</div>
+        <strong>11/16</strong> bàn của đội (69%). Gần như một mình cõng cả đội lên ngôi Nhì. Nếu có thêm 1 đồng đội ổn định hơn, ngôi vô địch là chuyện có thể bàn. Xứng đáng chiếc giày vàng.
+      </div>
+      <div class="callout silver">
+        <div class="callout-title">🏹 Á quân — Nam Lê (9 bàn · + Thin 6 bàn = 15)</div>
+        <strong>Cặp tấn công ăn ý nhất giải</strong> với 15 bàn giữa 2 người. Nam Lê có trận bùng nổ 5 bàn trong 1 trận — kỷ lục mùa. Tiếc là độ ổn định không đủ để leo lên Nhì.
+      </div>
+      <div class="callout bronze" style="border-color:#cd7f32;">
+        <div class="callout-title">🦁 Huy Phạm — người cô đơn nhất giải (7/8 bàn đội)</div>
+        Ghi <strong>87%</strong> số bàn của Trung–Huy. Hat-trick ngày 27/5. Nếu có đồng đội tốt hơn Trung Vương (1 bàn cả mùa), Trung–Huy đã không ở thứ 5.
+      </div>
+      <div class="callout gold">
+        <div class="callout-title">★ Phương Nguyễn 8 — "Ông chú FIFA"</div>
+        Hạng S thực chiến (nhiều giờ nhất), tính hạng A để cân bằng đội. Ghi 6 bàn, không thẻ, gánh Khánh Võ (D) như một người lớn thực thụ. Đội thắng vô địch, fair play — mọi thứ đều ổn với ông chú.
+      </div>
+      <div class="callout blue">
+        <div class="callout-title">💤 Special mention — Tiến Lê (5 bàn, trận cuối)</div>
+        Tịt ngòi 5 trận liên tiếp, rồi <strong>5 bàn trong 1 trận</strong>. Không biết đây là chiến lược hay ngủ quên — nhưng kết quả thì không ai phàn nàn. Riêng Tâm–Vũ thì có thể có ý kiến khác.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PHẦN 4: GIẢI THƯỞNG ====== -->
+<div class="sec" id="giai-thuong">
+  <div class="sec-head">
+    <div class="sec-tag">04</div>
+    <div class="sec-title">Giải Thưởng Mùa Giải</div>
+    <div class="sec-rule"></div>
+  </div>
+
+  <div class="award-grid">
+    <div class="award">
+      <div class="award-ico">🏆</div>
+      <div class="award-lbl">Vô Địch</div>
+      <div class="award-name">Ca sĩ Khánh Phương</div>
+      <div class="award-desc">14 điểm · bất bại · chỉ nhận 2 bàn thua</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">🥈</div>
+      <div class="award-lbl">Á Quân</div>
+      <div class="award-name">Nam Nguyễn – Mạnh</div>
+      <div class="award-desc">11 điểm · 16 bàn thắng · sát nút tới phút cuối</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">🥉</div>
+      <div class="award-lbl">Hạng Ba</div>
+      <div class="award-name">Nam Lê – Thin</div>
+      <div class="award-desc">11 điểm · ngựa ô · thua ngôi Nhì chỉ 1 bàn</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">🌿</div>
+      <div class="award-lbl">Fair Play</div>
+      <div class="award-name">Ca sĩ Khánh Phương</div>
+      <div class="award-desc">0 thẻ vàng · 0 thẻ đỏ · đội sạch bóng nhất</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">🪑</div>
+      <div class="award-lbl">Áp Chót</div>
+      <div class="award-name">Tâm – Vũ</div>
+      <div class="award-desc">5đ · 6🟨 3🟥 · đóng góp 200k quỹ phạt thẻ BTC</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">⚽</div>
+      <div class="award-lbl">Vua Phá Lưới</div>
+      <div class="award-name">Nam Nguyễn</div>
+      <div class="award-desc">11 bàn · 69% bàn thắng của đội</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">😴</div>
+      <div class="award-lbl">Ngủ Đông → Bùng Nổ</div>
+      <div class="award-name">Tiến Lê</div>
+      <div class="award-desc">0 bàn 5 trận đầu → 5 bàn trận cuối. Delay mode hoàn hảo.</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">💪</div>
+      <div class="award-lbl">Một Mình Chống Giải</div>
+      <div class="award-name">Huy Phạm</div>
+      <div class="award-desc">7/8 bàn của đội (87%). Anh hùng cô đơn nhất mùa.</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">👴</div>
+      <div class="award-lbl">Ông Chú FIFA</div>
+      <div class="award-name">Phương Nguyễn 8</div>
+      <div class="award-desc">Hạng S · giờ chơi nhiều nhất · gánh đồng đội hạng D như gánh bông</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">🎯</div>
+      <div class="award-lbl">Bàn Thắng Đầu Tiên</div>
+      <div class="award-name">Tâm Nguyễn</div>
+      <div class="award-desc">1 bàn duy nhất · nhưng là kỷ niệm đáng nhớ nhất</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">💰</div>
+      <div class="award-lbl">Đóng Góp Quỹ Phạt</div>
+      <div class="award-name">200,000đ cho BTC</div>
+      <div class="award-desc">11 thẻ vàng × 50k + 6 thẻ đỏ × ... — cảm ơn Tâm–Vũ</div>
+    </div>
+    <div class="award">
+      <div class="award-ico">🙃</div>
+      <div class="award-lbl">Tên Đội Gây Hiểu Nhầm</div>
+      <div class="award-name">Dũng Tiến khao giải</div>
+      <div class="award-desc">Đặt tên trước khi có giải để khao. Sai trình tự từ đầu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== LỜI KẾT ====== -->
+<div class="sec" id="ket">
+  <div class="sec-head">
+    <div class="sec-tag">05</div>
+    <div class="sec-title">Lời Kết</div>
+    <div class="sec-rule"></div>
+  </div>
+
+  <div class="callout" style="border-color:var(--lime);font-size:13px;line-height:1.75;">
+    <div class="callout-title">🏁 Tổng kết mùa giải 2026</div>
+    Một mùa giải thành công theo đúng nghĩa: <strong>21 trận · 69 bàn · tất cả 14 cầu thủ đều ghi bàn</strong>, dàn đều từ 1 đến 11 bàn — không ai bị quên lãng. Ca sĩ Khánh Phương thống trị bằng kỷ luật và "ông chú FIFA"; Nam Nguyễn–Mạnh bền bỉ cán đích Nhì dù bị Nam Lê–Thin bám đuổi đến phút chót; Dũng Tiến "khao giải" cuối cùng cũng có cái để kể: Tiến Lê và 5 bàn thắng lịch sử. <strong>Hẹn gặp lại mùa sau — và đừng khao giải trước khi có giải nhé!</strong>
+  </div>
+</div>
+
+</div><!-- end page -->
+
+<footer>
+  <strong>FIFA LEAGUE MANAGER PRO</strong> · Mùa Giải 2026 · Tổng kết chính thức
+</footer>
+
+</body>
+</html>

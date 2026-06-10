@@ -182,6 +182,50 @@ tr:last-child td { border-bottom: none; }
 /* FOOTER */
 footer { text-align: center; padding: 1.5rem 1rem; background: var(--surface); border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); margin-top: 2rem; }
 footer strong { color: var(--lime); }
+
+/* Menu Khịa */
+:root {
+  --bg: #0d1f0d;
+  --surface: #132613;
+  --surface2: #1a3320;
+  --border: rgba(163,230,53,0.15);
+  --lime: #a3e635;
+  --lime2: #84cc16;
+  --lime-dim: rgba(163,230,53,0.12);
+  --gold: #fbbf24;
+  --silver: #94a3b8;
+  --bronze: #b45309;
+  --red: #ef4444;
+  --blue: #60a5fa;
+  --text: #e2ffe2;
+  --text-dim: #6b9b6b;
+  --text-muted: #4d7a4d;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', 'Aptos', 'Arial', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 20px;
+}
+.container { max-width: 800px; margin: 0 auto; }
+h1 { color: var(--lime); margin-bottom: 20px; font-size: 28px; text-transform: uppercase; border-bottom: 2px solid var(--lime); padding-bottom: 10px; }
+h2 { color: var(--gold); margin-top: 30px; margin-bottom: 15px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+.team-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+.team-name { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: var(--lime); }
+.team-meta { font-size: 14px; color: var(--text-dim); margin-bottom: 15px; background: var(--surface2); padding: 8px 12px; border-radius: 4px; display: inline-block; }
+.commentary { background: rgba(0,0,0,0.2); border-left: 4px solid var(--lime); padding: 12px 15px; margin-top: 15px; font-style: italic; border-radius: 0 4px 4px 0; }
+.commentary strong { color: var(--gold); font-style: normal; }
+.badge { display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: bold; border-radius: 4px; margin-left: 10px; text-transform: uppercase; }
+.badge-gold { background: var(--gold); color: #000; }
+.badge-silver { background: var(--silver); color: #000; }
+.badge-bronze { background: var(--bronze); color: #fff; }
+.menu-khia { background: #220000; border: 1px solid #550000; padding: 20px; margin-top: 4px; border-radius: 8px; }
+.menu-khia h3 { color: var(--red); margin-bottom: 15px; }
+.menu-khia ul { padding-left: 20px; }
+.menu-khia li { margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -507,27 +551,53 @@ footer strong { color: var(--lime); }
     </div>
 
     <div style="display:flex;flex-direction:column;gap:0.5rem;">
-      <div class="callout">
-        <div class="callout-title">🏆 Nhất — Ca sĩ Khánh Phương</div>
-        Bất bại, 14 điểm, <strong>0 thẻ</strong>. "Ông chú FIFA" Phương Nguyễn 8 gánh đồng đội Khánh Võ (hạng D) như gánh bông. Thủ chắc chỉ nhận <strong>2 bàn thua cả mùa</strong> — đội nào vào sân đấu Khánh Phương cũng biết mình làm khách.
-      </div>
-      <div class="callout silver">
-        <div class="callout-title">🥈 Nhì — Nam Nguyễn–Mạnh (11đ · sát nút)</div>
-        Hai người cân bằng kỹ năng, phối hợp đồng đều, <strong>ghi nhiều bàn nhất giải (16)</strong>. Chật vật giữ ngôi nhì trước Nam Lê–Thin vì đồng điểm sát nút — chỉ hơn 1 bàn thắng. Kịch tính đến phút cuối.
-      </div>
-      <div class="callout bronze" style="border-color:#cd7f32;">
-        <div class="callout-title">🥉 Ba — Nam Lê–Thin (11đ · ngựa ô)</div>
-        Đội ngựa ô của giải — thắng những trận không ai ngờ (<strong>6–1 Tâm–Vũ</strong>), nhưng cũng thua khi không ai ngờ. 2 thẻ đỏ là điểm trừ lớn. Thiếu chút ổn định là đủ lên Nhì.
-      </div>
-      <div class="callout gold">
-        <div class="callout-title">🪑 Áp Chót — Tâm–Vũ (5đ · 6🟨 3🟥)</div>
-        Đến muộn, đá hăng, thẻ nhiều nhất giải. Cầm hòa nhà vô địch trận đầu rồi nhận 6 bàn trận sau — đúng chất Tâm–Vũ. <strong>Giải áp chót xứng đáng</strong>, cộng thêm đóng góp đáng kể vào quỹ phạt thẻ ban tổ chức.
-      </div>
-      <div class="callout red">
-        <div class="callout-title">⚰️ Bét Bảng — Dũng Tiến khao giải (3đ)</div>
-        Tên đội là "khao giải" — nhưng đã khao gì chưa thì cần xem lại. 5 trận thua, 1 thắng, 0 hòa. Điểm son: <strong>Tiến Lê thức dậy trận cuối ghi 5 bàn</strong>. Ra đi với style — và nụ cười.
-      </div>
+      <div class="team-card" style="border-color: var(--gold);">
+    <div class="team-name">🥇 Ca sĩ Khánh Phương <span class="badge badge-gold">Vô Địch + Fair Play</span></div>
+    <div class="team-meta">Thành tích: Sạch bóng thất bại | Nhân sự: Phương Nguyễn 8, Khánh Võ</div>
+    <div class="commentary">
+      <strong>Lời bình quán bia:</strong> Nhà vô địch mang cái tên rất showbiz nhưng lối đá lại nặc mùi thực dụng. Thực chất, đây là vở kịch <strong>"Phương Nguyễn 8 và đứa trẻ tội nghiệp"</strong>. Một mình "Ông chú FIFA" ôm hết cả map, còng cả lưng để gánh quả tạ Khánh Võ lên bục nhận giải. Danh hiệu <em>Fair Play</em> (0 thẻ) thực ra là vì Phương Nguyễn đá quá out trình, đối thủ còn chưa kịp chạm vào người đã thấy bóng vào lưới, lấy đâu ra cơ hội mà phạm lỗi? Khánh Võ vô địch giải này xong tốt nhất nên bao anh Phương một bữa lẩu voi để bù đắp lại vài đốt sống cổ đã thoát vị vì gánh tạ quá nặng.
     </div>
+  </div>
+
+  <div class="team-card" style="border-color: var(--silver);">
+    <div class="team-name">🥈 Nam Nguyễn – Mạnh <span class="badge badge-silver">Á Quân</span></div>
+    <div class="team-meta">Thành tích: Bằng điểm hạng 3, hơn đúng 1 bàn thắng | Ghi nhiều bàn nhất giải (16 bàn)</div>
+    <div class="commentary">
+      <strong>Lời bình quán bia:</strong> Ghi lắm bàn nhất giải để làm gì? Để rồi nhìn cúp bay về tay người khác trong bất lực. Nam Nguyễn cày cuốc ghi tới 11 bàn (chiếm mẹ nó gần 70% hỏa lực của toàn đội), điều đó có nghĩa là Mạnh Vũ chỉ cần đóng góp thêm... đúng 1 bàn thắng nữa ở trận hòa Nam Lê 3-3 là hai anh đã có thể mơ về ngai vàng. Tiếc là kịch bản không có chữ "nếu", lên bàn bia hôm nay Mạnh Vũ xác định là bia rót tràn ly để tạ lỗi với đôi chân gánh team của Nam Nguyễn nhé.
+    </div>
+  </div>
+
+  <div class="team-card" style="border-color: var(--bronze);">
+    <div class="team-name">🥉 Nam Lê – Thin <span class="badge badge-bronze">Hạng 3</span></div>
+    <div class="team-meta">Thành tích: Đồng hạng điểm với Á quân | Kỷ lục: 2 Thẻ đỏ</div>
+    <div class="commentary">
+      <strong>Lời bình quán bia:</strong> Đúng chất "Ngựa ô" — hay nói thẳng ra là những kẻ bất ổn định về mặt tâm lý. Thắng hủy diệt Tâm–Vũ 6-1 như một vị thần, nhưng lại sẵn sàng vấp cỏ ngã ngựa ở những trận không ai ngờ tới. Điểm nhấn làm nên thương hiệu của cặp đôi này là <strong>2 chiếc thẻ đỏ</strong> đi vào lòng đất. Đá bóng bằng tay cầm chứ có phải đấu võ đài sinh tử đâu hai khứa? Chính cái đầu nóng và những pha "chặt chém" vô tri đã tự tay dâng ngôi Nhì cho nhà Nam Nguyễn.
+    </div>
+  </div>
+
+  <div class="team-card">
+    <div class="team-name">🪵 Trung – Huy <span class="badge" style="background:#555;">Hạng 5</span></div>
+    <div class="team-meta">Thành tích: Huy Phạm ghi 87.5% số bàn thắng của đội</div>
+    <div class="commentary">
+      <strong>Lời bình quán bia:</strong> Đây tuyệt đối không phải một đội bóng, đây là một <strong>"Hộ kinh doanh cá thể"</strong> mang tên Huy Phạm. Ghi 7 trên tổng số 8 bàn của toàn đội (đạt tỷ lệ gánh tạ không tưởng: 87.5%). Câu hỏi đặt ra cho hội đồng thẩm định là trong suốt mùa giải, Trung Vương đã làm cái gì trên sân ngoại trừ việc chạy lăng quăng cho đủ tụ và đóng góp đúng... 1 bàn danh dự để check-in sự kiện? Mang tiếng chung mâm nhưng thực tế Huy Phạm đá muốn tụt huyết áp, còn Trung Vương lên quán bia chắc vẫn vỗ ngực tự hào "đội tôi hạng 5". Khuyên Huy Phạm mùa sau nên đơn phương ly hôn hủy cặp gấp.
+    </div>
+  </div>
+
+  <div class="team-card" style="border-color: var(--red);">
+    <div class="team-name">🤡 Tâm – Vũ <span class="badge" style="background:var(--red);">Nhà Tài Trợ Vàng</span></div>
+    <div class="team-meta">Thành tích: Hạng 6/7 | Kỷ lục: 6 Thẻ vàng, 3 Thẻ đỏ, cúng 200k quỹ phạt</div>
+    <div class="commentary">
+      <strong>Lời bình quán bia:</strong> Đội bóng sở hữu lối chơi mang đậm bản sắc... bạo lực và hoang dã. Đi đá thì muộn, thắng thì ít (đúng 1 trận), nhưng bộ sưu tập <strong>6 thẻ vàng và 3 thẻ đỏ</strong> thì không ai độ nổi. Cứ ngỡ anh em mang tiền đi đóng quỹ giải cho vui, hóa ra là đi đóng "thuế thân" nuôi Ban tổ chức. Trận cuối chỉ cần thủ hòa là ẵm giải Áp chót êm đẹp, thế mà để Tiến Lê nã vào lưới 5 quả, nhục nhã lết về vị trí thứ 6. Tâm Nguyễn ghi được đúng 1 bàn duy nhất cả mùa, chắc tối nay ra quán bia đem đi kể từ đầu bữa đến cuối bữa.
+    </div>
+  </div>
+
+  <div class="team-card" style="background: #1a0d0d; border-color: #552222;">
+    <div class="team-name">💀 Dũng Tiến khao giải <span class="badge" style="background:#000; color:#fff;">Đáy Xã Hội</span></div>
+    <div class="team-meta">Thành tích: Bét bảng | Biến động: Tiến Lê nổ 5 bàn trận cuối</div>
+    <div class="commentary">
+      <strong>Lời bình quán bia:</strong> Cái tên nói lên tất cả: <strong>"Khao giải" khi chưa đá trận nào</strong> — một sự tự tin mù quáng và sai quy trình đi vào lịch sử. Kết quả nhận về hoàn toàn xứng đáng: 5 trận thua trắng dái, vững vàng ở vị trí đáy xã hội không ai thèm tranh chấp. Điểm nhấn hài hước nhất giải gọi tên Tiến Lê: 5 trận đầu tiên bật chế độ "ngủ đông" ăn hại, bóng đến chân là mất, sút toàn lên trời. Đến trận cuối cùng khi giải đấu chuẩn bị hạ màn, khứa này bỗng dưng... "nhập thần" nã liên tù tì 5 bàn vào lưới Tâm–Vũ. Đây không phải là bùng nổ, đây là hành vi "lừa đảo" đồng đội một cách hợp pháp! Dũng Nguyễn 4 chắc cay đắng lắm khi cày cuốc cả mùa không bằng một góc trận cuối bay lắc của bạn diễn.
+    </div>
+  </div>
   </div>
 </div>
 

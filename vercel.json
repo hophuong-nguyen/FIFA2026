@@ -3,8 +3,10 @@
   "builds": [
       { "src": "index.html", "use": "@vercel/static" },
       { "src": "summary.html", "use": "@vercel/static" }
+      { "src": "overcooked2.html", "use": "@vercel/static" }
     ],
   "rewrites": [
+    { "source": "/overcooked2", "destination": "/overcooked2.html" },
     { "source": "/summary", "destination": "/summary.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ] 

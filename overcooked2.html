@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giải Đấu Overcooked! 2 — Huyền Thoại Bếp Cyber</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&family=Momo+Trust+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --yellow:  #FFD23F;
+    --coral:   #FF6B6B;
+    --mint:    #4ECDC4;
+    --purple:  #9B5DE5;
+    --cream:   #FFFBF2;
+    --dark:    #1A1A2E;
+    --white:   #ffffff;
+    --radius:  18px;
+    --font-display: 'Be Vietnam Pro', sans-serif;
+    --font-body:    'Be Vietnam Pro', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--cream);
+    color: var(--dark);
+    overflow-x: hidden;
+    line-height: 1.65;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 1.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 15% 30%, rgba(255,210,63,.16) 0%, transparent 50%),
+      radial-gradient(circle at 85% 70%, rgba(255,107,107,.16) 0%, transparent 50%),
+      radial-gradient(circle at 50% 90%, rgba(78,205,196,.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .stickers {
+    display: flex;
+    gap: 1.2rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .sticker {
+    font-size: 3rem;
+    display: inline-block;
+    animation: bounce 2.2s ease-in-out infinite;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.4));
+  }
+  .sticker:nth-child(2) { animation-delay: .2s; }
+  .sticker:nth-child(3) { animation-delay: .4s; }
+  .sticker:nth-child(4) { animation-delay: .6s; }
+  .sticker:nth-child(5) { animation-delay: .8s; }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-14px) rotate(3deg); }
+  }
+
+  .badge-eyebrow {
+    display: inline-block;
+    background: var(--yellow);
+    color: var(--dark);
+    font-weight: 800;
+    font-size: .9rem;
+    padding: .4rem 1.25rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+    letter-spacing: .03em;
+  }
+
+  .hero h1 {
+    font-weight: 800;
+    font-size: clamp(2.6rem, 7vw, 5rem);
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: .75rem;
+    letter-spacing: -.02em;
+  }
+
+  .hero h1 span { color: var(--yellow); }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,.68);
+    max-width: 500px;
+    line-height: 1.75;
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-stat {
+    background: rgba(255,255,255,.07);
+    border: 1.5px solid rgba(255,255,255,.13);
+    border-radius: var(--radius);
+    padding: .8rem 1.5rem;
+    text-align: center;
+  }
+
+  .hero-stat-num {
+    font-weight: 800;
+    font-size: 2rem;
+    color: var(--yellow);
+    line-height: 1;
+  }
+
+  .hero-stat-label {
+    font-size: .78rem;
+    color: rgba(255,255,255,.55);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  .btn-cta {
+    display: inline-block;
+    background: var(--coral);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+    padding: .9rem 2.5rem;
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 6px 0 #c94a4a;
+    transition: transform .1s, box-shadow .1s;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-body);
+    letter-spacing: .01em;
+  }
+
+  .btn-cta:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 #c94a4a; }
+  .btn-cta:active { transform: translateY(2px);  box-shadow: 0 4px 0 #c94a4a; }
+
+  /* ── GENERIC LAYOUT ── */
+  .section {
+    padding: 5rem 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .section-band {
+    padding: 5rem 1.5rem;
+  }
+
+  .section-band .inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    display: inline-block;
+    font-weight: 800;
+    font-size: .8rem;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: .3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+
+  .tag-yellow  { background: var(--yellow);  color: var(--dark); }
+  .tag-mint    { background: var(--mint);    color: var(--dark); }
+  .tag-coral   { background: var(--coral);   color: #fff; }
+  .tag-purple  { background: var(--purple);  color: #fff; }
+  .tag-dark    { background: rgba(255,255,255,.12); color: rgba(255,255,255,.85); }
+
+  .section-title {
+    font-weight: 800;
+    font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+    margin-bottom: 1.75rem;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+  }
+
+  .section-title.light { color: var(--white); }
+  .section-title em { font-style: normal; color: var(--yellow); }
+  .section-title .accent-mint { color: var(--mint); }
+
+  /* ── INTRO GAME ── */
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 640px) { .intro-grid { grid-template-columns: 1fr; } }
+
+  .intro-card {
+    background: var(--white);
+    border: 1.5px solid rgba(26,26,46,.08);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .intro-icon { font-size: 2.2rem; flex-shrink: 0; line-height: 1; }
+
+  .intro-card-title {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--dark);
+    margin-bottom: .3rem;
+  }
+
+  .intro-card-desc {
+    font-size: .9rem;
+    color: rgba(26,26,46,.65);
+    line-height: 1.65;
+  }
+
+  .intro-big {
+    background: var(--dark);
+    border-radius: var(--radius);
+    padding: 2rem;
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .intro-big-left { flex: 1; min-width: 200px; }
+
+  .intro-big-left p {
+    font-size: 1rem;
+    color: rgba(255,255,255,.78);
+    line-height: 1.75;
+  }
+
+  .intro-big-left strong { color: var(--yellow); }
+
+  .intro-steps {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .intro-step {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    background: rgba(255,255,255,.07);
+    border-radius: 12px;
+    padding: .6rem .9rem;
+  }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--dark);
+    font-weight: 800;
+    font-size: .85rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-text { font-size: .88rem; color: rgba(255,255,255,.85); font-weight: 600; }
+
+  /* ── MAPS ── */
+  .maps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .map-card {
+    border-radius: var(--radius);
+    padding: 2rem 1.5rem;
+    transition: transform .2s;
+  }
+
+  .map-card:hover { transform: translateY(-6px) rotate(-1deg); }
+
+  .map-card-1 { background: #E6FAF7; border: 2px solid var(--mint); }
+  .map-card-2 { background: #EEEEFF; border: 2px solid #818CF8; }
+  .map-card-3 { background: #FFF0F0; border: 2px solid var(--coral); }
+
+  .map-emoji { font-size: 3rem; display: block; margin-bottom: .75rem; }
+
+  .map-round {
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    color: rgba(26,26,46,.45);
+    text-transform: uppercase;
+    margin-bottom: .25rem;
+  }
+
+  .map-name {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: .25rem;
+    color: var(--dark);
+    letter-spacing: -.02em;
+  }
+
+  .map-code {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 700;
+    background: rgba(26,26,46,.07);
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    margin-bottom: .8rem;
+    color: rgba(26,26,46,.55);
+  }
+
+  .map-desc {
+    font-size: .92rem;
+    line-height: 1.7;
+    color: rgba(26,26,46,.72);
+  }
+
+  .map-food {
+    margin-top: .85rem;
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+
+  /* ── TIMELINE ── */
+  .timeline-wrap { background: #F0FDF9; padding: 3.5rem 1.5rem; }
+
+  .timeline {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: .5rem;
+  }
+
+  .tl-step {
+    flex: 1;
+    min-width: 110px;
+    text-align: center;
+    position: relative;
+  }
+
+  .tl-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 55%;
+    width: 90%;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--mint) 0, var(--mint) 6px, transparent 6px, transparent 12px);
+  }
+
+  .tl-dot {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--mint);
+    color: var(--dark);
+    font-weight: 800;
+    font-size: 1.05rem;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 4px 0 rgba(0,0,0,.1);
+  }
+
+  .tl-label { font-size: .82rem; font-weight: 700; color: var(--dark); margin-bottom: .2rem; }
+  .tl-time  { font-size: .72rem; color: rgba(26,26,46,.5); }
+
+  /* ── ROLES ── */
+  .roles-band { background: var(--dark); }
+
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .role-card {
+    background: rgba(255,255,255,.06);
+    border: 1.5px solid rgba(255,255,255,.11);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    transition: background .2s;
+  }
+
+  .role-card:hover { background: rgba(255,255,255,.1); }
+
+  .role-emoji { font-size: 2.5rem; display: block; margin-bottom: .65rem; }
+
+  .role-name {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--yellow);
+    margin-bottom: .35rem;
+  }
+
+  .role-desc { font-size: .85rem; color: rgba(255,255,255,.62); line-height: 1.65; }
+
+  /* ── PRIZES ── */
+  .prizes-stack { display: flex; flex-direction: column; gap: 1rem; }
+
+  .prize-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: var(--white);
+    border: 1.5px solid rgba(26,26,46,.08);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    transition: transform .15s;
+  }
+
+  .prize-row:hover { transform: translateX(4px); }
+
+  .prize-row.gold   { border-left: 4px solid var(--yellow); }
+  .prize-row.silver { border-left: 4px solid #B0B0B0; }
+  .prize-row.bronze { border-left: 4px solid #CD7F32; }
+  .prize-row.fun    { border-left: 4px solid var(--purple); }
+
+  .prize-medal { font-size: 2.5rem; flex-shrink: 0; }
+
+  .prize-info { flex: 1; }
+
+  .prize-place {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--dark);
+    margin-bottom: .2rem;
+  }
+
+  .prize-desc { font-size: .85rem; color: rgba(26,26,46,.55); line-height: 1.5; }
+
+  .prize-badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+  }
+
+  .badge-gold   { background: #FFF7D6; color: #8A6800; }
+  .badge-silver { background: #F0F0F0; color: #555; }
+  .badge-bronze { background: #FFF0E6; color: #874500; }
+  .badge-fun    { background: #F3EEFF; color: #5B2EA6; }
+
+  /* ── NEWBIE ── */
+  .newbie-box {
+    background: linear-gradient(130deg, #9B5DE5 0%, #4ECDC4 100%);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    text-align: center;
+  }
+
+  .newbie-box h3 {
+    font-weight: 800;
+    font-size: 1.7rem;
+    color: #fff;
+    margin-bottom: .7rem;
+    letter-spacing: -.02em;
+  }
+
+  .newbie-box p {
+    font-size: .97rem;
+    color: rgba(255,255,255,.85);
+    line-height: 1.75;
+    max-width: 500px;
+    margin: 0 auto 1.5rem;
+  }
+
+  .newbie-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(255,255,255,.18);
+    border: 2px solid rgba(255,255,255,.45);
+    color: #fff;
+    font-weight: 700;
+    font-size: .95rem;
+    padding: .7rem 1.6rem;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background .2s;
+    font-family: var(--font-body);
+  }
+
+  .btn-ghost:hover { background: rgba(255,255,255,.3); }
+
+  /* ── INFO CARDS ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .info-card {
+    background: var(--white);
+    border: 1.5px solid rgba(26,26,46,.08);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .info-emoji { font-size: 2.5rem; display: block; margin-bottom: .6rem; }
+
+  .info-label {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: rgba(26,26,46,.38);
+    margin-bottom: .3rem;
+  }
+
+  .info-val {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--dark);
+    line-height: 1.4;
+  }
+
+  /* ── CTA ── */
+  .cta-band { background: var(--dark); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #111120;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: rgba(255,255,255,.35);
+    font-size: .82rem;
+  }
+
+  footer strong { color: var(--yellow); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .hero-stats { gap: .75rem; }
+    .newbie-btns { flex-direction: column; align-items: center; }
+    .prize-row { flex-wrap: wrap; }
+    .intro-big { flex-direction: column; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sticker { animation: none; }
+    .map-card:hover, .prize-row:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="stickers">
+    <span class="sticker">🍣</span>
+    <span class="sticker">🔥</span>
+    <span class="sticker">🎮</span>
+    <span class="sticker">🏆</span>
+    <span class="sticker">🍔</span>
+  </div>
+  <div class="badge-eyebrow">⚡ Giải Đấu Nội Bộ · Nintendo Switch</div>
+  <h1>Huyền Thoại<br><span>Bếp Cyber</span></h1>
+  <p class="hero-sub">Overcooked! 2 — Ai là đầu bếp số 1 văn phòng?<br>Lập team 4 người, hợp tác, cười đau bụng, đừng cháy bếp.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">4</div>
+      <div class="hero-stat-label">người / đội</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">3</div>
+      <div class="hero-stat-label">màn thi đấu</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">~20'</div>
+      <div class="hero-stat-label">mỗi đội</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">∞</div>
+      <div class="hero-stat-label">tiếng cười</div>
+    </div>
+  </div>
+  <a href="#dang-ky" class="btn-cta">Đăng Ký Ngay 🔥</a>
+</section>
+
+<!-- ── GIỚI THIỆU GAME ── -->
+<section class="section">
+  <div class="section-tag tag-mint">🎮 Overcooked! 2 là gì?</div>
+  <h2 class="section-title">Game <em>hợp tác</em> vui nhất<br>mọi buổi tụ họp</h2>
+
+  <div class="intro-grid">
+    <div class="intro-big">
+      <div class="intro-big-left">
+        <p>Bạn và đồng đội vào bếp cùng nhau, nhận order từ khách, <strong>phân công cắt nguyên liệu → nấu → hoàn thiện → giao món</strong> trước khi hết giờ.<br><br>Nghe đơn giản — nhưng khi bếp bắt đầu đổ lửa, mọi người la hét chỉ đường cho nhau... đó chính là lúc vui nhất!</p>
+      </div>
+      <div class="intro-steps">
+        <div class="intro-step"><div class="step-num">1</div><div class="step-text">Nhận order từ khách hàng 📋</div></div>
+        <div class="intro-step"><div class="step-num">2</div><div class="step-text">Cắt & chuẩn bị nguyên liệu 🔪</div></div>
+        <div class="intro-step"><div class="step-num">3</div><div class="step-text">Nấu & lắp ráp món ăn 🍳</div></div>
+        <div class="intro-step"><div class="step-num">4</div><div class="step-text">Giao món — ghi điểm! ⭐</div></div>
+      </div>
+    </div>
+
+    <div class="intro-card">
+      <span class="intro-icon">🕹️</span>
+      <div>
+        <div class="intro-card-title">Điều khiển siêu dễ</div>
+        <p class="intro-card-desc">Chỉ cần di chuyển + 2 nút: nhặt/đặt đồ và tương tác. Không cần kỹ năng game — chỉ cần giao tiếp tốt là thắng.</p>
+      </div>
+    </div>
+
+    <div class="intro-card">
+      <span class="intro-icon">👥</span>
+      <div>
+        <div class="intro-card-title">Hợp tác là tất cả</div>
+        <p class="intro-card-desc">Không ai giỏi hơn cả đội. Team ăn ý, phân công rõ ràng sẽ đánh bại team "ai cũng làm hết".</p>
+      </div>
+    </div>
+
+    <div class="intro-card">
+      <span class="intro-icon">😂</span>
+      <div>
+        <div class="intro-card-title">Cười nhiều hơn chill</div>
+        <p class="intro-card-desc">Overcooked! nổi tiếng là game làm... tan vỡ tình bạn. Nhưng theo nghĩa vui nhất có thể.</p>
+      </div>
+    </div>
+
+    <div class="intro-card">
+      <span class="intro-icon">⏱️</span>
+      <div>
+        <div class="intro-card-title">Mỗi màn 5 phút</div>
+        <p class="intro-card-desc">Đủ ngắn để tim đập nhanh, đủ dài để tạo kỷ niệm. Nhìn lại replay là không nhịn được cười.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MAPS ── -->
+<section class="section" style="padding-top:1rem;">
+  <div class="section-tag tag-coral">🗺️ Lộ trình thi đấu</div>
+  <h2 class="section-title">3 màn — <em>thử thách tăng dần</em></h2>
+  <div class="maps-grid">
+    <div class="map-card map-card-1">
+      <span class="map-emoji">🍣</span>
+      <div class="map-round">Màn 1</div>
+      <div class="map-name">Khởi Động</div>
+      <div class="map-code">Map 1-2</div>
+      <p class="map-desc">Bếp cố định, không có bẫy. Tập trung làm quen nút bấm và phân công vai trò trong đội.</p>
+      <div class="map-food">🥢 Cuộn Sushi</div>
+    </div>
+    <div class="map-card map-card-2">
+      <span class="map-emoji">🥗</span>
+      <div class="map-round">Màn 2</div>
+      <div class="map-name">Chia Cắt</div>
+      <div class="map-code">Map 1-3</div>
+      <p class="map-desc">Dòng người qua lại chia đôi bếp. Phải ném nguyên liệu qua — giao tiếp kém là hỏng cả màn.</p>
+      <div class="map-food">🥗 Salad &amp; Súp</div>
+    </div>
+    <div class="map-card map-card-3">
+      <span class="map-emoji">🍔</span>
+      <div class="map-round">Màn 3</div>
+      <div class="map-name">Hỗn Loạn</div>
+      <div class="map-code">Map 1-5</div>
+      <p class="map-desc">Sàn khinh khí cầu liên tục dịch chuyển. Bàn đồ &amp; bếp đổi vị trí không ngừng — ứng biến hay về nhà.</p>
+      <div class="map-food">🍔 Burger</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TIMELINE ── -->
+<div class="timeline-wrap">
+  <div style="max-width:900px; margin:0 auto;">
+    <div class="section-tag tag-mint" style="margin-bottom:1rem;">⏱️ Luồng 1 lượt thi</div>
+    <h2 class="section-title" style="margin-bottom:2rem;">Khoảng <em>20 phút</em> mỗi đội</h2>
+    <div class="timeline">
+      <div class="tl-step">
+        <div class="tl-dot">1</div>
+        <div class="tl-label">Load game</div>
+        <div class="tl-time">1 phút</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">2</div>
+        <div class="tl-label">Hội ý chiến thuật</div>
+        <div class="tl-time">1 phút</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">3</div>
+        <div class="tl-label">Màn 1</div>
+        <div class="tl-time">5 phút</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">4</div>
+        <div class="tl-label">Màn 2</div>
+        <div class="tl-time">5 phút</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">5</div>
+        <div class="tl-label">Màn 3</div>
+        <div class="tl-time">5 phút</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">6</div>
+        <div class="tl-label">Tổng kết</div>
+        <div class="tl-time">3 phút</div>
+      </div>
+    </div>
+    <p style="text-align:center; font-size:.82rem; color:rgba(26,26,46,.45); margin-top:1.25rem; font-weight:600;">5 đội thi đấu ≈ tổng cộng <strong style="color:var(--dark)">1 tiếng 40 phút</strong></p>
+  </div>
+</div>
+
+<!-- ── ROLES ── -->
+<section class="section-band roles-band">
+  <div class="inner">
+    <div class="section-tag tag-dark">👥 Đội hình lý tưởng</div>
+    <h2 class="section-title light" style="margin-bottom:2rem;">4 người — <em>4 vai trò hoàn hảo</em></h2>
+    <div class="roles-grid">
+      <div class="role-card">
+        <span class="role-emoji">📣</span>
+        <div class="role-name">Nhạc Trưởng</div>
+        <p class="role-desc">Điều phối toàn bộ đội, hô lệnh ưu tiên, giữ nhịp khi mọi thứ hỗn loạn.</p>
+      </div>
+      <div class="role-card">
+        <span class="role-emoji">🔪</span>
+        <div class="role-name">Thợ Cắt</div>
+        <p class="role-desc">Cắt &amp; chuẩn bị nguyên liệu không ngừng. Đừng để bếp chờ!</p>
+      </div>
+      <div class="role-card">
+        <span class="role-emoji">👨‍🍳</span>
+        <div class="role-name">Đầu Bếp</div>
+        <p class="role-desc">Nấu, lắp ráp và hoàn thiện món. Canh lửa — cháy là mất điểm.</p>
+      </div>
+      <div class="role-card">
+        <span class="role-emoji">🧹</span>
+        <div class="role-name">Tạp Vụ</div>
+        <p class="role-desc">Rửa bát, vận chuyển và "cứu hỏa" khi mọi thứ sắp vỡ trận.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRIZES ── -->
+<section class="section">
+  <div class="section-tag tag-yellow">🏆 Giải thưởng</div>
+  <h2 class="section-title">Vinh quang <em>&amp; quà</em> đang chờ</h2>
+  <div class="prizes-stack">
+    <div class="prize-row gold">
+      <span class="prize-medal">🥇</span>
+      <div class="prize-info">
+        <div class="prize-place">Giải Nhất</div>
+        <p class="prize-desc">Danh hiệu "Huyền Thoại Bếp Cyber" · Phần thưởng từ quỹ giải đấu</p>
+      </div>
+      <span class="prize-badge badge-gold">Quán quân</span>
+    </div>
+    <div class="prize-row silver">
+      <span class="prize-medal">🥈</span>
+      <div class="prize-info">
+        <div class="prize-place">Giải Nhì</div>
+        <p class="prize-desc">Á quân — xứng đáng, nhưng chưa đủ để lên ngôi</p>
+      </div>
+      <span class="prize-badge badge-silver">Á quân</span>
+    </div>
+    <div class="prize-row bronze">
+      <span class="prize-medal">🥉</span>
+      <div class="prize-info">
+        <div class="prize-place">Giải Ba</div>
+        <p class="prize-desc">Top 3 — bếp núc vẫn còn nguyên, thành tích thì không</p>
+      </div>
+      <span class="prize-badge badge-bronze">Top 3</span>
+    </div>
+    <div class="prize-row fun">
+      <span class="prize-medal">🍅</span>
+      <div class="prize-info">
+        <div class="prize-place">Mâm Xôi Vàng</div>
+        <p class="prize-desc">Giải Cháy Bếp / Tấu Hài Nhất — combo giẻ lau + nước rửa chén cao cấp 🧴</p>
+      </div>
+      <span class="prize-badge badge-fun">Giải phụ</span>
+    </div>
+  </div>
+
+  <div style="background:#F8F0FF; border-radius:var(--radius); padding:1.25rem 1.5rem; margin-top:1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+    <span style="font-size:1.8rem;">🎟️</span>
+    <div>
+      <div style="font-weight:800; color:var(--dark); font-size:1rem; margin-bottom:.2rem;">Phí ghi danh</div>
+      <div style="font-size:.9rem; color:rgba(26,26,46,.65);">Dự kiến <strong style="color:var(--purple)">100.000 – 200.000đ / đội</strong> · Dùng 100% cho quỹ thưởng, snack &amp; nước uống cổ vũ</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── NEWBIE ── -->
+<section class="section" style="padding-top:0;">
+  <div class="section-tag tag-purple">🌱 Chưa từng chơi?</div>
+  <h2 class="section-title" style="margin-bottom:1.5rem;">Không vấn đề — <em>10 phút là hiểu</em></h2>
+  <div class="newbie-box">
+    <h3>Dành cho người mới hoàn toàn</h3>
+    <p>Overcooked! 2 không cần phản xạ nhanh hay kinh nghiệm game. Chỉ cần biết hợp tác &amp; la hét đúng lúc. Xem 2 clip ngắn dưới đây là đủ tự tin đăng ký ngay!</p>
+    <div class="newbie-btns">
+      <a href="https://www.youtube.com/results?search_query=overcooked+2+tutorial+beginner" target="_blank" class="btn-ghost">▶ Clip hướng dẫn cơ bản</a>
+      <a href="https://www.youtube.com/results?search_query=overcooked+2+funny+fail+compilation" target="_blank" class="btn-ghost">😂 Clip tấu hài mẫu</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── THIẾT BỊ ── -->
+<div style="background:#F0F4FF; padding:3.5rem 1.5rem;">
+  <div style="max-width:900px; margin:0 auto;">
+    <div class="section-tag tag-purple" style="margin-bottom:1rem;">🎮 Thiết bị thi đấu</div>
+    <h2 class="section-title" style="margin-bottom:2rem;">BTC chuẩn bị hết — <em>bạn chỉ cần đến</em></h2>
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="info-emoji">🎮</span>
+        <div class="info-label">Máy chơi game</div>
+        <div class="info-val">Nintendo Switch + Dock HDMI</div>
+      </div>
+      <div class="info-card">
+        <span class="info-emoji">📺</span>
+        <div class="info-label">Màn hình</div>
+        <div class="info-val">TV lớn hoặc máy chiếu</div>
+      </div>
+      <div class="info-card">
+        <span class="info-emoji">🕹️</span>
+        <div class="info-label">Tay cầm</div>
+        <div class="info-val">4 Joy-Con / tay cầm thứ ba, sạc đầy</div>
+      </div>
+      <div class="info-card">
+        <span class="info-emoji">🏟️</span>
+        <div class="info-label">Không khí</div>
+        <div class="info-val">Caster cầm mic + snack + nước cổ vũ</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ── -->
+<section class="section-band cta-band" id="dang-ky">
+  <div class="inner" style="text-align:center; padding:2rem 0;">
+    <div style="font-size:4rem; margin-bottom:1rem;">🔥</div>
+    <h2 class="section-title light" style="margin-bottom:.75rem;">Sẵn sàng <em>cháy bếp</em> chưa?</h2>
+    <p style="color:rgba(255,255,255,.62); font-size:1rem; max-width:420px; margin:0 auto 2rem; line-height:1.75;">Lập team 4 người, báo tên cho BTC và chờ ngày lên bếp. Không giới hạn số đội đăng ký!</p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <a href="#" class="btn-cta" style="background:var(--yellow); color:var(--dark); box-shadow:0 6px 0 #c9a200;">Đăng Ký Đội 🍳</a>
+      <a href="#" class="btn-ghost" style="font-size:.95rem;">Hỏi thêm BTC 💬</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p>🍳 <strong>Giải đấu Overcooked! 2</strong> · Sự kiện nội bộ · Nintendo Switch</p>
+  <p style="margin-top:.4rem;">Tổng điểm 3 màn · Đội cao nhất thắng · Chúc may mắn và đừng cháy bếp!</p>
+</footer>
+
+</body>
+</html>

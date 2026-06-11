@@ -1,0 +1,660 @@
+{
+  "league2026": {
+    "presence": {
+      "12wzhbdkmq9copye": {
+        "joinedAt": 1781173455210,
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+      },
+      "4u03a8gvmq9cozm2": {
+        "joinedAt": 1781173467727,
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+      },
+      "figzvi4jmpz8nt2b": {
+        "joinedAt": 1780562032359,
+        "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHT"
+      }
+    },
+    "state": {
+      "leagueConfig": {
+        "desc": "Vui - Khỏe - Có ích",
+        "drawPts": 1,
+        "format": "single",
+        "leagueName": "ODIN FIFA 2026 - League Manager",
+        "matchesPerDay": 2,
+        "season": "2026",
+        "winPts": 3
+      },
+      "manualDates": [
+        "2026-06-01",
+        "2026-05-26",
+        "2026-05-22",
+        "2026-05-22",
+        "2026-06-04",
+        "2026-05-25",
+        "2026-05-25",
+        "2026-05-27",
+        "2026-06-02",
+        "2026-05-22",
+        "2026-06-04",
+        "2026-05-25",
+        "2026-06-03",
+        "2026-05-28",
+        null,
+        "2026-05-26",
+        "2026-06-03",
+        "2026-05-22",
+        "2026-06-01",
+        "2026-06-04",
+        "2026-05-27"
+      ],
+      "matchDates": [
+        "2026-06-01",
+        "2026-05-26",
+        "2026-05-22",
+        "2026-05-22",
+        "2026-06-04",
+        "2026-05-25",
+        "2026-05-25",
+        "2026-05-27",
+        "2026-06-02",
+        "2026-05-22",
+        "2026-06-04",
+        "2026-05-25",
+        "2026-06-03",
+        "2026-05-28",
+        "2026-06-10",
+        "2026-05-26",
+        "2026-06-03",
+        "2026-05-22",
+        "2026-06-01",
+        "2026-06-04",
+        "2026-05-27"
+      ],
+      "memberEmails": {
+        "A": [
+          "",
+          ""
+        ],
+        "B": [
+          "",
+          ""
+        ],
+        "C": [
+          "",
+          ""
+        ],
+        "D": [
+          "",
+          ""
+        ],
+        "E": [
+          "",
+          ""
+        ],
+        "F": [
+          "",
+          ""
+        ],
+        "G": [
+          "",
+          ""
+        ]
+      },
+      "members": {
+        "A": [
+          "Phương Nguyễn 8",
+          "Khánh Võ"
+        ],
+        "B": [
+          "Vũ Nguyễn",
+          "Tâm Nguyễn"
+        ],
+        "C": [
+          "Quân Phạm",
+          "Phương Nguyễn 6"
+        ],
+        "D": [
+          "Nam Nguyễn",
+          "Mạnh Vũ"
+        ],
+        "E": [
+          "Trung Vương",
+          "Huy Phạm"
+        ],
+        "F": [
+          "Dũng Nguyễn 4",
+          "Tiến Lê"
+        ],
+        "G": [
+          "Nam Lê",
+          "Thìn Hoàng"
+        ]
+      },
+      "rankMovement": {
+        "A": {
+          "changedAt": 1780569643282,
+          "delta": 0,
+          "dir": "same",
+          "glowUntil": 1781070009330,
+          "isFresh": false,
+          "source": "result-save",
+          "tooltip": "Giữ nguyên thứ hạng sau trận gần nhất"
+        },
+        "B": {
+          "changedAt": 1780569643282,
+          "delta": 0,
+          "dir": "same",
+          "glowUntil": 1781070009330,
+          "isFresh": false,
+          "source": "result-save",
+          "tooltip": "Giữ nguyên thứ hạng sau trận gần nhất"
+        },
+        "C": {
+          "changedAt": 1780569643282,
+          "delta": 0,
+          "dir": "same",
+          "glowUntil": 1781070009330,
+          "isFresh": false,
+          "source": "result-save",
+          "tooltip": "Giữ nguyên thứ hạng sau trận gần nhất"
+        },
+        "D": {
+          "changedAt": 1780569643282,
+          "delta": 1,
+          "dir": "up",
+          "glowUntil": 1781070009330,
+          "isFresh": false,
+          "source": "result-save",
+          "tooltip": "Tăng 1 bậc sau trận gần nhất\nXếp trên đội dưới vì thứ tự bảng chữ cái"
+        },
+        "E": {
+          "changedAt": 1780569643282,
+          "delta": 0,
+          "dir": "same",
+          "glowUntil": 1781070009330,
+          "isFresh": false,
+          "source": "result-save",
+          "tooltip": "Giữ nguyên thứ hạng sau trận gần nhất"
+        },
+        "F": {
+          "changedAt": 1780569643282,
+          "delta": 0,
+          "dir": "same",
+          "glowUntil": 1781070009330,
+          "isFresh": false,
+          "source": "result-save",
+          "tooltip": "Giữ nguyên thứ hạng sau trận gần nhất"
+        },
+        "G": {
+          "changedAt": 1780569643282,
+          "delta": -1,
+          "dir": "down",
+          "glowUntil": 1781070009330,
+          "isFresh": false,
+          "source": "result-save",
+          "tooltip": "Giảm 1 bậc sau trận gần nhất\nXếp dưới vì thứ tự bảng chữ cái"
+        }
+      },
+      "results": [
+        {
+          "r1": 1,
+          "r2": 1,
+          "score1": 1,
+          "score2": 6,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Vũ Nguyễn"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 5,
+              "name": "Nam Lê"
+            },
+            {
+              "goals": 1,
+              "name": "Thìn Hoàng"
+            }
+          ],
+          "y1": 1,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 3,
+          "score2": 1,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Quân Phạm"
+            },
+            {
+              "goals": 2,
+              "name": "Phương Nguyễn 6"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 1,
+          "score2": 1,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Mạnh Vũ"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Huy Phạm"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 0,
+          "score2": 0,
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 1,
+          "score2": 1,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Vũ Nguyễn"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Huy Phạm"
+            }
+          ],
+          "y1": 1,
+          "y2": 1
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 1,
+          "score2": 4,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Quân Phạm"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 4,
+              "name": "Nam Nguyễn"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 4,
+          "score2": 0,
+          "scorers1": [
+            {
+              "goals": 2,
+              "name": "Phương Nguyễn 8"
+            },
+            {
+              "goals": 2,
+              "name": "Khánh Võ"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 2,
+          "score2": 1,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Nam Lê"
+            },
+            {
+              "goals": 1,
+              "name": "Thìn Hoàng"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Huy Phạm"
+            }
+          ],
+          "y1": 1,
+          "y2": 0
+        },
+        {
+          "r1": 1,
+          "r2": 0,
+          "score1": 1,
+          "score2": 0,
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 1,
+          "score2": 0,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Khánh Võ"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 1,
+          "score2": 4,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Dũng Nguyễn 4"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 2,
+              "name": "Nam Nguyễn"
+            },
+            {
+              "goals": 2,
+              "name": "Mạnh Vũ"
+            }
+          ],
+          "y1": 0,
+          "y2": 1
+        },
+        {
+          "r1": 0,
+          "r2": 1,
+          "score1": 0,
+          "score2": 1,
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Quân Phạm"
+            }
+          ],
+          "y1": 0,
+          "y2": 1
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 2,
+          "score2": 1,
+          "scorers1": [
+            {
+              "goals": 2,
+              "name": "Phương Nguyễn 8"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Nam Nguyễn"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 2,
+          "score2": 2,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Trung Vương"
+            },
+            {
+              "goals": 1,
+              "name": "Huy Phạm"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 2,
+              "name": "Phương Nguyễn 6"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 1,
+          "score1": 5,
+          "score2": 1,
+          "scorers1": [
+            {
+              "goals": 5,
+              "name": "Tiến Lê"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Tâm Nguyễn"
+            }
+          ],
+          "y1": 0,
+          "y2": 2
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 2,
+          "score2": 0,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Phương Nguyễn 8"
+            },
+            {
+              "goals": 1,
+              "name": "Khánh Võ"
+            }
+          ],
+          "y1": 0,
+          "y2": 1
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 3,
+          "score2": 0,
+          "scorers1": [
+            {
+              "goals": 2,
+              "name": "Nam Nguyễn"
+            },
+            {
+              "goals": 1,
+              "name": "Mạnh Vũ"
+            }
+          ],
+          "y1": 0,
+          "y2": 1
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 1,
+          "score2": 4,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Dũng Nguyễn 4"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 2,
+              "name": "Nam Lê"
+            },
+            {
+              "goals": 2,
+              "name": "Thìn Hoàng"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 1,
+          "score2": 1,
+          "scorers1": [
+            {
+              "goals": 1,
+              "name": "Phương Nguyễn 8"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Vũ Nguyễn"
+            }
+          ],
+          "y1": 0,
+          "y2": 1
+        },
+        {
+          "r1": 0,
+          "r2": 1,
+          "score1": 3,
+          "score2": 3,
+          "scorers1": [
+            {
+              "goals": 2,
+              "name": "Nam Nguyễn"
+            },
+            {
+              "goals": 1,
+              "name": "Mạnh Vũ"
+            }
+          ],
+          "scorers2": [
+            {
+              "goals": 1,
+              "name": "Nam Lê"
+            },
+            {
+              "goals": 2,
+              "name": "Thìn Hoàng"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        },
+        {
+          "r1": 0,
+          "r2": 0,
+          "score1": 3,
+          "score2": 0,
+          "scorers1": [
+            {
+              "goals": 3,
+              "name": "Huy Phạm"
+            }
+          ],
+          "y1": 0,
+          "y2": 0
+        }
+      ],
+      "scheduleOrder": [
+        13,
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        18,
+        0,
+        11,
+        15,
+        17,
+        20,
+        8,
+        16,
+        4,
+        12,
+        19,
+        10,
+        14
+      ],
+      "teamColors": {
+        "A": "#ec4899",
+        "B": "#14b8a6",
+        "C": "#22c55e",
+        "D": "#00adef",
+        "E": "#06b6d4",
+        "F": "#ef4444",
+        "G": "#ec4899"
+      },
+      "teamEmojis": {
+        "A": "💪",
+        "B": "😈",
+        "C": "🦁",
+        "D": "🏋️",
+        "E": "🦉",
+        "F": "🎭",
+        "G": "🤸"
+      },
+      "teamIds": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "teams": {
+        "A": "Ca sĩ Khánh Phương",
+        "B": "Tâm - Vũ",
+        "C": "Quân - Phương 6",
+        "D": "Nam Nguyễn - Mạnh",
+        "E": "Trung - Huy",
+        "F": "Dùng Tiền khao giải",
+        "G": "Nam Lê - Thìn"
+      }
+    },
+    "visitCount": 753
+  }
+}

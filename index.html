@@ -943,7 +943,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 /* Toast & Loading */
 .toast{position:fixed;bottom:18px;right:18px;z-index:9999;padding:11px 16px;border-radius:9px;font-size:.84rem;font-weight:600;transform:translateY(60px);opacity:0;transition:all .28s;display:flex;align-items:center;gap:7px;pointer-events:none;max-width:calc(100vw - 36px);}
 .toast.show{transform:translateY(0);opacity:1;}
-.loading-overlay{position:fixed;inset:0;z-index:9998;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .5s;opacity:1;}
+.loading-overlay{position:fixed;inset:0;z-index:9998;background:var(--bg-deep);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .5s;opacity:1;}
+.loading-overlay.visible{display:flex;}
 .loading-overlay.hidden{opacity:0;pointer-events:none;display:none;}
 .loading-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
 .loading-text{color:var(--text-muted);font-size:.86rem;letter-spacing:1px;}
@@ -7767,6 +7768,7 @@ window.clearMarathonStageScores = () => {
 /* ═══════════════════ BOOT ═══════════════════ */
 updateAuthUI();
 upgradeStaticCardInputIcons();
+document.getElementById('loadingOverlay').classList.add('visible'); // Show loading overlay
 subscribePlatform(); // replaces subscribeFirebase()
 
 window.addEventListener('resize', () => {

@@ -3380,6 +3380,7 @@ function subscribeFirebase() {
     if (!fbReady) {
       fbReady = true;
       document.getElementById('loadingOverlay').classList.add('hidden');
+      try { window.scrollTo(0,0); } catch(e){}
     }
 
     setSyncState('connected');
@@ -3396,6 +3397,7 @@ function subscribeFirebase() {
       if (!fbReady) {
         fbReady = true;
         document.getElementById('loadingOverlay').classList.add('hidden');
+        try { window.scrollTo(0,0); } catch(e){}
         BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
         TOTAL = BASE_SCHEDULE.length;
         matchDates = buildSeasonDates();
@@ -6839,7 +6841,7 @@ window.generateResetCode = () => {
   _resetCode = String(Math.floor(100000 + Math.random() * 900000));
   const d = document.getElementById('resetCodeDisplay'), i = document.getElementById('resetCodeInput'), h = document.getElementById('resetCodeHint'), c = document.getElementById('resetCodeCheck'), b = document.getElementById('resetConfirmBtn');
   if (d) { d.textContent = _resetCode; d.style.transform = 'scale(1.12)'; d.style.color = '#ff6b6b'; setTimeout(() => { d.style.transform = 'scale(1)'; d.style.color = 'var(--red)'; }, 200); }
-  if (i) { i.value = ''; i.focus(); i.style.borderColor = 'var(--border)'; i.style.boxShadow = 'none'; }
+  if (i) { i.value = ''; try { i.focus({preventScroll:true}); } catch(e) { try { i.focus(); } catch(e){} } i.style.borderColor = 'var(--border)'; i.style.boxShadow = 'none'; }
   if (h) { h.textContent = 'Nhập chính xác 6 chữ số ở trên'; h.style.color = 'var(--text-muted)'; }
   if (c) c.textContent = '';
   if (b) { b.disabled = true; b.style.opacity = '.38'; b.style.cursor = 'not-allowed'; }
@@ -7101,6 +7103,7 @@ function subscribePlatform() {
     if (!fbReady) {
       fbReady = true;
       document.getElementById('loadingOverlay').classList.add('hidden');
+      try { window.scrollTo(0,0); } catch(e){}
     }
     setSyncState('connected');
     updateHeaderTitle();
@@ -7125,6 +7128,7 @@ function subscribePlatform() {
         if (!fbReady) {
           fbReady = true;
           document.getElementById('loadingOverlay').classList.add('hidden');
+          try { window.scrollTo(0,0); } catch(e){}
         }
         setSyncState('connected');
         updateHeaderTitle();
@@ -7135,6 +7139,7 @@ function subscribePlatform() {
         if (!fbReady) {
           fbReady = true;
           document.getElementById('loadingOverlay').classList.add('hidden');
+          try { window.scrollTo(0,0); } catch(e){}
         }
         initFallback();
         renderAll();
@@ -7203,6 +7208,7 @@ async function migrateFromLegacy() {
     if (!fbReady) {
       fbReady = true;
       document.getElementById('loadingOverlay').classList.add('hidden');
+      try { window.scrollTo(0,0); } catch(e){}
     }
     setSyncState('connected');
     updateHeaderTitle();
@@ -7215,6 +7221,7 @@ async function migrateFromLegacy() {
     if (!fbReady) {
       fbReady = true;
       document.getElementById('loadingOverlay').classList.add('hidden');
+      try { window.scrollTo(0,0); } catch(e){}
     }
     renderAll();
   }
@@ -7708,7 +7715,7 @@ window.toggleMarathonStageNameEdit = () => {
   if (wrap.style.display === 'none') {
     nameInput.value = stageNames[String(_editMarathonStage)] || '';
     wrap.style.display = '';
-    nameInput.focus();
+    try { nameInput.focus({preventScroll:true}); } catch(e) { try { nameInput.focus(); } catch(e){} }
   } else {
     wrap.style.display = 'none';
   }
@@ -7819,7 +7826,7 @@ function syncFixtureCardHeight() {
   if (rightCard) {
     rightCard.style.height = availH + 'px';
     rightCard.style.maxHeight = availH + 'px';
-    rightCard.style.overflowY = 'hidden';
+    rightCard.style.overflowY = 'auto';
   }
 }
 

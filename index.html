@@ -488,6 +488,30 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   overflow: visible;      /* Cho phép bảng hiển thị hết */
 }
 
+/* Thêm vào sau rule #standingsTableParentCard (~dòng 484) */
+#standingsCard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#leagueStandingsPanel,
+#marathonStandingsPanel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#standingsScrollWrap,
+#marathonStandingsScrollWrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 /* Podium */
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px;padding:8px 4px 0;}
 .podium-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;max-width:180px;min-width:0;}
@@ -7585,11 +7609,16 @@ function syncFixtureCardHeight() {
   card.style.maxHeight = availH + 'px';
 
   // Chiều cao card BXH bằng card trái, nội dung scroll qua #standingsScrollWrap
+  // Dòng ~7582-7588 — thay toàn bộ block rightCard
   const rightCard = document.querySelector('.grid-2 .card:last-child');
   if (rightCard) {
     rightCard.style.height = availH + 'px';
     rightCard.style.maxHeight = availH + 'px';
-    rightCard.style.overflowY = 'hidden';
+    rightCard.style.overflowY = 'hidden';   // ← XÓA dòng này
+    // Thêm vào:
+    rightCard.style.overflow = 'hidden';    // card ngoài vẫn clip border-radius
+    rightCard.style.display = 'flex';
+    rightCard.style.flexDirection = 'column';
   }
 }
 

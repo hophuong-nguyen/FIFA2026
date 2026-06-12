@@ -120,7 +120,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
   gap: 16px;
   width: 100%;
-  align-items: start;
+  align-items: start;       /* giữ nguyên: mỗi cột tự cao theo nội dung */
   background: transparent;
 }
 
@@ -131,7 +131,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   display: flex;
   flex-direction: column;
   min-height: 0;
-  height: 100%;
+  height: auto;             /* ← đổi từ 100% → auto, tránh xung đột với align-items:start */
   min-width: 0;
   width: 100%;
   max-width: 100%;
@@ -144,7 +144,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 80vh;             /* ← explicit height để fixture-list bên trong có thể scroll */
+  min-height: 400px;
 }
+
 /* Cột phải (Bảng xếp hạng) */
 .card:last-child {
   height: auto;
@@ -153,12 +156,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 @media (max-width: 768px) {
   .card:first-child {
+    height: auto;
     max-height: 80vh;
   }
   .card:last-child {
     max-height: none;
   }
 }
+
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--bg-card));}
 .card-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--accent);letter-spacing:.3px;}
 .card-title .icon{width:30px;height:30px;border-radius:8px;background:var(--accent2-a10);border:1px solid var(--accent2-a18);display:flex;align-items:center;justify-content:center;font-size:15px;}

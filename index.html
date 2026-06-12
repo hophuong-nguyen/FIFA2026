@@ -2538,13 +2538,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   <div class="header">
     <div class="header-left">
       <div class="header-logo">⚽</div>
-      <div class="header-title">
-        <h1>FIFA LEAGUE MANAGER</h1>
-        <p>⚡ Pro Edition · Season 2026 · Real-time Sync</p>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div class="header-title">
+          <h1>FIFA LEAGUE MANAGER</h1>
+          <p>⚡ Pro Edition · Season 2026 · Real-time Sync</p>
+        </div>        
       </div>
     </div>
-    <div class="header-right">
-    <!-- League Selector -->
+    <!-- THAY THẾ <div class="header-right"> ... <div class="header-actions"> -->
+<div class="header-right">
+  <div class="header-actions">
+    <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
+      <div class="auth-dot"></div>
+      <span id="authLabel">Đăng nhập</span>
+    </div>
     <div style="position:relative;" id="leagueSelectorWrap">
       <button class="league-selector-btn" id="leagueSelectorBtn" onclick="toggleLeagueDropdown()">
         <span id="currentLeagueEmoji">⚽</span>
@@ -2559,17 +2566,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         </div>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="auth-badge" id="authBadge" onclick="handleAuthClick()">
-        <div class="auth-dot"></div>
-        <span id="authLabel">Đăng nhập</span>
-      </div>
-      <button class="btn-flat" id="btnTheme" onclick="openThemeModal()">🎨</button>
-      <button class="btn-flat" id="btnAbout">Info</button>
-      <button class="btn-flat" onclick="openTeamModal()">🛡️ <span class="btn-label">Đội</span></button>
-      <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">⚽ <span class="btn-label">Kết quả</span><span class="admin-lock" id="lockResult">🔒</span></button>
-      <button class="btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">🔄 <span class="btn-label">Reset</span><span class="admin-lock" id="lockReset">🔒</span></button>
-    </div>
+    <button class="btn-flat" id="btnTheme" onclick="openThemeModal()">🎨</button>
+    <button class="btn-flat" id="btnAbout">Info</button>
+    <button class="btn-flat" onclick="openTeamModal()">🛡️ <span class="btn-label">Đội</span></button>
+    <button class="btn-flat" id="btnResult" onclick="requireAdmin(()=>openResultModal(-1))">⚽ <span class="btn-label">Kết quả</span><span class="admin-lock" id="lockResult">🔒</span></button>
+    <button class="btn-flat btn-flat-danger" id="btnReset" onclick="requireAdmin(()=>openResetModal())">🔄 <span class="btn-label">Reset</span><span class="admin-lock" id="lockReset">🔒</span></button>
+  </div>
 
   <!-- Presence bar: chips + sync inline -->
   <div class="presence-bar">
@@ -7101,20 +7103,58 @@ function renderLeagueSelector() {
 window.toggleLeagueDropdown = () => {
   const dd = document.getElementById('leagueDropdown');
   const btn = document.getElementById('leagueSelectorBtn');
-  const isHidden = dd.style.display === 'none';
+  const wrap = document.getElementById('leagueSelectorWrap');
 
-  if (isHidden) {
-    // Teleport ra body để thoát overflow:hidden của header
-    document.body.appendChild(dd);
-    const rect = btn.getBoundingClientRect();
-    dd.style.position = 'fixed';
-    dd.style.top = (rect.bottom + 6) + 'px';
-    dd.style.left = rect.left + 'px';
-    dd.style.display = 'block';
-  } else {
+  if (dd.style.display !== 'none') {
     dd.style.display = 'none';
+    dd.style.position = '';
+    dd.style.top = '';
+    dd.style.left = '';
+    if (dd.parentElement !== wrap) wrap.appendChild(dd);
+    return;
   }
+
+  // Teleport ra body
+  document.body.appendChild(dd);
+  dd.style.position = 'fixed';
+  dd.style.zIndex = '9999';
+  dd.style.display = 'block';
+  _positionLeagueDropdown(btn, dd);
 };
+
+function _positionLeagueDropdown(btn, dd) {
+  const rect = btn.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 6) + 'px';
+  dd.style.right = '';
+  dd.style.left = rect.left + 'px';
+
+  // Chống tràn bên phải
+  requestAnimationFrame(() => {
+    const ddRect = dd.getBoundingClientRect();
+    if (ddRect.right > window.innerWidth - 8) {
+      dd.style.left = (window.innerWidth - ddRect.width - 8) + 'px';
+    }
+  });
+}
+
+// Đóng dropdown — trả dd về wrap
+function closeLeagueDropdown() {
+  const dd = document.getElementById('leagueDropdown');
+  const wrap = document.getElementById('leagueSelectorWrap');
+  dd.style.display = 'none';
+  dd.style.position = '';
+  dd.style.top = '';
+  dd.style.left = '';
+  if (dd.parentElement !== wrap) wrap.appendChild(dd);
+}
+
+// Cập nhật vị trí khi resize
+window.addEventListener('resize', () => {
+  const dd = document.getElementById('leagueDropdown');
+  if (dd.style.display === 'none') return;
+  const btn = document.getElementById('leagueSelectorBtn');
+  _positionLeagueDropdown(btn, dd);
+});
 
 // Close dropdown on outside click
 document.addEventListener('click', (e) => {

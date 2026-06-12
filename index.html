@@ -2244,9 +2244,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     </div>
     <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg-deep);border-radius:10px;padding:4px;border:1px solid var(--border);">
       <button id="tab-teams" onclick="switchTeamTab('teams')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:var(--accent-a12);color:var(--accent);">🛡️ Danh sách đội</button>
-      <button id="tab-settings" onclick="switchTeamTab('settings')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:transparent;color:var(--text-muted);">🔒 Cài đặt giải đấu</button>
-      <button id="tab-marathonCfg" onclick="switchTeamTab('marathonCfg')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:transparent;color:var(--text-muted);">🎮 Marathon</button>
+      <button id="tab-settings" onclick="switchTeamTab('settings')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:transparent;color:var(--text-muted);">⚙️ Cài đặt giải đấu</button>
     </div>
+
+    <!-- Tab: Danh sách đội -->
     <div id="tab-content-teams">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <div style="font-size:.78rem;color:var(--text-muted);">Click icon để đổi emoji & màu • Kéo để sắp xếp</div>
@@ -2265,51 +2266,74 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         </div>
       </div>
     </div>
+
+    <!-- Tab: Cài đặt giải đấu -->
     <div id="tab-content-settings" style="display:none;">
+
+      <!-- Thông tin chung -->
+      <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:8px;">📋 Thông tin chung</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-        <div class="form-group"><label class="form-label">Tên giải đấu</label><input class="form-input" id="cfg-leagueName" placeholder="FIFA League 2026"></div>
+        <div class="form-group" style="display:flex;gap:10px;align-items:flex-end;grid-column:1/-1;">
+          <div class="form-group" style="margin:0;flex-shrink:0;">
+            <label class="form-label">Icon</label>
+            <button id="cfgLeagueEmojiBtn" onclick="openEmojiPickerFor('cfg-leagueEmoji','cfgLeagueEmojiBtn')"
+              style="width:48px;height:42px;font-size:1.5rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-deep);cursor:pointer;display:flex;align-items:center;justify-content:center;">⚽</button>
+            <input type="hidden" id="cfg-leagueEmoji" value="⚽">
+          </div>
+          <div class="form-group" style="margin:0;flex:1;">
+            <label class="form-label">Tên giải đấu</label>
+            <input class="form-input" id="cfg-leagueName" placeholder="FIFA League 2026">
+          </div>
+        </div>
         <div class="form-group"><label class="form-label">Mùa giải / Năm</label><input class="form-input" id="cfg-season" placeholder="2026"></div>
-        <div class="form-group"><label class="form-label">Số trận / ngày</label><select class="form-select" id="cfg-matchesPerDay"><option value="1">1 trận</option><option value="2">2 trận</option><option value="3" selected>3 trận</option><option value="4">4 trận</option><option value="5">5 trận</option></select></div>
-        <div class="form-group"><label class="form-label">Thể thức</label><select class="form-select" id="cfg-format"><option value="single">Lượt đi (1 lượt)</option><option value="double">Lượt đi + về (2 lượt)</option></select></div>
-        <div class="form-group"><label class="form-label">Điểm thắng</label><input class="form-input" id="cfg-winPts" type="number" min="1" value="3"></div>
-        <div class="form-group"><label class="form-label">Điểm hòa</label><input class="form-input" id="cfg-drawPts" type="number" min="0" value="1"></div>
+        <div class="form-group"><label class="form-label">Loại hình</label>
+          <select class="form-select" id="cfg-leagueType" onchange="onCfgLeagueTypeChange()">
+            <option value="league">⚽ Football League</option>
+            <option value="marathon">🎮 Marathon / Arcade</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Mô tả</label><textarea class="form-input" id="cfg-desc" rows="2" style="resize:vertical;min-height:56px;" placeholder="Giải bóng đá nội bộ..."></textarea></div>
       </div>
-      <div class="form-group" style="margin-top:4px;"><label class="form-label">Mô tả giải đấu</label><textarea class="form-input" id="cfg-desc" rows="2" style="resize:vertical;min-height:56px;" placeholder="Giải bóng đá nội bộ..."></textarea></div>
-      <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-top:4px;">
-        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">Thông tin tổng quan</div>
+
+      <!-- Section League -->
+      <div id="cfgSectionLeague">
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:14px 0 8px;">⚽ Thể thức</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group"><label class="form-label">Số trận / ngày</label><select class="form-select" id="cfg-matchesPerDay"><option value="1">1 trận</option><option value="2">2 trận</option><option value="3" selected>3 trận</option><option value="4">4 trận</option><option value="5">5 trận</option></select></div>
+          <div class="form-group"><label class="form-label">Lượt đấu</label><select class="form-select" id="cfg-format"><option value="single">Lượt đi (1 lượt)</option><option value="double">Lượt đi + về (2 lượt)</option></select></div>
+        </div>
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:12px 0 8px;">🏅 Tính điểm</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group"><label class="form-label">Điểm thắng</label><input class="form-input" id="cfg-winPts" type="number" min="1" value="3"></div>
+          <div class="form-group"><label class="form-label">Điểm hòa</label><input class="form-input" id="cfg-drawPts" type="number" min="0" value="1"></div>
+        </div>
+      </div>
+
+      <!-- Section Marathon -->
+      <div id="cfgSectionMarathon" style="display:none;">
+        <div style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:14px 0 8px;">🎮 Cấu hình Marathon</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group"><label class="form-label">Tên game / sự kiện</label><input class="form-input" id="cfg-marathonGame" placeholder="Mario Kart, Pacman, Metal Slug..."></div>
+          <div class="form-group"><label class="form-label">Số màn chơi (Stages)</label><input class="form-input" id="cfg-stageCount" type="number" min="1" max="100" value="10"></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Xếp hạng theo</label>
+            <select class="form-select" id="cfg-rankingMethod">
+              <option value="totalScore">Tổng điểm cao nhất</option>
+              <option value="avgScore">Điểm trung bình cao nhất</option>
+              <option value="stagesWon">Số màn thắng nhiều nhất</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tổng quan -->
+      <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-top:14px;">
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">📊 Tổng quan mùa giải</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="leagueInfoGrid"></div>
       </div>
+
       <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
         <button class="btn-flat" onclick="closeModal('teamModal')">Hủy</button>
         <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="saveLeagueConfig()">💾 Lưu cài đặt</button>
-      </div>
-    </div>
-    <!-- Marathon config tab -->
-    <div id="tab-content-marathonCfg" style="display:none;">
-      <div style="background:rgba(197,248,81,.05);border:1px solid var(--accent-a30);border-radius:9px;padding:12px 14px;margin-bottom:14px;font-size:.8rem;color:var(--text-muted);line-height:1.6;">
-        🎮 Tab này chỉ áp dụng khi loại giải đấu là <strong style="color:var(--accent)">Marathon</strong>. Cấu hình để nhập điểm theo từng màn chơi / chặng đua.
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group">
-          <label class="form-label">Tên game / sự kiện</label>
-          <input class="form-input" id="cfg-marathonGame" placeholder="Mario Kart, Pacman, Metal Slug...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Số màn chơi (Stages)</label>
-          <input class="form-input" id="cfg-stageCount" type="number" min="1" max="100" value="10">
-        </div>
-        <div class="form-group" style="grid-column:1/-1;">
-          <label class="form-label">Phương pháp xếp hạng</label>
-          <select class="form-select" id="cfg-rankingMethod">
-            <option value="totalScore">Tổng điểm cao nhất</option>
-            <option value="avgScore">Điểm trung bình cao nhất</option>
-            <option value="stagesWon">Số màn thắng nhiều nhất</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
-        <button class="btn-flat" onclick="closeModal('teamModal')">Hủy</button>
-        <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="saveMarathonConfig()">💾 Lưu cấu hình Marathon</button>
       </div>
     </div>
   </div>
@@ -2440,62 +2464,138 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 </div>
 
 <!-- CREATE / EDIT LEAGUE MODAL -->
+<!-- THAY THẾ toàn bộ #createLeagueModal -->
 <div class="modal-overlay" id="createLeagueModal">
-  <div class="modal-box" style="max-width:500px;">
+  <div class="modal-box" style="max-width:540px;">
     <div class="modal-header">
       <div class="modal-title" id="createLeagueTitleEl">🏆 Tạo giải đấu mới</div>
       <button class="modal-close" onclick="closeModal('createLeagueModal')">✕</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="form-group" style="grid-column:1/-1;">
-        <label class="form-label">Tên giải đấu</label>
-        <input class="form-input" id="newLeagueName" placeholder="FIFA Premier League 2026">
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg-deep);border-radius:10px;padding:4px;border:1px solid var(--border);">
+      <button id="clTab-info" onclick="switchCreateLeagueTab('info')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:var(--accent-a12);color:var(--accent);">📋 Thông tin</button>
+      <button id="clTab-format" onclick="switchCreateLeagueTab('format')" style="flex:1;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .18s;background:transparent;color:var(--text-muted);">⚙️ Thể thức</button>
+    </div>
+
+    <!-- Tab: Thông tin chung -->
+    <div id="clTab-content-info">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group" style="grid-column:1/-1;display:flex;gap:10px;align-items:flex-end;">
+          <!-- Emoji picker button -->
+          <div class="form-group" style="margin:0;flex-shrink:0;">
+            <label class="form-label">Icon</label>
+            <button id="newLeagueEmojiBtn" onclick="openEmojiPickerFor('newLeagueEmoji','newLeagueEmojiBtn')"
+              style="width:48px;height:42px;font-size:1.5rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-deep);cursor:pointer;display:flex;align-items:center;justify-content:center;">⚽</button>
+            <input type="hidden" id="newLeagueEmoji" value="⚽">
+          </div>
+          <div class="form-group" style="margin:0;flex:1;">
+            <label class="form-label">Tên giải đấu</label>
+            <input class="form-input" id="newLeagueName" placeholder="FIFA Premier League 2026">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mùa giải</label>
+          <input class="form-input" id="newLeagueSeason" placeholder="2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Loại hình</label>
+          <select class="form-select" id="newLeagueType" onchange="onNewLeagueTypeChange()">
+            <option value="league">⚽ Football League</option>
+            <option value="marathon">🎮 Marathon / Arcade</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Mô tả</label>
+          <input class="form-input" id="newLeagueDesc" placeholder="Giải bóng đá nội bộ...">
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Loại hình</label>
-        <select class="form-select" id="newLeagueType" onchange="onNewLeagueTypeChange()">
-          <option value="league">⚽ Football League</option>
-          <option value="marathon">🎮 Marathon / Arcade</option>
-        </select>
+
+      <!-- Thống kê tổng quan (chỉ hiện khi edit, ẩn khi tạo mới) -->
+      <div id="clLeagueStats" style="display:none;background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-top:4px;">
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">📊 Tổng quan mùa giải</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="clLeagueInfoGrid"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Icon giải đấu</label>
-        <input class="form-input" id="newLeagueEmoji" value="⚽" placeholder="⚽" style="font-size:1.2rem;text-align:center;">
-      </div>
-      <div class="form-group" style="grid-column:1/-1;">
-        <label class="form-label">Mô tả</label>
-        <input class="form-input" id="newLeagueDesc" placeholder="Giải bóng đá nội bộ...">
+
+      <!-- Clone option -->
+      <div id="cloneLeagueSection" style="margin-top:10px;padding:10px 12px;border-radius:9px;background:var(--bg-deep);border:1px solid var(--border);">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;">
+          <input type="checkbox" id="cloneFromCurrent" style="accent-color:var(--accent);">
+          <span>Nhân bản cấu hình từ giải hiện tại <span style="color:var(--text-muted);font-size:.74rem;">(giữ lại đội, màu, cài đặt)</span></span>
+        </label>
       </div>
     </div>
-    <!-- Marathon config section -->
-    <div id="marathonConfigSection" style="display:none;margin-top:4px;padding:12px;border-radius:9px;background:var(--bg-deep);border:1px solid var(--border);">
-      <div style="font-size:.72rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🎮 Cấu hình Marathon</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group">
-          <label class="form-label">Tên game / sự kiện</label>
-          <input class="form-input" id="newMarathonGame" placeholder="Mario Kart, Pacman...">
+
+    <!-- Tab: Thể thức & Cài đặt -->
+    <div id="clTab-content-format" style="display:none;">
+
+      <!-- LEAGUE section -->
+      <div id="clFormatLeague">
+        <div style="font-size:.7rem;color:var(--accent2,#3145eb);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:10px;">⚽ Thể thức League</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label">Số trận / ngày</label>
+            <select class="form-select" id="newMatchesPerDay">
+              <option value="1">1 trận</option><option value="2">2 trận</option>
+              <option value="3" selected>3 trận</option><option value="4">4 trận</option><option value="5">5 trận</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lượt đấu</label>
+            <select class="form-select" id="newFormat">
+              <option value="single">Lượt đi (1 lượt)</option>
+              <option value="double">Lượt đi + về (2 lượt)</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Số màn chơi (Stages)</label>
-          <input class="form-input" id="newMarathonStages" type="number" min="1" max="100" value="10" placeholder="10">
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:12px 0 8px;">🏅 Tính điểm</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div class="form-group">
+            <label class="form-label">Điểm thắng</label>
+            <input class="form-input" id="newWinPts" type="number" min="1" value="3">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Điểm hòa</label>
+            <input class="form-input" id="newDrawPts" type="number" min="0" value="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Điểm thua</label>
+            <input class="form-input" id="newLosePts" type="number" min="0" value="0" disabled style="opacity:.5;">
+          </div>
+        </div>
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:12px 0 8px;">📊 Xếp hạng (ưu tiên lần lượt)</div>
+        <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:.79rem;color:var(--text-muted);line-height:1.8;">
+          1. Tổng điểm → 2. Hiệu số bàn thắng → 3. Tổng bàn thắng → 4. Đối đầu trực tiếp → 5. Fair-play (thẻ phạt)
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Xếp hạng theo</label>
+
+      <!-- MARATHON section -->
+      <div id="clFormatMarathon" style="display:none;">
+        <div style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:10px;">🎮 Thể thức Marathon / Arcade</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label">Tên game / sự kiện</label>
+            <input class="form-input" id="newMarathonGame" placeholder="Mario Kart, Metal Slug...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số màn chơi (Stages)</label>
+            <input class="form-input" id="newMarathonStages" type="number" min="1" max="100" value="10">
+          </div>
+        </div>
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:12px 0 8px;">🏅 Tính điểm</div>
+        <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:.79rem;color:var(--text-muted);line-height:1.8;">
+          Nhập tay điểm số từng người/đội sau mỗi màn chơi — không tính tự động.
+        </div>
+        <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:12px 0 8px;">📊 Xếp hạng theo</div>
         <select class="form-select" id="newMarathonRanking">
           <option value="totalScore">Tổng điểm cao nhất</option>
           <option value="avgScore">Điểm trung bình cao nhất</option>
           <option value="stagesWon">Số màn thắng nhiều nhất</option>
         </select>
       </div>
+
     </div>
-    <!-- Clone option -->
-    <div id="cloneLeagueSection" style="margin-top:10px;padding:10px 12px;border-radius:9px;background:var(--bg-deep);border:1px solid var(--border);">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;">
-        <input type="checkbox" id="cloneFromCurrent" style="accent-color:var(--accent);">
-        <span>Nhân bản cấu hình từ giải hiện tại <span style="color:var(--text-muted);font-size:.74rem;">(giữ lại đội, màu, cài đặt)</span></span>
-      </label>
-    </div>
+
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
       <button class="btn-flat" onclick="closeModal('createLeagueModal')">Hủy</button>
       <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="saveCreateLeague()" id="btnSaveCreateLeague">🏆 Tạo giải đấu</button>
@@ -2524,7 +2624,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     </div>
     <div id="marathonScoreInputs" class="round-inputs-grid"></div>
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:space-between;flex-wrap:wrap;">
-      <button class="btn-flat btn-flat-danger btn-sm" onclick="clearMarathonStageScores()">↩️ Xóa điểm màn này</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-flat btn-flat-danger btn-sm" onclick="clearMarathonStageScores()">↩️ Xóa điểm</button>
+        <button class="btn-flat btn-flat-danger btn-sm" onclick="deleteMarathonStage()">🗑️ Xóa stage</button>
+      </div>
       <div style="display:flex;gap:8px;">
         <button class="btn-flat" onclick="closeModal('marathonScoreModal')">Hủy</button>
         <button class="btn-flat" style="border-color:var(--accent-a30);color:var(--accent);" onclick="saveMarathonScores()">💾 Lưu điểm</button>
@@ -2610,6 +2713,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         </div>
       </div>
       <div class="fixtures-wrap" id="fixturesList"></div>
+    </div>
+    <!-- THÊM VÀO ngay sau </div> đóng của #fixturesCard -->
+    <div class="card" id="marathonFixturesCard" style="display:none;">
+      <div class="card-title"><div class="icon">🎮</div><span id="marathonFixturesTitle">Lịch thi đấu Marathon</span>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn-flat" id="btnMarathonAddMatch" onclick="requireAdmin(openMarathonAddMatchModal)" style="font-size:.72rem;padding:4px 8px;color:var(--accent);border-color:var(--accent-a30);">➕ Thêm trận</button>
+          <button class="btn-flat" id="btnMarathonAutoFixture" onclick="requireAdmin(openMarathonAutoModal)" style="font-size:.72rem;padding:4px 8px;">⚡ Tự động</button>
+        </div>
+      </div>
+      <div id="marathonFixturesList" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;margin-top:8px;"></div>
     </div>
     <!-- Right column: standings + marathon panel -->
     <div class="card" id="standingsCard">
@@ -6470,20 +6583,23 @@ window.teamDrop = (e, targetId) => { e.preventDefault(); if (!_dragTeamId || _dr
 window.teamDragEnd = () => { _dragTeamId = null; document.querySelectorAll('.team-entry').forEach(el => el.style.opacity = '1'); };
 
 window.switchTeamTab = (tab) => {
-  if ((tab === 'settings' || tab === 'marathonCfg') && !isAdmin) {
+  if (tab === 'settings' && !isAdmin) {
     openModal('loginModal');
     showToast('🔒 Cần đăng nhập Admin', 'warn');
     return;
   }
-  ['teams', 'settings', 'marathonCfg'].forEach(t => {
-    const btn = document.getElementById(`tab-${t}`), content = document.getElementById(`tab-content-${t}`), active = t === tab;
+  ['teams', 'settings'].forEach(t => {
+    const btn = document.getElementById(`tab-${t}`);
+    const content = document.getElementById(`tab-content-${t}`);
+    const active = t === tab;
     if (btn) { btn.style.background = active ? 'var(--accent-a12)' : 'transparent'; btn.style.color = active ? 'var(--accent)' : 'var(--text-muted)'; }
     if (content) content.style.display = active ? 'block' : 'none';
   });
   if (tab === 'settings') renderLeagueConfigTab();
-  if (tab === 'marathonCfg') renderMarathonConfigTab();
 };
 
+
+/*
 function renderMarathonConfigTab() {
   const g = document.getElementById('cfg-marathonGame');
   const s = document.getElementById('cfg-stageCount');
@@ -6492,7 +6608,9 @@ function renderMarathonConfigTab() {
   if (s) s.value = leagueConfig.stageCount || 10;
   if (r) r.value = leagueConfig.rankingMethod || 'totalScore';
 }
+*/
 
+/*
 window.saveMarathonConfig = () => {
   leagueConfig.marathonGame  = document.getElementById('cfg-marathonGame')?.value.trim() || '';
   leagueConfig.stageCount    = Number(document.getElementById('cfg-stageCount')?.value) || 10;
@@ -6501,6 +6619,8 @@ window.saveMarathonConfig = () => {
   closeModal('teamModal');
   showToast('✅ Đã lưu cấu hình Marathon!');
 };
+*/
+
 window.addMemberToTeam = (id) => {
   _tempMembers[id] = [...(_tempMembers[id] || ['','']), ''];
   _tempMemberEmails[id] = [...(_tempMemberEmails[id] || []), ''];
@@ -6516,63 +6636,109 @@ window.addMemberToTeam = (id) => {
 };
 
 function renderLeagueConfigTab() {
+  const type = leagueConfig.leagueType || 'league';
+  const isMarathon = type === 'marathon';
+
+  // Thông tin chung
   const fields = {
     'cfg-leagueName': leagueConfig.leagueName || '',
     'cfg-season': leagueConfig.season || '2026',
     'cfg-matchesPerDay': leagueConfig.matchesPerDay || 3,
     'cfg-format': leagueConfig.format || 'single',
-    'cfg-winPts': leagueConfig.winPts || 3,
-    'cfg-drawPts': leagueConfig.drawPts || 1,
-    'cfg-desc': leagueConfig.desc || ''
+    'cfg-winPts': leagueConfig.winPts ?? 3,
+    'cfg-drawPts': leagueConfig.drawPts ?? 1,
+    'cfg-desc': leagueConfig.desc || '',
+    'cfg-leagueType': type,
+    'cfg-marathonGame': leagueConfig.marathonGame || '',
+    'cfg-stageCount': leagueConfig.stageCount || 10,
+    'cfg-rankingMethod': leagueConfig.rankingMethod || 'totalScore'
   };
   Object.entries(fields).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
-  const newTotal = generateRoundRobin(teamIds, leagueConfig.format).length;
-  const played = Object.values(results).filter(r => r && r.score1 !== undefined).length;
+
+  // Emoji
+  const emojiBtn = document.getElementById('cfgLeagueEmojiBtn');
+  const emojiInput = document.getElementById('cfg-leagueEmoji');
+  if (emojiBtn && emojiInput) { emojiInput.value = leagueConfig.emoji || '⚽'; emojiBtn.textContent = leagueConfig.emoji || '⚽'; }
+
+  // Ẩn/hiện section theo loại hình
+  onCfgLeagueTypeChange();
+
+  // Tổng quan
+  const stageCount = leagueConfig.stageCount || 10;
+  const stagesPlayed = Object.keys(marathonScores || {}).filter(k => Object.keys(marathonScores[k] || {}).length > 0).length;
+  const newTotal = isMarathon ? stageCount : generateRoundRobin(teamIds, leagueConfig.format).length;
+  const played = isMarathon ? stagesPlayed : Object.values(results).filter(r => r?.score1 !== undefined).length;
   const grid = document.getElementById('leagueInfoGrid');
   if (grid) grid.innerHTML = [
     { label: 'Số đội', val: teamIds.length, color: 'var(--accent)' },
-    { label: 'Tổng trận', val: newTotal, color: 'var(--accent)' },
-    { label: 'Đã đấu', val: played, color: 'var(--green)' },
-    { label: 'Còn lại', val: newTotal - played, color: 'var(--gold)' },
-    { label: 'Điểm thắng', val: leagueConfig.winPts, color: 'var(--text)' },
-    { label: 'Điểm hòa', val: leagueConfig.drawPts, color: 'var(--text)' }
+    isMarathon
+      ? { label: 'Tổng màn', val: stageCount, color: 'var(--accent)' }
+      : { label: 'Tổng trận', val: newTotal, color: 'var(--accent)' },
+    isMarathon
+      ? { label: 'Đã chơi', val: stagesPlayed, color: 'var(--green)' }
+      : { label: 'Đã đấu', val: played, color: 'var(--green)' },
+    isMarathon
+      ? { label: 'Còn lại', val: stageCount - stagesPlayed, color: 'var(--gold)' }
+      : { label: 'Còn lại', val: newTotal - played, color: 'var(--gold)' },
+    isMarathon
+      ? { label: 'Xếp hạng', val: { totalScore:'Tổng ĐS', avgScore:'TB', stagesWon:'Màn thắng' }[leagueConfig.rankingMethod||'totalScore'], color: 'var(--text)' }
+      : { label: 'Điểm thắng', val: leagueConfig.winPts ?? 3, color: 'var(--text)' },
+    isMarathon
+      ? { label: 'Game', val: leagueConfig.marathonGame || '–', color: 'var(--text)' }
+      : { label: 'Điểm hòa', val: leagueConfig.drawPts ?? 1, color: 'var(--text)' }
   ].map(item => `<div style="text-align:center;padding:8px 4px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);">
-    <div style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:${item.color};">${item.val}</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:1.15rem;font-weight:700;color:${item.color};">${item.val}</div>
     <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">${item.label}</div>
   </div>`).join('');
 }
 
+// THÊM MỚI — toggle section trong settings tab
+window.onCfgLeagueTypeChange = () => {
+  const isMarathon = document.getElementById('cfg-leagueType')?.value === 'marathon';
+  document.getElementById('cfgSectionLeague').style.display = isMarathon ? 'none' : 'block';
+  document.getElementById('cfgSectionMarathon').style.display = isMarathon ? 'block' : 'none';
+};
+
+// THAY THẾ saveLeagueConfig — gộp cả marathon config
 window.saveLeagueConfig = () => {
+  if (!isAdmin) { showToast('🔒 Cần Admin', 'warn'); return; }
+  const newType = document.getElementById('cfg-leagueType')?.value || 'league';
   const newFormat = document.getElementById('cfg-format')?.value || 'single';
   const newMpd = Number(document.getElementById('cfg-matchesPerDay')?.value) || 3;
   const formatChanged = newFormat !== leagueConfig.format;
   const mpdChanged = newMpd !== leagueConfig.matchesPerDay;
+
   const doSave = () => {
-    const prev = leagueConfig.format;
     leagueConfig = {
+      ...leagueConfig,
+      leagueType: newType,
       leagueName: document.getElementById('cfg-leagueName')?.value || leagueConfig.leagueName,
       season: document.getElementById('cfg-season')?.value || leagueConfig.season,
+      emoji: document.getElementById('cfg-leagueEmoji')?.value || leagueConfig.emoji,
+      desc: document.getElementById('cfg-desc')?.value || '',
       matchesPerDay: newMpd,
       format: newFormat,
-      winPts: Number(document.getElementById('cfg-winPts')?.value) || 3,
-      drawPts: Number(document.getElementById('cfg-drawPts')?.value) || 1,
-      desc: document.getElementById('cfg-desc')?.value || ''
+      winPts: Number(document.getElementById('cfg-winPts')?.value) ?? 3,
+      drawPts: Number(document.getElementById('cfg-drawPts')?.value) ?? 1,
+      marathonGame: document.getElementById('cfg-marathonGame')?.value.trim() || '',
+      stageCount: Number(document.getElementById('cfg-stageCount')?.value) || 10,
+      rankingMethod: document.getElementById('cfg-rankingMethod')?.value || 'totalScore'
     };
-    if (formatChanged) rebuildSchedule(true);
+    if (formatChanged && newType === 'league') rebuildSchedule(true);
     updateHeaderTitle(); persist(); closeModal('teamModal');
+    renderAll();
     showToast('✅ Đã lưu cài đặt giải đấu!');
   };
-  if (formatChanged || mpdChanged) {
+
+  if ((formatChanged || mpdChanged) && newType === 'league') {
     const newTotal = generateRoundRobin(teamIds, newFormat).length;
     const changeDesc = [
       formatChanged ? `Thể thức: <strong style="color:var(--accent)">${leagueConfig.format === 'single' ? 'Lượt đi' : 'Lượt đi+về'} → ${newFormat === 'single' ? 'Lượt đi' : 'Lượt đi+về'}</strong>` : '',
       mpdChanged ? `Số trận/ngày: <strong style="color:var(--accent)">${leagueConfig.matchesPerDay} → ${newMpd}</strong>` : ''
     ].filter(Boolean).join('<br>');
-    requireConfirmCode(
-      '⚙️ Xác nhận thay đổi cài đặt',
+    requireConfirmCode('⚙️ Xác nhận thay đổi cài đặt',
       `${changeDesc}<br>${formatChanged ? `Lịch sẽ được tái tạo: <strong style="color:var(--accent)">${BASE_SCHEDULE.length} → ${newTotal} trận</strong><br>` : ''}<span style="opacity:.75">Auto Schedule sẽ dùng cài đặt mới.</span>`,
-      doSave
-    );
+      doSave);
   } else {
     doSave();
   }
@@ -7193,24 +7359,53 @@ window.deleteLeague = (id) => {
 };
 
 window.openCreateLeagueModal = () => {
-  document.getElementById('leagueDropdown').style.display = 'none';
+  closeLeagueDropdown();
   document.getElementById('newLeagueName').value = '';
+  document.getElementById('newLeagueSeason').value = new Date().getFullYear().toString();
   document.getElementById('newLeagueType').value = 'league';
   document.getElementById('newLeagueEmoji').value = '⚽';
+  document.getElementById('newLeagueEmojiBtn').textContent = '⚽';
   document.getElementById('newLeagueDesc').value = '';
   document.getElementById('newMarathonGame').value = '';
   document.getElementById('newMarathonStages').value = '10';
   document.getElementById('newMarathonRanking').value = 'totalScore';
+  document.getElementById('newMatchesPerDay').value = '3';
+  document.getElementById('newFormat').value = 'single';
+  document.getElementById('newWinPts').value = '3';
+  document.getElementById('newDrawPts').value = '1';
+  document.getElementById('clLeagueStats').style.display = 'none';
+  document.getElementById('cloneLeagueSection').style.display = 'block';
   document.getElementById('createLeagueTitleEl').textContent = '🏆 Tạo giải đấu mới';
   document.getElementById('btnSaveCreateLeague').textContent = '🏆 Tạo giải đấu';
+  switchCreateLeagueTab('info');
   onNewLeagueTypeChange();
   openModal('createLeagueModal');
 };
 
 window.onNewLeagueTypeChange = () => {
   const type = document.getElementById('newLeagueType')?.value;
-  const ms = document.getElementById('marathonConfigSection');
-  if (ms) ms.style.display = type === 'marathon' ? 'block' : 'none';
+  const isMarathon = type === 'marathon';
+  const fl = document.getElementById('clFormatLeague');
+  const fm = document.getElementById('clFormatMarathon');
+  if (fl) fl.style.display = isMarathon ? 'none' : 'block';
+  if (fm) fm.style.display = isMarathon ? 'block' : 'none';
+  // Đổi emoji mặc định nếu chưa chỉnh tay
+  const emojiBtn = document.getElementById('newLeagueEmojiBtn');
+  const emojiVal = document.getElementById('newLeagueEmoji');
+  if (emojiBtn && (emojiVal.value === '⚽' || emojiVal.value === '🎮')) {
+    const def = isMarathon ? '🎮' : '⚽';
+    emojiBtn.textContent = def;
+    emojiVal.value = def;
+  }
+};
+
+window.switchCreateLeagueTab = (tab) => {
+  ['info','format'].forEach(t => {
+    document.getElementById(`clTab-content-${t}`).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById(`clTab-${t}`);
+    btn.style.background = t === tab ? 'var(--accent-a12)' : 'transparent';
+    btn.style.color = t === tab ? 'var(--accent)' : 'var(--text-muted)';
+  });
 };
 
 window.saveCreateLeague = async () => {
@@ -7218,44 +7413,40 @@ window.saveCreateLeague = async () => {
   const name = document.getElementById('newLeagueName').value.trim();
   if (!name) { showToast('⚠️ Nhập tên giải đấu', 'warn'); return; }
   const type = document.getElementById('newLeagueType').value;
-  const emoji = document.getElementById('newLeagueEmoji').value.trim() || '⚽';
+  const emoji = document.getElementById('newLeagueEmoji').value.trim() || (type === 'marathon' ? '🎮' : '⚽');
   const desc = document.getElementById('newLeagueDesc').value.trim();
+  const season = document.getElementById('newLeagueSeason').value.trim() || new Date().getFullYear().toString();
   const cloneFrom = document.getElementById('cloneFromCurrent').checked;
-
   const newId = genLeagueId();
   let newLeague;
 
   if (cloneFrom && activeLeagueId) {
     const src = allLeagues[activeLeagueId];
-    newLeague = JSON.parse(JSON.stringify(src)); // deep clone
+    newLeague = JSON.parse(JSON.stringify(src));
     newLeague.config.leagueName = name;
     newLeague.config.emoji = emoji;
     newLeague.config.desc = desc;
+    newLeague.config.season = season;
     newLeague.config.leagueType = type;
-    newLeague.results = {};
-    newLeague.matchDates = {};
-    newLeague.scheduleOrder = [];
-    newLeague.manualDates = {};
-    newLeague.rankMovement = {};
-    newLeague.marathonScores = {};
+    newLeague.results = {}; newLeague.matchDates = {}; newLeague.scheduleOrder = [];
+    newLeague.manualDates = {}; newLeague.rankMovement = {}; newLeague.marathonScores = {};
   } else {
     const defaultTeamIds = ['A','B','C','D'];
     const defaultTeams = { A:'Team Alpha', B:'Team Beta', C:'Team Cobra', D:'Team Delta' };
     newLeague = {
       config: {
-        leagueType: type,
-        leagueName: name,
-        season: new Date().getFullYear().toString(),
-        matchesPerDay: 3, format: 'single', winPts: 3, drawPts: 1,
-        emoji, desc,
+        leagueType: type, leagueName: name, season, emoji, desc,
+        matchesPerDay: Number(document.getElementById('newMatchesPerDay').value) || 3,
+        format: document.getElementById('newFormat').value || 'single',
+        winPts: Number(document.getElementById('newWinPts').value) || 3,
+        drawPts: Number(document.getElementById('newDrawPts').value) || 1,
         marathonGame: document.getElementById('newMarathonGame').value.trim(),
         stageCount: Number(document.getElementById('newMarathonStages').value) || 10,
         rankingMethod: document.getElementById('newMarathonRanking').value,
         stageNames: {},
         scheduleConfig: { matchDurationMin: 10, breakDurationMin: 5, sessions: { morning: '08:30', afternoon: '14:00', evening: '19:30' } }
       },
-      teamIds: defaultTeamIds,
-      teams: defaultTeams,
+      teamIds: defaultTeamIds, teams: defaultTeams,
       members: Object.fromEntries(defaultTeamIds.map(id => [id, ['','']])),
       memberEmails: {},
       teamEmojis: Object.fromEntries(defaultTeamIds.map((id,i) => [id, DEFAULT_EMOJIS[i]])),
@@ -7272,9 +7463,11 @@ window.saveCreateLeague = async () => {
 };
 
 // ── Render function switching based on league type ──
+// THAY THẾ renderAll — thêm marathonFixturesCard
 function renderAll() {
   const type = leagueConfig.leagueType || 'league';
   const fixturesCard = document.getElementById('fixturesCard');
+  const marathonFixturesCard = document.getElementById('marathonFixturesCard');
   const leaguePanel = document.getElementById('leagueStandingsPanel');
   const marathonPanel = document.getElementById('marathonStandingsPanel');
   const marathonBtn = document.getElementById('btnMarathonScore');
@@ -7283,26 +7476,113 @@ function renderAll() {
 
   if (type === 'marathon') {
     if (fixturesCard) fixturesCard.style.display = 'none';
+    if (marathonFixturesCard) marathonFixturesCard.style.display = '';
     if (leaguePanel) leaguePanel.style.display = 'none';
     if (marathonPanel) marathonPanel.style.display = '';
     if (marathonBtn) marathonBtn.style.display = '';
     if (autoBtn) autoBtn.style.display = 'none';
     if (standingsTitle) standingsTitle.innerHTML = `<div class="icon">🎮</div>Marathon · ${leagueConfig.marathonGame || ''} <span class="marathon-badge">Marathon</span>`;
     renderMarathonPanel();
+    renderMarathonFixtures();
   } else {
     if (fixturesCard) fixturesCard.style.display = '';
+    if (marathonFixturesCard) marathonFixturesCard.style.display = 'none';
     if (leaguePanel) leaguePanel.style.display = '';
     if (marathonPanel) marathonPanel.style.display = 'none';
     if (marathonBtn) marathonBtn.style.display = 'none';
     if (autoBtn) autoBtn.style.display = '';
     if (standingsTitle) standingsTitle.innerHTML = '<div class="icon">🏆</div>Bảng xếp hạng';
-    render(); // original render
+    render();
   }
 }
 
 /* ═══════════════════ MARATHON SYSTEM ═══════════════════ */
 // marathonScores: { stageIdx: { teamId: score, ... }, ... }
 let marathonScores = {};
+
+// THÊM MỚI — render marathon fixtures (danh sách stages dạng fixture rows)
+function renderMarathonFixtures() {
+  const container = document.getElementById('marathonFixturesList');
+  const titleEl = document.getElementById('marathonFixturesTitle');
+  if (!container) return;
+  const stageCount = leagueConfig.stageCount || 10;
+  const stageNames = leagueConfig.stageNames || {};
+  if (titleEl) titleEl.textContent = `${leagueConfig.marathonGame || 'Marathon'} · ${stageCount} Stages`;
+
+  let html = '';
+  for (let s = 0; s < stageCount; s++) {
+    const sd = marathonScores[String(s)] || {};
+    const stageName = stageNames[String(s)] || `Stage ${s + 1}`;
+    const hasData = teamIds.some(id => sd[id] !== undefined && sd[id] !== '');
+    let maxSc = -Infinity, winnerId = null;
+    teamIds.forEach(id => { const sc = Number(sd[id]); if (!isNaN(sc) && sc > maxSc) { maxSc = sc; winnerId = id; } });
+
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;border:1px solid var(--border);margin-bottom:6px;background:var(--bg-deep);${!hasData ? 'opacity:.6' : ''}">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:var(--text-muted);min-width:28px;text-align:center;">#${s + 1}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${stageName}</div>
+        <div style="font-size:.7rem;color:var(--text-muted);margin-top:2px;">
+          ${hasData
+            ? teamIds.filter(id => sd[id] !== undefined && sd[id] !== '').map(id =>
+                `<span style="color:${teamColors[id]};margin-right:5px;">${teamEmojis[id]} ${sd[id]}${id === winnerId ? '🏆' : ''}</span>`
+              ).join('')
+            : 'Chưa có điểm'}
+        </div>
+      </div>      
+      ${isAdmin ? `<button onclick="_editMarathonStage=${s}; openMarathonScoreModal(${s});"
+        style="padding:4px 10px;border-radius:7px;border:1px solid var(--accent-a30);background:transparent;color:var(--accent);cursor:pointer;font-size:.72rem;font-weight:600;white-space:nowrap;">
+        ${hasData ? '✏️ Sửa' : '➕ Nhập'}
+      </button>` : ''}
+    </div>`;
+  }
+  container.innerHTML = html || '<div style="color:var(--text-muted);font-size:.82rem;text-align:center;padding:20px;">Chưa có màn chơi nào</div>';
+}
+
+// THÊM MỚI — Marathon: thêm stage thủ công
+window.openMarathonAddMatchModal = () => {
+  const stageCount = leagueConfig.stageCount || 10;
+  // Tăng stageCount thêm 1 và lưu
+  leagueConfig.stageCount = stageCount + 1;
+  persist();
+  renderAll();
+  // Mở thẳng modal nhập điểm cho stage mới
+  openMarathonScoreModal();
+  const newIdx = stageCount; // index của stage vừa thêm
+  document.getElementById('marathonStageSelect').value = newIdx;
+  _editMarathonStage = newIdx;
+  renderMarathonScoreInputs(newIdx);
+  showToast(`➕ Đã thêm Stage ${newIdx + 1}`);
+};
+
+// THÊM MỚI — Marathon: tự động sinh fixtures (round-robin theo stages)
+window.openMarathonAutoModal = () => {
+  const stageCount = leagueConfig.stageCount || 10;
+  const stageNames = leagueConfig.stageNames || {};
+  // Tạo tên stages mặc định nếu chưa có
+  let changed = false;
+  for (let s = 0; s < stageCount; s++) {
+    if (!stageNames[String(s)]) {
+      stageNames[String(s)] = `Stage ${s + 1}`;
+      changed = true;
+    }
+  }
+  if (changed) {
+    leagueConfig.stageNames = stageNames;
+    persist();
+  }
+  // Mở modal nhập điểm từ stage đầu tiên chưa có data
+  let firstEmpty = 0;
+  for (let s = 0; s < stageCount; s++) {
+    const sd = marathonScores[String(s)] || {};
+    const hasData = teamIds.some(id => sd[id] !== undefined && sd[id] !== '');
+    if (!hasData) { firstEmpty = s; break; }
+  }
+  openMarathonScoreModal();
+  document.getElementById('marathonStageSelect').value = firstEmpty;
+  _editMarathonStage = firstEmpty;
+  renderMarathonScoreInputs(firstEmpty);
+  showToast(`⚡ Stage ${firstEmpty + 1} — nhập điểm để bắt đầu`);
+};
 
 function calcMarathonStandings() {
   const method = leagueConfig.rankingMethod || 'totalScore';
@@ -7351,7 +7631,7 @@ function renderMarathonPanel() {
   renderMarathonStageGrid();
   renderMarathonStats();
   // Ensure score entry button exists
-  ensureMarathonScoreBtn();
+  //ensureMarathonScoreBtn();
 }
 
 function ensureMarathonScoreBtn() {
@@ -7362,7 +7642,7 @@ function ensureMarathonScoreBtn() {
     btn.id = 'btnMarathonScore';
     btn.className = 'btn-flat btn-flat-teal btn-sm';
     btn.innerHTML = '🎮 Nhập điểm <span class="admin-lock" id="lockMarathon">🔒</span>';
-    btn.onclick = () => requireAdmin(() => openMarathonScoreModal());
+    btn.onclick = () => requireAdmin(() => { _editMarathonStage = 0; openMarathonScoreModal(0); });
     // Insert after card title
     const card = document.getElementById('standingsCard');
     if (card) {
@@ -7506,24 +7786,25 @@ function renderMarathonStageGrid() {
 // ── Marathon Score Entry Modal ──
 let _editMarathonStage = 0;
 
-window.openMarathonScoreModal = () => {
+window.openMarathonScoreModal = (stageIndex) => {
+  // Nếu có truyền stageIndex vào, cập nhật lại biến _editMarathonStage
+  if (typeof stageIndex !== 'undefined') {
+    _editMarathonStage = Number(stageIndex);
+  }
+
+  console.log('[openMarathonScoreModal] _editMarathonStage=', _editMarathonStage);
   const select = document.getElementById('marathonStageSelect');
   const stageCount = leagueConfig.stageCount || 10;
   const stageNames = leagueConfig.stageNames || {};
+  
   select.innerHTML = Array.from({length: stageCount}, (_,i) =>
     `<option value="${i}">${stageNames[String(i)] || `Stage ${i+1}`}</option>`
   ).join('');
-  _editMarathonStage = 0;
-  select.value = '0';
-  renderMarathonScoreInputs(0);
+  
+  select.value = String(_editMarathonStage);
+  renderMarathonScoreInputs(_editMarathonStage);
   document.getElementById('marathonStageNameWrap').style.display = 'none';
   openModal('marathonScoreModal');
-};
-
-window.onMarathonStageChange = () => {
-  const s = Number(document.getElementById('marathonStageSelect').value);
-  _editMarathonStage = s;
-  renderMarathonScoreInputs(s);
 };
 
 function renderMarathonScoreInputs(stageIdx) {
@@ -7559,11 +7840,9 @@ window.toggleMarathonStageNameEdit = () => {
 };
 
 window.editStageName = (stageIdx) => {
+  _editMarathonStage = stageIdx;
   requireAdmin(() => {
     openMarathonScoreModal();
-    document.getElementById('marathonStageSelect').value = stageIdx;
-    _editMarathonStage = stageIdx;
-    renderMarathonScoreInputs(stageIdx);
     toggleMarathonStageNameEdit();
   });
 };
@@ -7607,6 +7886,41 @@ window.clearMarathonStageScores = () => {
       showToast('↩️ Đã xóa điểm!', 'warn');
     }
   );
+};
+
+window.deleteMarathonStage = async () => {
+  const stageIdx = Number(document.getElementById('marathonStageSelect').value); // đọc trực tiếp từ select thay vì _editMarathonStage
+  const stageCount = leagueConfig.stageCount || 10;
+  const stageNames = { ...(leagueConfig.stageNames || {}) };
+  const stageName = stageNames[String(stageIdx)] || `Stage ${stageIdx + 1}`;
+
+  console.log('[deleteStage] stageIdx=', stageIdx, 'stageCount=', stageCount, '_editMarathonStage=', _editMarathonStage);
+
+  if (!confirm(`Xóa "${stageName}"? Điểm và tên stage này sẽ mất, các stage sau sẽ dịch lên.`)) return;
+
+  const newScores = {};
+  const newNames = {};
+  for (let s = 0; s < stageCount; s++) {
+    if (s === stageIdx) continue;
+    const newIdx = s < stageIdx ? s : s - 1;
+    if (marathonScores[String(s)] !== undefined) newScores[String(newIdx)] = marathonScores[String(s)];
+    if (stageNames[String(s)] !== undefined) newNames[String(newIdx)] = stageNames[String(s)];
+  }
+
+  console.log('[deleteStage] newScores=', newScores, 'newNames=', newNames);
+
+  marathonScores = newScores;
+  leagueConfig.stageCount = Math.max(1, stageCount - 1);
+  leagueConfig.stageNames = newNames;
+  if (allLeagues[activeLeagueId]) {
+    allLeagues[activeLeagueId].marathonScores = newScores;
+    allLeagues[activeLeagueId].config = { ...allLeagues[activeLeagueId].config, stageCount: leagueConfig.stageCount, stageNames: newNames };
+  }
+
+  await persist();
+  closeModal('marathonScoreModal');
+  renderAll();
+  showToast(`🗑️ Đã xóa ${stageName}`);
 };
 
 /* ═══════════════════ BOOT ═══════════════════ */

@@ -7100,10 +7100,20 @@ function renderLeagueSelector() {
 
 window.toggleLeagueDropdown = () => {
   const dd = document.getElementById('leagueDropdown');
-  if (!dd) return;
-  const open = dd.style.display !== 'none';
-  dd.style.display = open ? 'none' : 'block';
-  if (!open) renderLeagueSelector();
+  const btn = document.getElementById('leagueSelectorBtn');
+  const isHidden = dd.style.display === 'none';
+
+  if (isHidden) {
+    // Teleport ra body để thoát overflow:hidden của header
+    document.body.appendChild(dd);
+    const rect = btn.getBoundingClientRect();
+    dd.style.position = 'fixed';
+    dd.style.top = (rect.bottom + 6) + 'px';
+    dd.style.left = rect.left + 'px';
+    dd.style.display = 'block';
+  } else {
+    dd.style.display = 'none';
+  }
 };
 
 // Close dropdown on outside click

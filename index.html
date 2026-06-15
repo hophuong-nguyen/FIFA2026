@@ -7607,7 +7607,7 @@ function appendMarathonStageRows(block, stages, date, today, isPast) {
 
     // Edit btn — tái dùng .btn-icon giống league
     const editBtn = isAdmin
-      ? `<button class="btn-icon" title="Nhập điểm" onclick="_editMarathonStage=${s};openMarathonScoreModal();">✏️</button>`
+  ? `<button class="btn-icon" title="Nhập điểm" onclick="openMarathonScoreModal(${s});">✏️</button>`
       : `<button class="btn-icon" style="opacity:.38;cursor:not-allowed;background:rgba(232,0,77,.07);border-color:rgba(232,0,77,.18);color:var(--red);"
            onclick="requireAdmin(()=>{_editMarathonStage=${s};openMarathonScoreModal();})">🔒</button>`;
 
@@ -7782,7 +7782,7 @@ window.openMarathonAddMatchModal = () => {
   persist();
   renderAll();
   // Mở thẳng modal nhập điểm cho stage mới
-  openMarathonScoreModal();
+  openMarathonScoreModal(stageCount); // index của stage mới
   const newIdx = stageCount; // index của stage vừa thêm
   document.getElementById('marathonStageSelect').value = newIdx;
   _editMarathonStage = newIdx;
@@ -7872,7 +7872,7 @@ function ensureMarathonScoreBtn() {
     btn.id = 'btnMarathonScore';
     btn.className = 'btn-flat btn-flat-teal btn-sm';
     btn.innerHTML = '🎮 Nhập điểm <span class="admin-lock" id="lockMarathon">🔒</span>';
-    btn.onclick = () => requireAdmin(() => { _editMarathonStage = 0; openMarathonScoreModal(0); });
+    btn.onclick = () => requireAdmin(() => openMarathonScoreModal(0));
     // Insert after card title
     const card = document.getElementById('standingsCard');
     if (card) {
@@ -8017,29 +8017,32 @@ function renderMarathonStageGrid() {
 let _editMarathonStage = 0;
 
 window.openMarathonScoreModal = (stageIndex) => {
-  // Nếu có truyền stageIndex vào, cập nhật lại biến _editMarathonStage
-  if (typeof stageIndex !== 'undefined') {
-    _editMarathonStage = Number(stageIndex);
-  }
-
-  console.log('[openMarathonScoreModal] _editMarathonStage=', _editMarathonStage);
+  if (typeof stageIndex !== 'undefined') _editMarathonStage = Number(stageIndex);
   const select = document.getElementById('marathonStageSelect');
   const stageCount = leagueConfig.stageCount || 10;
   const stageNames = leagueConfig.stageNames || {};
-  
   select.innerHTML = Array.from({length: stageCount}, (_,i) =>
     `<option value="${i}">${stageNames[String(i)] || `Stage ${i+1}`}</option>`
   ).join('');
-  
   select.value = String(_editMarathonStage);
   renderMarathonScoreInputs(_editMarathonStage);
-  document.getElementById('marathonStageNameWrap').style.display = 'none';
   const dateInput = document.getElementById('marathonStageDate');
   if (dateInput) {
     const d = marathonDates[String(_editMarathonStage)];
     dateInput.value = (d && d !== '9999-12-31') ? d : '';
   }
+  document.getElementById('marathonStageNameWrap').style.display = 'none';
   openModal('marathonScoreModal');
+};
+
+window.onMarathonStageChange = () => {
+  _editMarathonStage = Number(document.getElementById('marathonStageSelect').value);
+  renderMarathonScoreInputs(_editMarathonStage);
+  const dateInput = document.getElementById('marathonStageDate');
+  if (dateInput) {
+    const d = marathonDates[String(_editMarathonStage)];
+    dateInput.value = (d && d !== '9999-12-31') ? d : '';
+  }
 };
 
 function renderMarathonScoreInputs(stageIdx) {
@@ -8075,9 +8078,8 @@ window.toggleMarathonStageNameEdit = () => {
 };
 
 window.editStageName = (stageIdx) => {
-  _editMarathonStage = stageIdx;
   requireAdmin(() => {
-    openMarathonScoreModal();
+    openMarathonScoreModal(stageIdx);
     toggleMarathonStageNameEdit();
   });
 };

@@ -3311,10 +3311,11 @@ function normalizeState(data) {
   }
 }
 
-function persist() {
-  pushActiveLeague();
+async function persist() {
+  await pushActiveLeague();
   render();
 }
+
 async function pushScheduleOnly() {
   if (!activeLeagueId) return;
   setSyncState('syncing');
@@ -6056,7 +6057,14 @@ function renderStandings() {
 function renderCupBracket() {
   const panel = document.getElementById('cupBracketPanel');
   if (!panel) return;
-  if (!leagueConfig.hasCup) { panel.style.display = 'none'; return; }
+  
+  // Tự động ẩn toàn bộ panel nếu giải này không bật Cup
+  if (!leagueConfig.hasCup) { 
+    panel.style.display = 'none'; 
+    return; 
+  }
+  
+  // Nếu có Cup, hiển thị panel
   panel.style.display = 'block';
 
   // Actions bar
@@ -6068,21 +6076,33 @@ function renderCupBracket() {
       <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;color:var(--accent);border-color:var(--accent-a30);" onclick="generateCupBracket()">⚡ Generate Bracket</button>`;
   }
 
-  if (Object.keys(knockoutMatches).length === 0) {
-    document.getElementById('cupBracketSVG').innerHTML =
-      `<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem;">Chưa có bracket — bấm Generate Bracket để tạo</div>`;
+  const svgContainer = document.getElementById('cupBracketSVG');
+  const cardsContainer = document.getElementById('cupBracketCards');
+
+  // Xử lý khi chưa có Bracket
+  if (!knockoutMatches || Object.keys(knockoutMatches).length === 0) {
+    if (svgContainer) {
+      svgContainer.style.display = 'block';
+      svgContainer.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem;">Chưa có bracket — bấm Generate Bracket để tạo</div>`;
+    }
+    if (cardsContainer) cardsContainer.style.display = 'none'; // Phải ẩn card đi để tránh HTML rác
     return;
   }
 
+  // Xử lý hiển thị SVG (Desktop) hoặc Card (Mobile)
   const isMobile = window.innerWidth < 768;
   if (isMobile) {
-    document.getElementById('cupBracketSVG').style.display = 'none';
-    document.getElementById('cupBracketCards').style.display = 'block';
-    renderBracketCards();
+    if (svgContainer) svgContainer.style.display = 'none';
+    if (cardsContainer) {
+      cardsContainer.style.display = 'block';
+      if (typeof renderBracketCards === 'function') renderBracketCards();
+    }
   } else {
-    document.getElementById('cupBracketSVG').style.display = 'block';
-    document.getElementById('cupBracketCards').style.display = 'none';
-    renderBracketSVG();
+    if (cardsContainer) cardsContainer.style.display = 'none';
+    if (svgContainer) {
+      svgContainer.style.display = 'block';
+      if (typeof renderBracketSVG === 'function') renderBracketSVG();
+    }
   }
 }
 
@@ -6112,7 +6132,7 @@ function renderBracketSVG() {
     const colX = PAD + colIdx * (MATCH_W + GAP_X);
 
     matchKeys.forEach((key, rowIdx) => {
-      const match = knockoutMatches[key];
+      const match = knockoutMatches[key] || {};
       if (!match) return;
       // Y position: center matches vertically in their slot
       const slotH = isThirdPlace
@@ -6131,9 +6151,15 @@ function renderBracketSVG() {
       const awayEmoji = match.away ? (teamEmojis[match.away] || '') : '';
       const homeColor = match.home ? (teamColors[match.home] || 'var(--text)') : 'var(--text-muted)';
       const awayColor = match.away ? (teamColors[match.away] || 'var(--text)') : 'var(--text-muted)';
-      const hasResult = match.score1 !== null && match.score2 !== null;
+      // Xử lý an toàn với các trường số
+      const score1 = match.score1 ?? null;
+      const score2 = match.score2 ?? null;
+      const hasResult = score1 !== null && score2 !== null;
+      //const hasResult = match.score1 !== null && match.score2 !== null;
       const isHomeWin = hasResult && match.winner === match.home;
       const isAwayWin = hasResult && match.winner === match.away;
+      //const isHomeWin = hasResult && match.winner === match.home;
+      //const isAwayWin = hasResult && match.winner === match.away;
 
       // Match card
       svgContent += `
@@ -6153,14 +6179,14 @@ function renderBracketSVG() {
           <!-- Home score -->
           ${hasResult ? `<text x="${MATCH_W-10}" y="${MATCH_H/2-10}" text-anchor="end" font-size="13"
             fill="${isHomeWin ? 'var(--accent)' : 'var(--text-muted)'}"
-            font-family="Rajdhani,sans-serif" font-weight="700">${match.score1}</text>` : ''}
+            font-family="Rajdhani,sans-serif" font-weight="700">${score1}</text>` : ''}
           <!-- Away team -->
           <text x="10" y="${MATCH_H/2+18}" font-size="11" fill="${isAwayWin ? awayColor : 'var(--text-muted)'}"
             font-family="Inter,sans-serif" font-weight="${isAwayWin?'700':'400'}">${awayEmoji} ${awayTeam.slice(0,14)}</text>
           <!-- Away score -->
           ${hasResult ? `<text x="${MATCH_W-10}" y="${MATCH_H/2+18}" text-anchor="end" font-size="13"
             fill="${isAwayWin ? 'var(--accent)' : 'var(--text-muted)'}"
-            font-family="Rajdhani,sans-serif" font-weight="700">${match.score2}</text>` : ''}
+            font-family="Rajdhani,sans-serif" font-weight="700">${score2}</text>` : ''}
           ${match.bye ? `<text x="${MATCH_W/2}" y="${MATCH_H/2+4}" text-anchor="middle"
             font-size="9" fill="var(--text-muted)" font-family="Inter,sans-serif">BYE</text>` : ''}
           <!-- Edit button (admin only) -->
@@ -7556,9 +7582,11 @@ async function migrateFromLegacy() {
 
 // ── Push current league data (hybrid: write to state or lmp based on league type) ──
 async function pushActiveLeague() {
-  if (!activeLeagueId) return;
+  const currentLeagueId = activeLeagueId; // [FIX 1] Bắt cứng ID hiện tại, tránh đính sai khi switch giải đấu
+  if (!currentLeagueId) return;
   setSyncState('syncing');
-  const leagueData = {
+  
+  const rawData = {
     config: {
       leagueType: leagueConfig.leagueType || 'league',
       leagueName: leagueConfig.leagueName,
@@ -7584,19 +7612,23 @@ async function pushActiveLeague() {
     teamIds, teams, members, memberEmails, teamEmojis, teamColors,
     results, matchDates, scheduleOrder, manualDates, rankMovement: rankMovementState,
     groups, knockoutMatches, cupSeeds,
-    marathonDates,marathonScores
+    marathonDates, marathonScores
   };
+
+  // [FIX 2] Parse/Stringify để dọn sạch các trường 'undefined' giúp Firebase không bị lỗi từ chối lưu
+  const leagueData = JSON.parse(JSON.stringify(rawData));
+
   try {
-    // Write to correct path: state for current league, lmp for new leagues
-    const league = allLeagues[activeLeagueId];
-    const storePath = league?._storePath || (activeLeagueId === 'league_default' ? 'state' : 'lmp');
+    const league = allLeagues[currentLeagueId];
+    const storePath = league?._storePath || (currentLeagueId === 'league_default' ? 'state' : 'lmp');
     
     if (storePath === 'state') {
       await update(ref(db, CURRENT_LEAGUE_PATH), leagueData);
     } else {
-      await update(ref(db, `${NEW_LEAGUES_ROOT}/${activeLeagueId}`), leagueData);
+      await update(ref(db, `${NEW_LEAGUES_ROOT}/${currentLeagueId}`), leagueData);
     }
-    allLeagues[activeLeagueId] = { ...leagueData, _storePath: storePath };
+    // [FIX 3] Gán lại state theo ID đã bắt cứng ban đầu
+    allLeagues[currentLeagueId] = { ...leagueData, _storePath: storePath };
     setSyncState('connected');
   } catch(e) {
     setSyncState('offline');
@@ -7615,12 +7647,16 @@ async function switchLeague(leagueId) {
   renderAll();
   showToast(`✅ Đã chuyển sang: ${allLeagues[leagueId].config?.leagueName || leagueId}`);
   
-  // Restore theme theo league
+  // [FIX] Restore theme: Cắt đứt hoàn toàn việc lấy theme từ localStorage nếu giải không có theme
   const leagueTheme = leagueConfig.theme;
-  const themeName = leagueTheme || localStorage.getItem(THEME_KEY);
-  if (themeName && typeof THEMES !== 'undefined') {
-    const t = THEMES.find(x => x.name === themeName);
-    if (t) applyTheme(t);
+  if (typeof THEMES !== 'undefined') {
+    if (leagueTheme) {
+      const t = THEMES.find(x => x.name === leagueTheme);
+      if (t) applyTheme(t);
+    } else {
+      // Giải không có theme riêng -> Áp dụng theme mặc định (Theme đầu tiên trong danh sách)
+      applyTheme(THEMES[0]); 
+    }
   }
 }
 
@@ -7878,8 +7914,9 @@ function renderAll() {
     if (marathonBtn) marathonBtn.style.display = '';
     if (autoBtn) autoBtn.style.display = 'none';
     if (standingsTitle) standingsTitle.innerHTML = `<div class="icon">🎮</div>Marathon · ${leagueConfig.marathonGame || ''} <span class="marathon-badge">Marathon</span>`;
-    renderMarathonPanel();
-    renderMarathonFixtures();
+    
+    if (typeof renderMarathonPanel === 'function') renderMarathonPanel();
+    if (typeof renderMarathonFixtures === 'function') renderMarathonFixtures();
   } else {
     if (fixturesCard) fixturesCard.style.display = '';
     if (marathonFixturesCard) marathonFixturesCard.style.display = 'none';
@@ -7888,76 +7925,88 @@ function renderAll() {
     if (marathonBtn) marathonBtn.style.display = 'none';
     if (autoBtn) autoBtn.style.display = '';
     if (standingsTitle) standingsTitle.innerHTML = '<div class="icon">🏆</div>Bảng xếp hạng';
-    render();
+    
+    if (typeof render === 'function') render();
   }
-  //CUP mode enabled render bracket
-  if (leagueConfig.hasCup) renderCupBracket();
+  
+  // LUÔN GỌI renderCupBracket để hàm này tự quyết định việc hiện/ẩn Panel thay vì chặn từ ngoài
+  renderCupBracket();
 }
 
 // ── Cup: tính seed từ BXH hiện tại ──
 function calcCupSeeds() {
   const groupCount = leagueConfig.groupCount || 0;
+
   if (groupCount === 0) {
-    // Không chia bảng — seed theo BXH tổng
+    // Không chia bảng — lấy toàn bộ BXH
     return calcStandings().map(r => r.id);
   }
-  // Có chia bảng — lấy top qualifyPerGroup mỗi bảng, xen kẽ: 1A,1B,2A,2B...
-  const qpg = leagueConfig.qualifyPerGroup || 2;
-  const qualified = [];
+
+  // Có chia bảng — lấy top qualifyPerGroup mỗi bảng, xen kẽ 1A,1B,2A,2B...
+  const qualifyPerGroup = leagueConfig.qualifyPerGroup || 2;
   const groupKeys = Object.keys(groups).sort();
-  for (let rank = 0; rank < qpg; rank++) {
+  const seeds = [];
+  for (let rank = 0; rank < qualifyPerGroup; rank++) {
     groupKeys.forEach(gk => {
-      const gIds = groups[gk];
-      const standings = calcStandingsForTeams(gIds);
-      if (standings[rank]) qualified.push(standings[rank].id);
+      const standing = calcStandingsForTeams(groups[gk] || []);
+      if (standing[rank]) seeds.push(standing[rank].id);
     });
   }
-  return qualified;
+  return seeds;
 }
 
 // ── Cup: generate bracket từ seeds ──
 function generateKnockoutBracket(seeds) {
   if (!seeds || seeds.length < 2) return {};
-  // Tính số slot (lũy thừa 2 gần nhất >= seeds.length)
   const slotCount = Math.pow(2, Math.ceil(Math.log2(seeds.length)));
-  const byeCount = slotCount - seeds.length;
-  // Pad byes vào cuối
-  const slotted = [...seeds, ...Array(byeCount).fill('__bye__')];
+  // Pad byes vào cuối — seed cao nhất (index nhỏ) sẽ được bye
+  const slotted = [...seeds, ...Array(slotCount - seeds.length).fill('__bye__')];
 
-  // Seeding: 1 vs last, 2 vs (last-1)... (chuẩn bracket)
   const roundName = getRoundName(slotCount);
   const matches = {};
+
   for (let i = 0; i < slotCount / 2; i++) {
     const home = slotted[i];
     const away = slotted[slotCount - 1 - i];
     const matchKey = `${roundName}_${i + 1}`;
-    // Nếu một bên là bye → winner tự động là đội còn lại
+    const isBye = home === '__bye__' || away === '__bye__';
+    // Giữ đội thật ở home/away, chỉ replace '__bye__' bằng null để hiển thị
     const winner = home === '__bye__' ? away : away === '__bye__' ? home : null;
     matches[matchKey] = {
       round: roundName, matchNum: i + 1,
-      home, away,
-      score1: home === '__bye__' ? 0 : null,
-      score2: away === '__bye__' ? 0 : null,
-      winner, bye: home === '__bye__' || away === '__bye__'
+      home: home === '__bye__' ? null : home,
+      away: away === '__bye__' ? null : away,
+      score1: null, score2: null,
+      winner, bye: isBye
     };
   }
-  // Generate empty slots cho các round tiếp theo
+
+  // Empty slots cho các round tiếp
+  const roundOrder = ['R32','R16','QF','SF','F'];
   let currentSlots = slotCount / 2;
-  let roundIdx = 1;
+  let roundIdx = roundOrder.indexOf(roundName) + 1;
   while (currentSlots > 1) {
     currentSlots /= 2;
-    const nextRound = getNextRoundName(roundName, roundIdx);
+    const nextRound = roundOrder[roundIdx];
+    if (!nextRound) break;
     for (let i = 0; i < currentSlots; i++) {
-      const matchKey = `${nextRound}_${i + 1}`;
-      if (!matches[matchKey]) {
-        matches[matchKey] = { round: nextRound, matchNum: i + 1, home: null, away: null, score1: null, score2: null, winner: null, bye: false };
-      }
+      const key = `${nextRound}_${i + 1}`;
+      if (!matches[key]) matches[key] = {
+        round: nextRound, matchNum: i + 1,
+        home: null, away: null,
+        score1: null, score2: null, winner: null, bye: false
+      };
     }
     roundIdx++;
   }
-  // Trận tranh hạng 3
+
+  // Auto-progress bye matches
+  Object.keys(matches).forEach(key => {
+    if (matches[key].bye && matches[key].winner) progressKnockout(key, matches);
+  });
+
   if (leagueConfig.thirdPlace) {
-    matches['3P_1'] = { round: '3P', matchNum: 1, home: null, away: null, score1: null, score2: null, winner: null, bye: false };
+    matches['3P_1'] = { round:'3P', matchNum:1, home:null, away:null, score1:null, score2:null, winner:null, bye:false };
   }
   return matches;
 }
@@ -7974,28 +8023,25 @@ function getNextRoundName(current, offset) {
 }
 
 // ── Cup: auto progression khi lưu kết quả knockout ──
-function progressKnockout(matchKey) {
-  const match = knockoutMatches[matchKey];
+function progressKnockout(matchKey, matchesObj) {
+  const src = matchesObj || knockoutMatches;
+  const match = src[matchKey];
   if (!match || !match.winner) return;
   const { round, matchNum, winner } = match;
-
-  // Tìm slot tiếp theo
   const nextRound = getNextRound(round);
   if (!nextRound) return;
   const nextMatchNum = Math.ceil(matchNum / 2);
   const nextKey = `${nextRound}_${nextMatchNum}`;
-  if (!knockoutMatches[nextKey]) knockoutMatches[nextKey] = { round: nextRound, matchNum: nextMatchNum, home: null, away: null, score1: null, score2: null, winner: null };
+  if (!src[nextKey]) src[nextKey] = { round:nextRound, matchNum:nextMatchNum, home:null, away:null, score1:null, score2:null, winner:null, bye:false };
+  if (matchNum % 2 === 1) src[nextKey].home = winner;
+  else src[nextKey].away = winner;
 
-  // Slot home/away: matchNum lẻ → home, chẵn → away
-  if (matchNum % 2 === 1) knockoutMatches[nextKey].home = winner;
-  else knockoutMatches[nextKey].away = winner;
-
-  // Thua SF → vào 3P
+  // Loser SF → 3P
   if (round === 'SF' && leagueConfig.thirdPlace) {
     const loser = match.home === winner ? match.away : match.home;
-    if (!knockoutMatches['3P_1']) knockoutMatches['3P_1'] = { round:'3P', matchNum:1, home:null, away:null, score1:null, score2:null, winner:null };
-    if (matchNum === 1) knockoutMatches['3P_1'].home = loser;
-    else knockoutMatches['3P_1'].away = loser;
+    if (!src['3P_1']) src['3P_1'] = { round:'3P', matchNum:1, home:null, away:null, score1:null, score2:null, winner:null, bye:false };
+    if (matchNum === 1) src['3P_1'].home = loser;
+    else src['3P_1'].away = loser;
   }
 }
 

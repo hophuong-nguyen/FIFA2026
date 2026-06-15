@@ -6921,7 +6921,8 @@ function loadLeagueIntoState(league) {
     stageCount: cfg.stageCount || 10,
     stageNames: cfg.stageNames || {},
     rankingMethod: cfg.rankingMethod || 'totalScore',
-    scheduleConfig: cfg.scheduleConfig || {}
+    scheduleConfig: cfg.scheduleConfig || {},
+    theme: cfg.theme || ''    
   };
   // teams
   teamIds       = league.teamIds || (league.teams ? Object.keys(league.teams) : ['A','B','C','D']);
@@ -7232,7 +7233,8 @@ async function pushActiveLeague() {
       stageCount: leagueConfig.stageCount || 10,
       stageNames: leagueConfig.stageNames || {},
       rankingMethod: leagueConfig.rankingMethod || 'totalScore',
-      scheduleConfig: leagueConfig.scheduleConfig || {}
+      scheduleConfig: leagueConfig.scheduleConfig || {},
+      theme: leagueConfig.theme || ''
     },
     teamIds, teams, members, memberEmails, teamEmojis, teamColors,
     results, matchDates, scheduleOrder, manualDates, rankMovement: rankMovementState,
@@ -7266,6 +7268,14 @@ async function switchLeague(leagueId) {
   renderLeagueSelector();
   renderAll();
   showToast(`✅ Đã chuyển sang: ${allLeagues[leagueId].config?.leagueName || leagueId}`);
+  
+  // Restore theme theo league
+  const leagueTheme = leagueConfig.theme;
+  const themeName = leagueTheme || localStorage.getItem(THEME_KEY);
+  if (themeName && typeof THEMES !== 'undefined') {
+    const t = THEMES.find(x => x.name === themeName);
+    if (t) applyTheme(t);
+  }
 }
 
 // ── League Selector UI ──
@@ -8348,6 +8358,11 @@ function applyTheme(t) {
   }
 
   localStorage.setItem(THEME_KEY, t.name);
+  if (activeLeagueId) {
+    leagueConfig.theme = t.name;
+    if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].config.theme = t.name;
+    persist();
+  }
 }
 
 function openThemeModal() {

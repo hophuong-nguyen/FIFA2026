@@ -7251,6 +7251,7 @@ function loadLeagueIntoState(league) {
     stageNames: cfg.stageNames || {},
     rankingMethod: cfg.rankingMethod || 'totalScore',
     scheduleConfig: cfg.scheduleConfig || {},
+    // Cup fields
     hasCup:          cfg.hasCup          || false,
     groupCount:      cfg.groupCount      || 0,
     qualifyPerGroup: cfg.qualifyPerGroup || 2,
@@ -7275,6 +7276,11 @@ function loadLeagueIntoState(league) {
   marathonDates = league.marathonDates || {};
   // Marathon scores
   marathonScores = league.marathonScores || {};
+
+  // Cup state
+  groups            = league.groups            || {};
+  knockoutMatches   = league.knockoutMatches   || {};
+  cupSeeds          = league.cupSeeds          || [];
 
   // Ensure default emoji/color
   teamIds.forEach((id, i) => {
@@ -8044,6 +8050,8 @@ window.generateCupBracket = async (force = false) => {
     allLeagues[activeLeagueId].cupSeeds = cupSeeds;
   }
   await persist();
+  console.log('[cup] saved knockoutMatches:', JSON.stringify(knockoutMatches));
+  console.log('[cup] allLeagues after persist:', JSON.stringify(allLeagues[activeLeagueId]?.knockoutMatches));
   renderCupBracket();
   showToast(`🏆 Bracket đã được tạo với ${cupSeeds.length} đội!`);
 };

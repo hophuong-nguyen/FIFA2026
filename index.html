@@ -5122,23 +5122,33 @@ function calcStandings() { return Object.entries(calcStandingsRaw()).sort((x, y)
 
 function calcTopScorers() {
   const map = {};
+  if (!results || !BASE_SCHEDULE) return [];
+
   Object.keys(results).forEach(mIdx => {
     const r = results[mIdx];
+    // [FIX] Kiểm tra 'r' tồn tại mới truy cập scorers
+    if (!r) return; 
+
     const match = BASE_SCHEDULE[Number(mIdx)];
     if (!match) return;
+    
     const t1 = match[0];
     const t2 = match[1];
     
-    (r.scorers1 || []).forEach(s => {
-      if (s.goals > 0 && s.name) {
+    // [FIX] Sử dụng optional chaining hoặc kiểm tra tồn tại
+    const scorers1 = r.scorers1 || [];
+    const scorers2 = r.scorers2 || [];
+
+    scorers1.forEach(s => {
+      if (s && s.goals > 0 && s.name) {
         const key = t1 + '_' + s.name;
         if (!map[key]) map[key] = { teamId: t1, name: s.name, goals: 0 };
         map[key].goals += s.goals;
       }
     });
     
-    (r.scorers2 || []).forEach(s => {
-      if (s.goals > 0 && s.name) {
+    scorers2.forEach(s => {
+      if (s && s.goals > 0 && s.name) {
         const key = t2 + '_' + s.name;
         if (!map[key]) map[key] = { teamId: t2, name: s.name, goals: 0 };
         map[key].goals += s.goals;
@@ -5847,7 +5857,7 @@ function renderStats() {
       map[p.name] = (map[p.name] || 0) + p.goals;
     });
   });
-
+  
   return Object.entries(map)
     .sort((a,b)=>b[1]-a[1])
     .slice(0,3);
@@ -7257,6 +7267,13 @@ function buildLeagueObject(overrides = {}) {
 // ── Load a league's data into runtime state ──
 function loadLeagueIntoState(league) {
   if (!league) return;
+
+  // [FIX] Reset sạch sẽ các biến toàn cục trước khi đổ dữ liệu mới vào
+  // Điều này đảm bảo dữ liệu giải trước không "tràn" sang giải sau
+  results = {}; 
+  knockoutMatches = {};
+  cupSeeds = [];
+
   const cfg = league.config || {};
   groups        = league.groups        || {};
   knockoutMatches = league.knockoutMatches || {};

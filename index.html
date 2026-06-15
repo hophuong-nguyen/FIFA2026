@@ -2330,6 +2330,44 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
           <div class="form-group"><label class="form-label">Điểm thắng</label><input class="form-input" id="cfg-winPts" type="number" min="1" value="3"></div>
           <div class="form-group"><label class="form-label">Điểm hòa</label><input class="form-input" id="cfg-drawPts" type="number" min="0" value="1"></div>
         </div>
+        <!-- Knockout Options -->
+        <div style="margin-top:14px;padding:12px 14px;border-radius:9px;background:var(--bg-deep);border:1px solid var(--border);">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:0;" id="cfgHasCupRow">
+            <input type="checkbox" id="cfg-hasCup" onchange="onCfgHasCupChange()" style="accent-color:var(--accent);width:16px;height:16px;">
+            <div>
+              <div style="font-weight:700;font-size:.84rem;">🏆 Bật Cup / Knockout Phase</div>
+              <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">Thêm vòng loại trực tiếp sau BXH vòng bảng</div>
+            </div>
+          </label>
+          <div id="cfgCupOptions" style="display:none;margin-top:12px;display:none;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Số bảng đấu</label>
+              <select class="form-select" id="cfg-groupCount">
+                <option value="0">Không chia bảng (round-robin)</option>
+                <option value="2">2 bảng (A, B)</option>
+                <option value="3">3 bảng (A, B, C)</option>
+                <option value="4">4 bảng (A, B, C, D)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Số đội đi tiếp / bảng</label>
+              <input class="form-input" id="cfg-qualifyPerGroup" type="number" min="1" max="4" value="2">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Thể thức knockout</label>
+              <select class="form-select" id="cfg-knockoutLeg">
+                <option value="single">Trận đơn</option>
+                <option value="home-away">Lượt đi - Lượt về</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" id="cfg-thirdPlace" style="accent-color:var(--accent);">
+                Trận tranh hạng 3
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Section Marathon -->
@@ -2526,6 +2564,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
           <select class="form-select" id="newLeagueType" onchange="onNewLeagueTypeChange()">
             <option value="league">⚽ Football League</option>
             <option value="marathon">🎮 Marathon / Arcade</option>
+            <option value="cup">🏆 Cup / Tournament</option>
           </select>
         </div>
         <div class="form-group" style="grid-column:1/-1;">
@@ -2767,6 +2806,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
           <table class="standings-table" id="topScorersTable" style="margin-bottom: 12px;"></table>
           <div id="topScorersToggleWrap" style="text-align:center; margin-bottom: 24px;"></div>
         </div>
+        <!-- CUP Mode bracket SVG-->
+        <div id="cupBracketPanel" style="display:none;margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">🏆 Knockout Bracket</div>
+          <div style="display:flex;gap:6px;" id="cupBracketActions"></div>
+        </div>
+        <!-- Desktop: SVG tree -->
+        <div id="cupBracketSVG" style="overflow-x:auto;"></div>
+        <!-- Mobile: horizontal scroll cards -->
+        <div id="cupBracketCards" style="display:none;overflow-x:auto;"></div>
+      </div>
       </div>
       <!-- Marathon mode standings -->
       <div id="marathonStandingsPanel" style="display:none;">
@@ -2989,7 +3039,6 @@ window.sendMagicLink = async () => {
 };
 
 // Xử lý khi user quay về app sau khi click magic link
-// Xử lý khi user quay về app sau khi click magic link
 if (isSignInWithEmailLink(fbAuth, window.location.href)) {
   let email = localStorage.getItem('magicLinkEmail');
   if (!email) email = window.prompt('Nhập lại email của bạn để xác nhận:');
@@ -3079,7 +3128,19 @@ let memberEmails = {}; // { teamId: ['email1', 'email2', ...] }
 let teamEmojis = Object.fromEntries(teamIds.map((id, i) => [id, DEFAULT_EMOJIS[i % DEFAULT_EMOJIS.length]]));
 let teamColors = Object.fromEntries(teamIds.map((id, i) => [id, DEFAULT_COLORS[i % DEFAULT_COLORS.length]]));
 let results = {};
-let leagueConfig = { leagueName: 'FIFA League Manager', season: '2026', matchesPerDay: 3, format: 'single', winPts: 3, drawPts: 1, desc: '' };
+let leagueConfig = { 
+    leagueName: 'FIFA League Manager', 
+    season: '2026', 
+    matchesPerDay: 3, 
+    format: 'single', 
+    hasCup: false,
+    groupCount: 0,          // 0 = không chia bảng
+    qualifyPerGroup: 2,
+    knockoutLeg: 'single',  // 'single' | 'home-away'
+    thirdPlace: true,
+    winPts: 3, 
+    rawPts: 1, 
+    desc: '' };
 let BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
 let TOTAL = BASE_SCHEDULE.length;
 let matchDates = {};
@@ -3087,6 +3148,9 @@ let marathonDates = {};
 let scheduleOrder = [];
 let manualDates = {}; // { matchIdx: isoDate } - các trận đã được admin set ngày thủ công
 let fbReady = false;
+let groups = {};           // { 'A': ['id1','id2',...], 'B': [...] }
+let knockoutMatches = {};  // { 'R16_1': {home,away,score1,score2,...}, ... }
+let cupSeeds = [];         // thứ tự seed sau vòng bảng ['id1','id2',...]
 
 /* ═══════════════════ FILTER ═══════════════════ */
 let filterTeamId = null;
@@ -5989,6 +6053,247 @@ function renderStandings() {
   }).join('');
 }
 
+function renderCupBracket() {
+  const panel = document.getElementById('cupBracketPanel');
+  if (!panel) return;
+  if (!leagueConfig.hasCup) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  // Actions bar
+  const actions = document.getElementById('cupBracketActions');
+  if (actions && isAdmin) {
+    actions.innerHTML = `
+      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="drawGroups('random')">🎲 Bốc thăm</button>
+      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="drawGroups('seeded')">🌱 Theo seed</button>
+      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;color:var(--accent);border-color:var(--accent-a30);" onclick="generateCupBracket()">⚡ Generate Bracket</button>`;
+  }
+
+  if (Object.keys(knockoutMatches).length === 0) {
+    document.getElementById('cupBracketSVG').innerHTML =
+      `<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem;">Chưa có bracket — bấm Generate Bracket để tạo</div>`;
+    return;
+  }
+
+  const isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    document.getElementById('cupBracketSVG').style.display = 'none';
+    document.getElementById('cupBracketCards').style.display = 'block';
+    renderBracketCards();
+  } else {
+    document.getElementById('cupBracketSVG').style.display = 'block';
+    document.getElementById('cupBracketCards').style.display = 'none';
+    renderBracketSVG();
+  }
+}
+
+// ── SVG Tree Bracket (desktop) ──
+function renderBracketSVG() {
+  const order = ['R32','R16','QF','SF','F'];
+  const rounds = order.filter(r => Object.keys(knockoutMatches).some(k => k.startsWith(r)));
+  if (leagueConfig.thirdPlace) rounds.push('3P');
+
+  const MATCH_H = 72, MATCH_W = 160, GAP_X = 48, GAP_Y = 16, PAD = 24;
+  const cols = rounds.length;
+  // Số match mỗi round
+  const matchCounts = rounds.map(r => r === '3P' ? 1 : Object.keys(knockoutMatches).filter(k => k.startsWith(r + '_')).length);
+  const maxMatches = Math.max(...matchCounts.filter((_, i) => rounds[i] !== '3P'));
+  const totalH = maxMatches * (MATCH_H + GAP_Y) - GAP_Y + PAD * 2;
+  const totalW = cols * (MATCH_W + GAP_X) - GAP_X + PAD * 2;
+
+  let svgContent = '';
+  const matchPositions = {}; // key → {x, y, cx, cy}
+
+  rounds.forEach((round, colIdx) => {
+    const isThirdPlace = round === '3P';
+    const matchKeys = isThirdPlace
+      ? ['3P_1']
+      : Object.keys(knockoutMatches).filter(k => k.startsWith(round + '_')).sort();
+    const count = matchKeys.length;
+    const colX = PAD + colIdx * (MATCH_W + GAP_X);
+
+    matchKeys.forEach((key, rowIdx) => {
+      const match = knockoutMatches[key];
+      if (!match) return;
+      // Y position: center matches vertically in their slot
+      const slotH = isThirdPlace
+        ? totalH - PAD - MATCH_H // 3P ở dưới cùng
+        : (totalH - PAD * 2) / count;
+      const y = isThirdPlace
+        ? totalH - PAD - MATCH_H
+        : PAD + rowIdx * slotH + (slotH - MATCH_H) / 2;
+      const cx = colX + MATCH_W / 2;
+      const cy = y + MATCH_H / 2;
+      matchPositions[key] = { x: colX, y, cx, cy };
+
+      const homeTeam = match.home ? (teams[match.home] || match.home) : 'TBD';
+      const awayTeam = match.away ? (teams[match.away] || match.away) : 'TBD';
+      const homeEmoji = match.home ? (teamEmojis[match.home] || '') : '';
+      const awayEmoji = match.away ? (teamEmojis[match.away] || '') : '';
+      const homeColor = match.home ? (teamColors[match.home] || 'var(--text)') : 'var(--text-muted)';
+      const awayColor = match.away ? (teamColors[match.away] || 'var(--text)') : 'var(--text-muted)';
+      const hasResult = match.score1 !== null && match.score2 !== null;
+      const isHomeWin = hasResult && match.winner === match.home;
+      const isAwayWin = hasResult && match.winner === match.away;
+
+      // Match card
+      svgContent += `
+        <g transform="translate(${colX},${y})">
+          <!-- Card background -->
+          <rect width="${MATCH_W}" height="${MATCH_H}" rx="10" ry="10"
+            fill="var(--bg-deep)" stroke="var(--border)" stroke-width="1"/>
+          <!-- Round label -->
+          <text x="${MATCH_W/2}" y="11" text-anchor="middle"
+            font-size="8" fill="var(--text-muted)" font-family="Inter,sans-serif"
+            font-weight="600" letter-spacing="0.5">${getRoundLabel(round)} ${!isThirdPlace ? '#'+match.matchNum : ''}</text>
+          <!-- Divider -->
+          <line x1="8" y1="${MATCH_H/2}" x2="${MATCH_W-8}" y2="${MATCH_H/2}" stroke="var(--border)" stroke-width="1"/>
+          <!-- Home team -->
+          <text x="10" y="${MATCH_H/2-10}" font-size="11" fill="${isHomeWin ? homeColor : 'var(--text-muted)'}"
+            font-family="Inter,sans-serif" font-weight="${isHomeWin?'700':'400'}">${homeEmoji} ${homeTeam.slice(0,14)}</text>
+          <!-- Home score -->
+          ${hasResult ? `<text x="${MATCH_W-10}" y="${MATCH_H/2-10}" text-anchor="end" font-size="13"
+            fill="${isHomeWin ? 'var(--accent)' : 'var(--text-muted)'}"
+            font-family="Rajdhani,sans-serif" font-weight="700">${match.score1}</text>` : ''}
+          <!-- Away team -->
+          <text x="10" y="${MATCH_H/2+18}" font-size="11" fill="${isAwayWin ? awayColor : 'var(--text-muted)'}"
+            font-family="Inter,sans-serif" font-weight="${isAwayWin?'700':'400'}">${awayEmoji} ${awayTeam.slice(0,14)}</text>
+          <!-- Away score -->
+          ${hasResult ? `<text x="${MATCH_W-10}" y="${MATCH_H/2+18}" text-anchor="end" font-size="13"
+            fill="${isAwayWin ? 'var(--accent)' : 'var(--text-muted)'}"
+            font-family="Rajdhani,sans-serif" font-weight="700">${match.score2}</text>` : ''}
+          ${match.bye ? `<text x="${MATCH_W/2}" y="${MATCH_H/2+4}" text-anchor="middle"
+            font-size="9" fill="var(--text-muted)" font-family="Inter,sans-serif">BYE</text>` : ''}
+          <!-- Edit button (admin only) -->
+          ${isAdmin && !match.bye ? `
+          <rect x="${MATCH_W-26}" y="${MATCH_H-18}" width="20" height="14" rx="4"
+            fill="var(--accent-a12)" stroke="var(--accent-a30)" stroke-width="1"
+            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}')"/>
+          <text x="${MATCH_W-16}" y="${MATCH_H-8}" text-anchor="middle"
+            font-size="9" fill="var(--accent)" font-family="Inter,sans-serif"
+            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}')">✏️</text>` : ''}
+          <!-- Penalty indicator -->
+          ${match.penalty1 !== undefined && match.penalty1 !== null
+            ? `<text x="${MATCH_W/2}" y="${MATCH_H-4}" text-anchor="middle"
+                font-size="8" fill="var(--gold)" font-family="Inter,sans-serif">
+                Pen: ${match.penalty1}–${match.penalty2}</text>` : ''}
+        </g>`;
+
+      // Connector lines đến round tiếp
+      if (!isThirdPlace && colIdx < rounds.length - 1 && round !== 'F') {
+        const nextRound = getNextRound(round);
+        if (nextRound) {
+          const nextKey = `${nextRound}_${Math.ceil(match.matchNum / 2)}`;
+          if (matchPositions[nextKey] === undefined) return; // chưa render, skip
+          const nx = matchPositions[nextKey].x;
+          const ny = matchPositions[nextKey].cy;
+          const ex = colX + MATCH_W;
+          const ey = cy;
+          const mx = ex + (nx - ex) / 2;
+          svgContent += `<path d="M${ex},${ey} C${mx},${ey} ${mx},${ny} ${nx},${ny}"
+            fill="none" stroke="var(--border)" stroke-width="1.5" opacity="0.6"/>`;
+        }
+      }
+    });
+  });
+
+  const svg = `<svg viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg"
+    style="width:100%;min-width:${totalW}px;font-family:Inter,sans-serif;">
+    ${svgContent}
+  </svg>`;
+  document.getElementById('cupBracketSVG').innerHTML = svg;
+
+  // Vẽ lại connector sau khi đã có tất cả positions
+  renderBracketConnectors(rounds, matchPositions, MATCH_W, GAP_X, PAD);
+}
+
+function renderBracketConnectors(rounds, matchPositions, MATCH_W) {
+  // Connector lines vẽ lại với đầy đủ positions
+  // (SVG inline đã có connector ở trên — hàm này reserve cho pass 2 nếu cần)
+}
+
+function getRoundLabel(round) {
+  const map = { F:'Chung kết', SF:'Bán kết', QF:'Tứ kết', R16:'Vòng 16', R32:'Vòng 32', '3P':'Hạng 3' };
+  return map[round] || round;
+}
+
+// ── Mobile: Card columns ──
+function renderBracketCards() {
+  const order = ['R32','R16','QF','SF','F'];
+  const rounds = order.filter(r => Object.keys(knockoutMatches).some(k => k.startsWith(r)));
+  if (leagueConfig.thirdPlace) rounds.push('3P');
+
+  const html = rounds.map(round => {
+    const matchKeys = round === '3P' ? ['3P_1']
+      : Object.keys(knockoutMatches).filter(k => k.startsWith(round + '_')).sort();
+    return `<div style="min-width:180px;flex-shrink:0;">
+      <div style="font-size:.68rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;text-align:center;margin-bottom:8px;letter-spacing:.5px;">${getRoundLabel(round)}</div>
+      ${matchKeys.map(key => {
+        const m = knockoutMatches[key];
+        if (!m) return '';
+        const h = m.home ? (teamEmojis[m.home]||'') + ' ' + (teams[m.home]||m.home) : 'TBD';
+        const a = m.away ? (teamEmojis[m.away]||'') + ' ' + (teams[m.away]||m.away) : 'TBD';
+        const hasResult = m.score1 !== null && m.score2 !== null;
+        return `<div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin-bottom:6px;${m.winner?'border-color:var(--accent-a30)':''}" 
+          onclick="${isAdmin && !m.bye ? `openKnockoutResultModal('${key}')` : ''}">
+          <div style="font-size:.8rem;font-weight:${m.winner===m.home?'700':'400'};color:${m.winner===m.home?'var(--accent)':'var(--text)'};">${h} ${hasResult?`<span style="float:right;font-family:Rajdhani,sans-serif;font-weight:700;">${m.score1}</span>`:''}
+          </div>
+          <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+          <div style="font-size:.8rem;font-weight:${m.winner===m.away?'700':'400'};color:${m.winner===m.away?'var(--accent)':'var(--text)'};">${a} ${hasResult?`<span style="float:right;font-family:Rajdhani,sans-serif;font-weight:700;">${m.score2}</span>`:''}
+          </div>
+          ${m.penalty1!=null?`<div style="font-size:.68rem;color:var(--gold);text-align:center;margin-top:3px;">Pen: ${m.penalty1}–${m.penalty2}</div>`:''}
+          ${m.bye?`<div style="font-size:.68rem;color:var(--text-muted);text-align:center;">BYE</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  document.getElementById('cupBracketCards').innerHTML =
+    `<div style="display:flex;gap:12px;padding-bottom:8px;">${html}</div>`;
+}
+
+// ── Modal nhập kết quả knockout ──
+window.openKnockoutResultModal = (matchKey) => {
+  const match = knockoutMatches[matchKey];
+  if (!match) return;
+  const label = `${getRoundLabel(match.round)} #${match.matchNum}`;
+  const homeTeam = match.home ? (teamEmojis[match.home]||'')+'  '+(teams[match.home]||match.home) : 'TBD';
+  const awayTeam = match.away ? (teamEmojis[match.away]||'')+'  '+(teams[match.away]||match.away) : 'TBD';
+  document.getElementById('koResultTitle').textContent = `⚽ ${label}`;
+  document.getElementById('koResultBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:center;margin-bottom:12px;">
+      <div style="text-align:center;font-weight:700;color:${teamColors[match.home]||'var(--text)'};">${homeTeam}</div>
+      <div style="text-align:center;color:var(--text-muted);font-size:.8rem;">vs</div>
+      <div style="text-align:center;font-weight:700;color:${teamColors[match.away]||'var(--text)'};">${awayTeam}</div>
+      <input class="form-input" id="ko_s1_${matchKey}" type="number" min="0"
+        value="${match.score1 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.2rem;font-weight:700;">
+      <div style="text-align:center;font-weight:700;color:var(--text-muted);">–</div>
+      <input class="form-input" id="ko_s2_${matchKey}" type="number" min="0"
+        value="${match.score2 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.2rem;font-weight:700;">
+    </div>
+    <div id="koPenaltySection" style="display:none;background:var(--bg-deep);border-radius:9px;padding:10px;margin-bottom:10px;">
+      <div style="font-size:.72rem;color:var(--gold);font-weight:700;margin-bottom:8px;text-align:center;">⚡ Penalty Shootout</div>
+      <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:center;">
+        <input class="form-input" id="ko_p1_${matchKey}" type="number" min="0"
+          value="${match.penalty1 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
+        <div style="text-align:center;font-size:.8rem;color:var(--text-muted);">pen</div>
+        <input class="form-input" id="ko_p2_${matchKey}" type="number" min="0"
+          value="${match.penalty2 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:4px;">
+      <button class="btn-flat" style="font-size:.72rem;" onclick="toggleKoPenalty('${matchKey}')">⚡ Penalty</button>
+    </div>`;
+  document.getElementById('koBtnSave').onclick = () => saveKnockoutResult(matchKey);
+  // Show penalty nếu đã có
+  if (match.penalty1 != null) document.getElementById('koPenaltySection').style.display = 'block';
+  openModal('knockoutResultModal');
+};
+
+window.toggleKoPenalty = (matchKey) => {
+  const el = document.getElementById('koPenaltySection');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
+
 /* ═══════════════════ RANK MOVEMENT ═══════════════════ */
 let previousRanks        = null;
 let rankMovementState    = {};
@@ -6719,6 +7024,16 @@ function renderLeagueConfigTab() {
     <div style="font-family:'Rajdhani',sans-serif;font-size:1.15rem;font-weight:700;color:${item.color};">${item.val}</div>
     <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">${item.label}</div>
   </div>`).join('');
+
+  const hasCupEl = document.getElementById('cfg-hasCup');
+  if (hasCupEl) {
+    hasCupEl.checked = leagueConfig.hasCup || false;
+    document.getElementById('cfg-groupCount').value = leagueConfig.groupCount || 0;
+    document.getElementById('cfg-qualifyPerGroup').value = leagueConfig.qualifyPerGroup || 2;
+    document.getElementById('cfg-knockoutLeg').value = leagueConfig.knockoutLeg || 'single';
+    document.getElementById('cfg-thirdPlace').checked = leagueConfig.thirdPlace !== false;
+    onCfgHasCupChange();
+  }
 }
 
 // THÊM MỚI — toggle section trong settings tab
@@ -6726,6 +7041,12 @@ window.onCfgLeagueTypeChange = () => {
   const isMarathon = document.getElementById('cfg-leagueType')?.value === 'marathon';
   document.getElementById('cfgSectionLeague').style.display = isMarathon ? 'none' : 'block';
   document.getElementById('cfgSectionMarathon').style.display = isMarathon ? 'block' : 'none';
+};
+
+window.onCfgHasCupChange = () => {
+  const checked = document.getElementById('cfg-hasCup').checked;
+  const opts = document.getElementById('cfgCupOptions');
+  opts.style.display = checked ? 'grid' : 'none';
 };
 
 // THAY THẾ saveLeagueConfig — gộp cả marathon config
@@ -6751,6 +7072,11 @@ window.saveLeagueConfig = () => {
       drawPts: Number(document.getElementById('cfg-drawPts')?.value) ?? 1,
       marathonGame: document.getElementById('cfg-marathonGame')?.value.trim() || '',
       stageCount: Number(document.getElementById('cfg-stageCount')?.value) || 10,
+      hasCup:          document.getElementById('cfg-hasCup')?.checked || false,
+      groupCount:      Number(document.getElementById('cfg-groupCount')?.value) || 0,
+      qualifyPerGroup: Number(document.getElementById('cfg-qualifyPerGroup')?.value) || 2,
+      knockoutLeg:     document.getElementById('cfg-knockoutLeg')?.value || 'single',
+      thirdPlace:      document.getElementById('cfg-thirdPlace')?.checked !== false,
       rankingMethod: document.getElementById('cfg-rankingMethod')?.value || 'totalScore'
     };
     if (formatChanged && newType === 'league') rebuildSchedule(true);
@@ -6906,6 +7232,9 @@ function buildLeagueObject(overrides = {}) {
 function loadLeagueIntoState(league) {
   if (!league) return;
   const cfg = league.config || {};
+  groups        = league.groups        || {};
+  knockoutMatches = league.knockoutMatches || {};
+  cupSeeds      = league.cupSeeds      || [];
   leagueConfig = {
     leagueType: cfg.leagueType || 'league',
     leagueName: cfg.leagueName || 'League',
@@ -6922,6 +7251,11 @@ function loadLeagueIntoState(league) {
     stageNames: cfg.stageNames || {},
     rankingMethod: cfg.rankingMethod || 'totalScore',
     scheduleConfig: cfg.scheduleConfig || {},
+    hasCup:          cfg.hasCup          || false,
+    groupCount:      cfg.groupCount      || 0,
+    qualifyPerGroup: cfg.qualifyPerGroup || 2,
+    knockoutLeg:     cfg.knockoutLeg     || 'single',
+    thirdPlace:      cfg.thirdPlace      !== false,
     theme: cfg.theme || ''    
   };
   // teams
@@ -7234,10 +7568,16 @@ async function pushActiveLeague() {
       stageNames: leagueConfig.stageNames || {},
       rankingMethod: leagueConfig.rankingMethod || 'totalScore',
       scheduleConfig: leagueConfig.scheduleConfig || {},
+      hasCup: leagueConfig.hasCup || false,
+      groupCount: leagueConfig.groupCount || 0,
+      qualifyPerGroup: leagueConfig.qualifyPerGroup || 2,
+      knockoutLeg: leagueConfig.knockoutLeg || 'single',
+      thirdPlace: leagueConfig.thirdPlace !== false,
       theme: leagueConfig.theme || ''
     },
     teamIds, teams, members, memberEmails, teamEmojis, teamColors,
     results, matchDates, scheduleOrder, manualDates, rankMovement: rankMovementState,
+    groups, knockoutMatches, cupSeeds,
     marathonDates,marathonScores
   };
   try {
@@ -7495,6 +7835,15 @@ window.saveCreateLeague = async () => {
       results: {}, matchDates: {}, scheduleOrder: [], manualDates: {}, rankMovement: {}, marathonScores: {}
     };
   }
+  if (type === 'cup') {
+    newLeague.config.hasCup = true;
+    newLeague.config.groupCount = Number(document.getElementById('newGroupCount')?.value) || 0;
+    newLeague.config.qualifyPerGroup = Number(document.getElementById('newQualifyPerGroup')?.value) || 2;
+    newLeague.config.leagueType = 'league'; // vẫn dùng league engine
+    newLeague.knockoutMatches = {};
+    newLeague.groups = {};
+    newLeague.cupSeeds = [];
+  }
 
   allLeagues[newId] = { ...newLeague, _storePath: 'lmp' };
   await set(ref(db, `${NEW_LEAGUES_ROOT}/${newId}`), newLeague);
@@ -7535,6 +7884,190 @@ function renderAll() {
     if (standingsTitle) standingsTitle.innerHTML = '<div class="icon">🏆</div>Bảng xếp hạng';
     render();
   }
+  //CUP mode enabled render bracket
+  if (leagueConfig.hasCup) renderCupBracket();
+}
+
+// ── Cup: tính seed từ BXH hiện tại ──
+function calcCupSeeds() {
+  const groupCount = leagueConfig.groupCount || 0;
+  if (groupCount === 0) {
+    // Không chia bảng — seed theo BXH tổng
+    return calcStandings().map(r => r.id);
+  }
+  // Có chia bảng — lấy top qualifyPerGroup mỗi bảng, xen kẽ: 1A,1B,2A,2B...
+  const qpg = leagueConfig.qualifyPerGroup || 2;
+  const qualified = [];
+  const groupKeys = Object.keys(groups).sort();
+  for (let rank = 0; rank < qpg; rank++) {
+    groupKeys.forEach(gk => {
+      const gIds = groups[gk];
+      const standings = calcStandingsForTeams(gIds);
+      if (standings[rank]) qualified.push(standings[rank].id);
+    });
+  }
+  return qualified;
+}
+
+// ── Cup: generate bracket từ seeds ──
+function generateKnockoutBracket(seeds) {
+  if (!seeds || seeds.length < 2) return {};
+  // Tính số slot (lũy thừa 2 gần nhất >= seeds.length)
+  const slotCount = Math.pow(2, Math.ceil(Math.log2(seeds.length)));
+  const byeCount = slotCount - seeds.length;
+  // Pad byes vào cuối
+  const slotted = [...seeds, ...Array(byeCount).fill('__bye__')];
+
+  // Seeding: 1 vs last, 2 vs (last-1)... (chuẩn bracket)
+  const roundName = getRoundName(slotCount);
+  const matches = {};
+  for (let i = 0; i < slotCount / 2; i++) {
+    const home = slotted[i];
+    const away = slotted[slotCount - 1 - i];
+    const matchKey = `${roundName}_${i + 1}`;
+    // Nếu một bên là bye → winner tự động là đội còn lại
+    const winner = home === '__bye__' ? away : away === '__bye__' ? home : null;
+    matches[matchKey] = {
+      round: roundName, matchNum: i + 1,
+      home, away,
+      score1: home === '__bye__' ? 0 : null,
+      score2: away === '__bye__' ? 0 : null,
+      winner, bye: home === '__bye__' || away === '__bye__'
+    };
+  }
+  // Generate empty slots cho các round tiếp theo
+  let currentSlots = slotCount / 2;
+  let roundIdx = 1;
+  while (currentSlots > 1) {
+    currentSlots /= 2;
+    const nextRound = getNextRoundName(roundName, roundIdx);
+    for (let i = 0; i < currentSlots; i++) {
+      const matchKey = `${nextRound}_${i + 1}`;
+      if (!matches[matchKey]) {
+        matches[matchKey] = { round: nextRound, matchNum: i + 1, home: null, away: null, score1: null, score2: null, winner: null, bye: false };
+      }
+    }
+    roundIdx++;
+  }
+  // Trận tranh hạng 3
+  if (leagueConfig.thirdPlace) {
+    matches['3P_1'] = { round: '3P', matchNum: 1, home: null, away: null, score1: null, score2: null, winner: null, bye: false };
+  }
+  return matches;
+}
+
+function getRoundName(slotCount) {
+  const map = { 2:'F', 4:'SF', 8:'QF', 16:'R16', 32:'R32' };
+  return map[slotCount] || `R${slotCount}`;
+}
+
+function getNextRoundName(current, offset) {
+  const order = ['R32','R16','QF','SF','F'];
+  const idx = order.indexOf(current);
+  return idx >= 0 && idx + offset < order.length ? order[idx + offset] : `RND_${offset}`;
+}
+
+// ── Cup: auto progression khi lưu kết quả knockout ──
+function progressKnockout(matchKey) {
+  const match = knockoutMatches[matchKey];
+  if (!match || !match.winner) return;
+  const { round, matchNum, winner } = match;
+
+  // Tìm slot tiếp theo
+  const nextRound = getNextRound(round);
+  if (!nextRound) return;
+  const nextMatchNum = Math.ceil(matchNum / 2);
+  const nextKey = `${nextRound}_${nextMatchNum}`;
+  if (!knockoutMatches[nextKey]) knockoutMatches[nextKey] = { round: nextRound, matchNum: nextMatchNum, home: null, away: null, score1: null, score2: null, winner: null };
+
+  // Slot home/away: matchNum lẻ → home, chẵn → away
+  if (matchNum % 2 === 1) knockoutMatches[nextKey].home = winner;
+  else knockoutMatches[nextKey].away = winner;
+
+  // Thua SF → vào 3P
+  if (round === 'SF' && leagueConfig.thirdPlace) {
+    const loser = match.home === winner ? match.away : match.home;
+    if (!knockoutMatches['3P_1']) knockoutMatches['3P_1'] = { round:'3P', matchNum:1, home:null, away:null, score1:null, score2:null, winner:null };
+    if (matchNum === 1) knockoutMatches['3P_1'].home = loser;
+    else knockoutMatches['3P_1'].away = loser;
+  }
+}
+
+function getNextRound(round) {
+  const order = ['R32','R16','QF','SF','F'];
+  const idx = order.indexOf(round);
+  return idx >= 0 && idx + 1 < order.length ? order[idx + 1] : null;
+}
+
+// ── Cup: save knockout result ──
+window.saveKnockoutResult = async (matchKey) => {
+  if (!isAdmin) { showToast('🔒 Cần Admin','warn'); return; }
+  const match = knockoutMatches[matchKey];
+  if (!match) return;
+  const s1 = Number(document.getElementById(`ko_s1_${matchKey}`)?.value);
+  const s2 = Number(document.getElementById(`ko_s2_${matchKey}`)?.value);
+  match.score1 = s1; match.score2 = s2;
+
+  // Xác định winner
+  if (s1 > s2) match.winner = match.home;
+  else if (s2 > s1) match.winner = match.away;
+  else {
+    // Hòa → penalty
+    const p1 = document.getElementById(`ko_p1_${matchKey}`)?.value;
+    const p2 = document.getElementById(`ko_p2_${matchKey}`)?.value;
+    if (p1 !== '' && p2 !== '') {
+      match.penalty1 = Number(p1); match.penalty2 = Number(p2);
+      match.winner = Number(p1) > Number(p2) ? match.home : match.away;
+    }
+  }
+
+  if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].knockoutMatches = knockoutMatches;
+  progressKnockout(matchKey);
+  await persist();
+  renderCupBracket();
+  showToast(`✅ Đã lưu kết quả ${matchKey}`);
+};
+
+// ── Cup: generate hoặc reset bracket ──
+window.generateCupBracket = async (force = false) => {
+  if (!isAdmin) { showToast('🔒 Cần Admin','warn'); return; }
+  if (!force && Object.keys(knockoutMatches).length > 0) {
+    requireConfirmCode('🏆 Tạo lại bracket?',
+      'Bracket hiện tại sẽ bị xóa. Tiếp tục?',
+      () => generateCupBracket(true));
+    return;
+  }
+  cupSeeds = calcCupSeeds();
+  knockoutMatches = generateKnockoutBracket(cupSeeds);
+  if (allLeagues[activeLeagueId]) {
+    allLeagues[activeLeagueId].knockoutMatches = knockoutMatches;
+    allLeagues[activeLeagueId].cupSeeds = cupSeeds;
+  }
+  await persist();
+  renderCupBracket();
+  showToast(`🏆 Bracket đã được tạo với ${cupSeeds.length} đội!`);
+};
+
+// ── Cup: chia bảng ──
+window.drawGroups = async (method = 'random') => {
+  if (!isAdmin) return;
+  const groupCount = leagueConfig.groupCount || 2;
+  const ids = [...teamIds];
+  if (method === 'random') ids.sort(() => Math.random() - 0.5);
+  // method === 'seeded': giữ nguyên thứ tự seed (BXH hiện tại)
+  const groupKeys = Array.from({length: groupCount}, (_, i) => String.fromCharCode(65 + i));
+  groups = {};
+  groupKeys.forEach(k => groups[k] = []);
+  ids.forEach((id, i) => groups[groupKeys[i % groupCount]].push(id));
+  if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
+  await persist();
+  renderAll();
+  showToast(`✅ Đã chia ${groupCount} bảng!`);
+};
+
+// ── Standings cho nhóm đội cụ thể (tái dụng calcStandings) ──
+function calcStandingsForTeams(ids) {
+  return calcStandings().filter(r => ids.includes(r.id));
 }
 
 /* ═══════════════════ MARATHON SYSTEM ═══════════════════ */
@@ -8724,6 +9257,19 @@ document.getElementById('btnAbout').addEventListener('click', () => {
         📧 Gửi link đăng nhập
       </button>
       <button class="btn-flat" onclick="closeModal('magicLinkModal')" style="flex:0 0 auto">Hủy</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="knockoutResultModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title" id="koResultTitle">⚽ Kết quả</div>
+      <button class="modal-close" onclick="closeModal('knockoutResultModal')">✕</button>
+    </div>
+    <div id="koResultBody"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn-flat" onclick="closeModal('knockoutResultModal')">Hủy</button>
+      <button class="btn-flat" id="koBtnSave" style="border-color:var(--accent-a30);color:var(--accent);">💾 Lưu</button>
     </div>
   </div>
 </div>

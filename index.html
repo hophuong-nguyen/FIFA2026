@@ -6200,13 +6200,21 @@ function renderBracketSVG() {
           ${match.bye ? `<text x="${MATCH_W/2}" y="${MATCH_H/2+4}" text-anchor="middle"
             font-size="9" fill="var(--text-muted)" font-family="Inter,sans-serif">BYE</text>` : ''}
           <!-- Edit button (admin only) -->
-          ${isAdmin && !match.bye ? `
+          ${isAdmin && !match.bye && !match.isLeg2 ? `
           <rect x="${MATCH_W-26}" y="${MATCH_H-18}" width="20" height="14" rx="4"
             fill="var(--accent-a12)" stroke="var(--accent-a30)" stroke-width="1"
             style="cursor:pointer;" onclick="openKnockoutResultModal('${key}')"/>
           <text x="${MATCH_W-16}" y="${MATCH_H-8}" text-anchor="middle"
             font-size="9" fill="var(--accent)" font-family="Inter,sans-serif"
-            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}')">✏️</text>` : ''}
+            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}')">✏️</text>
+            ${leagueConfig.knockoutLeg === 'home-away' ? `
+          <rect x="${MATCH_W-50}" y="${MATCH_H-18}" width="22" height="14" rx="4"
+            fill="var(--accent2-a10)" stroke="var(--accent2-a18)" stroke-width="1"
+            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}_L2')"/>
+          <text x="${MATCH_W-39}" y="${MATCH_H-8}" text-anchor="middle"
+            font-size="8" fill="var(--silver)" font-family="Inter,sans-serif"
+            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}_L2')">↩️L2</text>` : ''}
+          ` : ''}
           <!-- Penalty indicator -->
           ${match.penalty1 !== undefined && match.penalty1 !== null
             ? `<text x="${MATCH_W/2}" y="${MATCH_H-4}" text-anchor="middle"
@@ -6291,41 +6299,95 @@ function renderBracketCards() {
 window.openKnockoutResultModal = (matchKey) => {
   const match = knockoutMatches[matchKey];
   if (!match) return;
-  const label = `${getRoundLabel(match.round)} #${match.matchNum}`;
-  const homeTeam = match.home ? (teamEmojis[match.home]||'')+'  '+(teams[match.home]||match.home) : 'TBD';
-  const awayTeam = match.away ? (teamEmojis[match.away]||'')+'  '+(teams[match.away]||match.away) : 'TBD';
+  const isLeg2 = !!match.isLeg2;
+  const leg2Key = matchKey + '_L2';
+  const leg2 = knockoutMatches[leg2Key];
+  const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && !match.bye;
+
+  const label = `${getRoundLabel(match.round)} #${match.matchNum}${isLeg2 ? ' (Lượt về)' : isTwoLeg ? ' (Lượt đi)' : ''}`;
+  const hId = match.home, aId = match.away;
+  const hName = hId ? (teamEmojis[hId]||'') + ' ' + (teams[hId]||hId) : 'TBD';
+  const aName = aId ? (teamEmojis[aId]||'') + ' ' + (teams[aId]||aId) : 'TBD';
+  const hColor = hId ? (teamColors[hId]||'var(--text)') : 'var(--text-muted)';
+  const aColor = aId ? (teamColors[aId]||'var(--text)') : 'var(--text-muted)';
+
+  // Aggregate display for two-leg (show on leg2 modal)
+  let aggregateHtml = '';
+  if (isTwoLeg && isLeg2 && leg2) {
+    const agg1 = (match.score1 ?? 0) + (leg2.score1 ?? 0);
+    const agg2 = (match.score2 ?? 0) + (leg2.score2 ?? 0);
+    aggregateHtml = `<div style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-bottom:10px;">
+      Lượt đi: <strong style="color:var(--text)">${match.score1 ?? '?'} – ${match.score2 ?? '?'}</strong>
+      &nbsp;|&nbsp; Tổng: <strong style="color:var(--accent)">${agg1} – ${agg2}</strong>
+    </div>`;
+  }
+
   document.getElementById('koResultTitle').textContent = `⚽ ${label}`;
   document.getElementById('koResultBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:center;margin-bottom:12px;">
-      <div style="text-align:center;font-weight:700;color:${teamColors[match.home]||'var(--text)'};">${homeTeam}</div>
-      <div style="text-align:center;color:var(--text-muted);font-size:.8rem;">vs</div>
-      <div style="text-align:center;font-weight:700;color:${teamColors[match.away]||'var(--text)'};">${awayTeam}</div>
-      <input class="form-input" id="ko_s1_${matchKey}" type="number" min="0"
-        value="${match.score1 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.2rem;font-weight:700;">
-      <div style="text-align:center;font-weight:700;color:var(--text-muted);">–</div>
-      <input class="form-input" id="ko_s2_${matchKey}" type="number" min="0"
-        value="${match.score2 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.2rem;font-weight:700;">
+    ${aggregateHtml}
+    <div class="score-cards-grid">
+      <div class="score-col">
+        <div class="score-col-header" style="color:${hColor};">${hName}</div>
+        <input class="form-input score-big" type="number" min="0" id="ko_s1_${matchKey}"
+          value="${(isLeg2 ? leg2?.score1 : match.score1) ?? ''}" placeholder="0">
+        <div id="ko_scorers1_${matchKey}"></div>
+        <div class="card-input-wrap">
+          <span class="card-icon">🟨</span>
+          <input class="form-input" type="number" min="0" id="ko_y1_${matchKey}"
+            value="${(isLeg2 ? leg2?.y1 : match.y1) || ''}" placeholder="0">
+        </div>
+        <div class="card-input-wrap">
+          <span class="card-icon">🟥</span>
+          <input class="form-input" type="number" min="0" id="ko_r1_${matchKey}"
+            value="${(isLeg2 ? leg2?.r1 : match.r1) || ''}" placeholder="0">
+        </div>
+      </div>
+      <div class="score-divider"> - </div>
+      <div class="score-col">
+        <div class="score-col-header" style="color:${aColor};">${aName}</div>
+        <input class="form-input score-big" type="number" min="0" id="ko_s2_${matchKey}"
+          value="${(isLeg2 ? leg2?.score2 : match.score2) ?? ''}" placeholder="0">
+        <div id="ko_scorers2_${matchKey}"></div>
+        <div class="card-input-wrap">
+          <span class="card-icon">🟨</span>
+          <input class="form-input" type="number" min="0" id="ko_y2_${matchKey}"
+            value="${(isLeg2 ? leg2?.y2 : match.y2) || ''}" placeholder="0">
+        </div>
+        <div class="card-input-wrap">
+          <span class="card-icon">🟥</span>
+          <input class="form-input" type="number" min="0" id="ko_r2_${matchKey}"
+            value="${(isLeg2 ? leg2?.r2 : match.r2) || ''}" placeholder="0">
+        </div>
+      </div>
     </div>
-    <div id="koPenaltySection" style="display:none;background:var(--bg-deep);border-radius:9px;padding:10px;margin-bottom:10px;">
+    <div id="koPenaltySection" style="display:none;background:var(--bg-deep);border-radius:9px;padding:10px;margin:10px 0;">
       <div style="font-size:.72rem;color:var(--gold);font-weight:700;margin-bottom:8px;text-align:center;">⚡ Penalty Shootout</div>
       <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:center;">
         <input class="form-input" id="ko_p1_${matchKey}" type="number" min="0"
-          value="${match.penalty1 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
+          value="${(isLeg2 ? leg2?.penalty1 : match.penalty1) ?? ''}" placeholder="0"
+          style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
         <div style="text-align:center;font-size:.8rem;color:var(--text-muted);">pen</div>
         <input class="form-input" id="ko_p2_${matchKey}" type="number" min="0"
-          value="${match.penalty2 ?? ''}" placeholder="0" style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
+          value="${(isLeg2 ? leg2?.penalty2 : match.penalty2) ?? ''}" placeholder="0"
+          style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
       </div>
     </div>
     <div style="display:flex;gap:6px;justify-content:center;margin-bottom:4px;">
-      <button class="btn-flat" style="font-size:.72rem;" onclick="toggleKoPenalty('${matchKey}')">⚡ Penalty</button>
+      <button class="btn-flat" style="font-size:.72rem;" onclick="toggleKoPenalty()">⚡ Penalty</button>
     </div>`;
+
+  // Render scorer inputs
+  if (hId) renderScorerInputs(hId, `ko_scorers1_${matchKey}`, (isLeg2 ? leg2?.scorers1 : match.scorers1) || []);
+  if (aId) renderScorerInputs(aId, `ko_scorers2_${matchKey}`, (isLeg2 ? leg2?.scorers2 : match.scorers2) || []);
+
+  const hasPen = isLeg2 ? (leg2?.penalty1 != null) : (match.penalty1 != null);
+  if (hasPen) document.getElementById('koPenaltySection').style.display = 'block';
+
   document.getElementById('koBtnSave').onclick = () => saveKnockoutResult(matchKey);
-  // Show penalty nếu đã có
-  if (match.penalty1 != null) document.getElementById('koPenaltySection').style.display = 'block';
   openModal('knockoutResultModal');
 };
 
-window.toggleKoPenalty = (matchKey) => {
+window.toggleKoPenalty = () => {
   const el = document.getElementById('koPenaltySection');
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
 };
@@ -7390,7 +7452,10 @@ async function loadHybridLeagues() {
         scheduleOrder: stateData.scheduleOrder || [],
         manualDates: stateData.manualDates || {},
         rankMovement: stateData.rankMovement || {},
-        marathonScores: {},
+        marathonScores: stateData.marathonScores || {},
+        groups: stateData.groups || {},
+        knockoutMatches: stateData.knockoutMatches || {},
+        cupSeeds: stateData.cupSeeds || [],
         _storePath: 'state'
       };
       console.log('✅ Loaded current league from state');
@@ -7460,6 +7525,9 @@ function subscribePlatform() {
         manualDates: stateData.manualDates || {},
         rankMovement: stateData.rankMovement || {},
         marathonScores: stateData.marathonScores || {},
+        groups: stateData.groups || {},
+        knockoutMatches: stateData.knockoutMatches || {},
+        cupSeeds: stateData.cupSeeds || [],
         _storePath: 'state'
       };
       loadLeagueIntoState(allLeagues['league_default']);
@@ -7956,7 +8024,7 @@ function calcCupSeeds() {
 
   if (groupCount === 0) {
     // Không chia bảng — lấy toàn bộ BXH
-    return calcStandings().map(r => r.id);
+    return calcStandings().map(r => r[0]);
   }
 
   // Có chia bảng — lấy top qualifyPerGroup mỗi bảng, xen kẽ 1A,1B,2A,2B...
@@ -8022,6 +8090,23 @@ function generateKnockoutBracket(seeds) {
     if (matches[key].bye && matches[key].winner) progressKnockout(key, matches);
   });
 
+  // Nếu lượt đi/lượt về: tạo thêm entry _L2 cho mỗi trận thực (không phải bye)
+  if (leagueConfig.knockoutLeg === 'home-away') {
+    Object.keys(matches).forEach(key => {
+      const m = matches[key];
+      if (m.bye || m.round === 'F' || m.round === '3P') return; // Chung kết và 3P vẫn 1 lượt
+      const leg2Key = key + '_L2';
+      if (!matches[leg2Key]) {
+        matches[leg2Key] = {
+          round: m.round, matchNum: m.matchNum, leg: 2, isLeg2: true,
+          home: m.away,  // đổi sân lượt về
+          away: m.home,
+          score1: null, score2: null, winner: null, bye: false
+        };
+      }
+    });
+  }
+
   if (leagueConfig.thirdPlace) {
     matches['3P_1'] = { round:'3P', matchNum:1, home:null, away:null, score1:null, score2:null, winner:null, bye:false };
   }
@@ -8073,25 +8158,77 @@ window.saveKnockoutResult = async (matchKey) => {
   if (!isAdmin) { showToast('🔒 Cần Admin','warn'); return; }
   const match = knockoutMatches[matchKey];
   if (!match) return;
-  const s1 = Number(document.getElementById(`ko_s1_${matchKey}`)?.value);
-  const s2 = Number(document.getElementById(`ko_s2_${matchKey}`)?.value);
-  match.score1 = s1; match.score2 = s2;
+  
+  function collectKoScorers(wrapId) {
+    return [...document.querySelectorAll(`#${wrapId} input`)]
+      .map(inp => ({ name: inp.dataset.player, goals: Number(inp.value) || 0 }))
+      .filter(p => p.goals > 0);
+  }
+
+  const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && !match.bye;
+  const isLeg2 = !!match.isLeg2;
+  const leg2Key = matchKey + '_L2';
+
+  // Target object: leg2 entry nếu là lượt về, else match itself
+  const target = (isTwoLeg && isLeg2 && knockoutMatches[leg2Key]) ? knockoutMatches[leg2Key] : match;
+
+  target.score1   = Number(document.getElementById(`ko_s1_${matchKey}`)?.value ?? 0);
+  target.score2   = Number(document.getElementById(`ko_s2_${matchKey}`)?.value ?? 0);
+  target.y1       = Number(document.getElementById(`ko_y1_${matchKey}`)?.value) || 0;
+  target.y2       = Number(document.getElementById(`ko_y2_${matchKey}`)?.value) || 0;
+  target.r1       = Number(document.getElementById(`ko_r1_${matchKey}`)?.value) || 0;
+  target.r2       = Number(document.getElementById(`ko_r2_${matchKey}`)?.value) || 0;
+  target.scorers1 = collectKoScorers(`ko_scorers1_${matchKey}`);
+  target.scorers2 = collectKoScorers(`ko_scorers2_${matchKey}`);
 
   // Xác định winner
-  if (s1 > s2) match.winner = match.home;
-  else if (s2 > s1) match.winner = match.away;
-  else {
-    // Hòa → penalty
-    const p1 = document.getElementById(`ko_p1_${matchKey}`)?.value;
-    const p2 = document.getElementById(`ko_p2_${matchKey}`)?.value;
-    if (p1 !== '' && p2 !== '') {
-      match.penalty1 = Number(p1); match.penalty2 = Number(p2);
-      match.winner = Number(p1) > Number(p2) ? match.home : match.away;
+  if (isTwoLeg) {
+    // Cần cả 2 lượt mới tính được winner
+    const leg1 = match, leg2 = knockoutMatches[leg2Key];
+    if (leg1.score1 != null && leg1.score2 != null && leg2 && leg2.score1 != null && leg2.score2 != null) {
+      const agg1 = leg1.score1 + leg2.score1; // tổng bàn đội home (lượt đi)
+      const agg2 = leg1.score2 + leg2.score2;
+      if (agg1 > agg2) { match.winner = match.home; leg2.winner = match.home; }
+      else if (agg2 > agg1) { match.winner = match.away; leg2.winner = match.away; }
+      else {
+        // Bàn thắng sân khách: đội away lượt đi = home lượt về; đội away lượt đi ghi leg1.score2 ở sân khách, leg2.score1 ở sân nhà
+        const awayGoals = leg1.score2 + leg2.score1; // bàn của đội away (lượt đi) tính sân khách
+        const homeGoals = leg1.score1 + leg2.score2;
+        // away goals away = leg1.score2 (sân đối), home goals away = leg2.score2 (sân đối)
+        const awayAwayGoals = leg1.score2; // đội away ghi ở sân khách (lượt đi)
+        const homeAwayGoals = leg2.score2; // đội home ghi ở sân khách (lượt về)
+        let winner = null;
+        if (awayAwayGoals > homeAwayGoals) winner = match.away;
+        else if (homeAwayGoals > awayAwayGoals) winner = match.home;
+        else {
+          // Vẫn hòa → penalty (nhập ở modal lượt về)
+          const p1 = document.getElementById(`ko_p1_${matchKey}`)?.value;
+          const p2 = document.getElementById(`ko_p2_${matchKey}`)?.value;
+          if (p1 != null && p2 != null && p1 !== '' && p2 !== '') {
+            target.penalty1 = Number(p1); target.penalty2 = Number(p2);
+            winner = Number(p1) > Number(p2) ? match.home : match.away;
+          }
+        }
+        match.winner = winner; if (leg2) leg2.winner = winner;
+      }
+    }
+  } else {
+    // Single leg
+    const s1 = target.score1, s2 = target.score2;
+    if (s1 > s2) match.winner = match.home;
+    else if (s2 > s1) match.winner = match.away;
+    else {
+      const p1 = document.getElementById(`ko_p1_${matchKey}`)?.value;
+      const p2 = document.getElementById(`ko_p2_${matchKey}`)?.value;
+      if (p1 !== '' && p2 !== '' && p1 != null) {
+        match.penalty1 = Number(p1); match.penalty2 = Number(p2);
+        match.winner = Number(p1) > Number(p2) ? match.home : match.away;
+      }
     }
   }
 
   if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].knockoutMatches = knockoutMatches;
-  progressKnockout(matchKey);
+  if (match.winner) progressKnockout(matchKey);
   await persist();
   renderCupBracket();
   showToast(`✅ Đã lưu kết quả ${matchKey}`);
@@ -8124,8 +8261,13 @@ window.drawGroups = async (method = 'random') => {
   if (!isAdmin) return;
   const groupCount = leagueConfig.groupCount || 2;
   const ids = [...teamIds];
-  if (method === 'random') ids.sort(() => Math.random() - 0.5);
-  // method === 'seeded': giữ nguyên thứ tự seed (BXH hiện tại)
+  if (method === 'random') {
+    ids.sort(() => Math.random() - 0.5);
+  } else {
+    // 'seeded': sắp xếp theo BXH hiện tại
+    const ranked = calcStandings().map(r => r[0]);
+    ids.sort((a, b) => ranked.indexOf(a) - ranked.indexOf(b));
+  }  
   const groupKeys = Array.from({length: groupCount}, (_, i) => String.fromCharCode(65 + i));
   groups = {};
   groupKeys.forEach(k => groups[k] = []);
@@ -8133,12 +8275,13 @@ window.drawGroups = async (method = 'random') => {
   if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
   await persist();
   renderAll();
+  if (leagueConfig.hasCup) renderCupBracket();
   showToast(`✅ Đã chia ${groupCount} bảng!`);
 };
 
 // ── Standings cho nhóm đội cụ thể (tái dụng calcStandings) ──
 function calcStandingsForTeams(ids) {
-  return calcStandings().filter(r => ids.includes(r.id));
+  return calcStandings().filter(r => ids.includes(r[0]));
 }
 
 /* ═══════════════════ MARATHON SYSTEM ═══════════════════ */

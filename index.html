@@ -6331,7 +6331,7 @@ function renderCupBracket() {
   if (!bracketCard) return;
 
   if (!leagueConfig.hasCup) {
-bracketCard.classList.remove('bracket-visible');
+    bracketCard.classList.remove('bracket-visible');
     document.getElementById('mainGrid').classList.remove('has-bracket');
     document.getElementById('mainGrid').style.gridTemplateColumns = '';    
    
@@ -6360,17 +6360,27 @@ bracketCard.classList.remove('bracket-visible');
   const collapseStandingsBtn = document.getElementById('btnCollapseStandings');
   if (collapseStandingsBtn) collapseStandingsBtn.style.display = '';  
 
-  // Auto-collapse fixture khi bracket hiện
   const hasBracketData = Object.keys(knockoutMatches).length > 0;
   const fixtureCards = [document.getElementById('fixturesCard'), document.getElementById('marathonFixturesCard')];
-  fixtureCards.forEach(fc => {
-    if (fc && fc.style.display !== 'none') {
-      if (hasBracketData) fc.classList.add('fixture-collapsed');
-    }
-  });
-  // Auto-collapse standings + topscorers khi đã có bracket data
   const standingsCard = document.getElementById('standingsCard');
-  if (hasBracketData && standingsCard) standingsCard.classList.add('col-collapsed');
+
+  if (!hasBracketData) {
+    // Chưa có dữ liệu: Expand fixture, Expand standing, Collapse bracket
+    fixtureCards.forEach(fc => {
+      if (fc) fc.classList.remove('fixture-collapsed');
+    });
+    if (standingsCard) standingsCard.classList.remove('col-collapsed');
+    bracketCard.classList.add('col-collapsed');
+  } else {
+    // Đã có dữ liệu: Collapse fixture, Expand standing, Expand bracket
+    fixtureCards.forEach(fc => {
+      if (fc && fc.style.display !== 'none') {
+        fc.classList.add('fixture-collapsed');
+      }
+    });
+    if (standingsCard) standingsCard.classList.remove('col-collapsed');
+    bracketCard.classList.remove('col-collapsed');
+  }
 
   applyGridLayout();
 

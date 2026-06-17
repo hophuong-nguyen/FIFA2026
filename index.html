@@ -6331,9 +6331,27 @@ function renderCupBracket() {
   if (!bracketCard) return;
 
   if (!leagueConfig.hasCup) {
-    bracketCard.classList.remove('bracket-visible');
+bracketCard.classList.remove('bracket-visible');
     document.getElementById('mainGrid').classList.remove('has-bracket');
     document.getElementById('mainGrid').style.gridTemplateColumns = '';    
+   
+   // Xóa class thu gọn của cả Fixture Card (dùng fixture-collapsed) và Standings Card (dùng col-collapsed)
+   const fixtures = document.getElementById('fixturesCard');
+   if (fixtures) fixtures.classList.remove('fixture-collapsed');
+   
+   const marathonFixtures = document.getElementById('marathonFixturesCard');
+   if (marathonFixtures) marathonFixtures.classList.remove('fixture-collapsed');
+   
+   const standings = document.getElementById('standingsCard');
+   if (standings) standings.classList.remove('col-collapsed');
+   
+   // Gỡ luôn cho bracketCard (nếu đang bị kẹt class)
+   bracketCard.classList.remove('col-collapsed');
+
+   // Kích hoạt lại hàm tính toán chiều cao để reset layout
+   if (typeof syncFixtureCardHeight === 'function') {
+     syncFixtureCardHeight();
+   }
     return;
   }
 
@@ -9446,26 +9464,34 @@ setTimeout(() => {
 /* ── Sync chiều cao card lịch thi đấu với mép dưới viewport ── */
 function syncFixtureCardHeight() {
   if (window.innerWidth <= 768) return; // mobile: CSS lo
-  const card = document.querySelector('.grid-2 .card:first-child');
-  if (!card) return;
-  const top = card.getBoundingClientRect().top + window.scrollY;
-  const scrollTop = window.scrollY;
-  const availH = window.innerHeight - (top - scrollTop) - 10;
-  card.style.height = availH + 'px';
-  card.style.maxHeight = availH + 'px';
-
-  // Chiều cao card BXH bằng card trái, nội dung scroll qua #standingsScrollWrap
-  // Dòng ~7582-7588 — thay toàn bộ block rightCard
-  const rightCard = document.querySelector('.grid-2 .card:last-child');
-  if (rightCard) {
-    rightCard.style.height = availH + 'px';
-    rightCard.style.maxHeight = availH + 'px';
-    rightCard.style.overflowY = 'hidden';   // ← XÓA dòng này
-    // Thêm vào: đoạn này gây ra lỗi luôn hiện KnockoutBracket dù league ko có Cup mode
-    rightCard.style.overflow = 'hidden';    // card ngoài vẫn clip border-radius
-    //rightCard.style.display = 'flex';
-    rightCard.style.flexDirection = 'column';
-  }
+   // Lấy container chứa các thẻ card
+   const grid = document.getElementById('mainGrid') || document.querySelector('.grid-2');
+   if (!grid) return;
+   
+   let availH = 0;
+   
+   // Chỉ lấy các thẻ con trực tiếp là .card
+   const cards = Array.from(grid.children).filter(el => el.classList.contains('card'));
+   
+   cards.forEach(card => {
+     // Bỏ qua các card đang bị ẩn (ví dụ bracketCard khi hasCup = false)
+     if (window.getComputedStyle(card).display === 'none') {
+       card.style.height = ''; 
+       card.style.maxHeight = '';
+       return;
+     }
+     
+     // Tính toán availH 1 lần dựa trên card hiển thị đầu tiên
+     if (availH === 0) {
+       const top = card.getBoundingClientRect().top + window.scrollY;
+       const scrollTop = window.scrollY;
+       availH = window.innerHeight - (top - scrollTop) - 10;
+     }
+     
+     card.style.height = availH + 'px';
+     card.style.maxHeight = availH + 'px';
+     card.style.flexDirection = 'column';
+   });
 }
 
 // Gọi sau mỗi lần render
@@ -9475,7 +9501,22 @@ render = function() {
   requestAnimationFrame(syncFixtureCardHeight);
 };
 
-window.addEventListener('resize', syncFixtureCardHeight);
+//window.addEventListener('resize', syncFixtureCardHeight);
+ window.addEventListener('resize', () => {
+   if (window.innerWidth > 768) {
+     syncFixtureCardHeight();
+   } else {
+     // Reset lại inline style khi về màn hình mobile để nhường quyền cho CSS
+     const grid = document.getElementById('mainGrid') || document.querySelector('.grid-2');
+     if (grid) {
+       Array.from(grid.children).forEach(card => {
+         card.style.height = '';
+         card.style.maxHeight = '';
+         card.style.flexDirection = '';
+       });
+     }
+   }
+ });
 window.addEventListener('scroll', syncFixtureCardHeight);
 setTimeout(syncFixtureCardHeight, 500);
 

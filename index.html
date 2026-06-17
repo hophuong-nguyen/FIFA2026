@@ -3260,7 +3260,7 @@ window.sendMagicLink = async () => {
   errEl.textContent = '⏳ Đang gửi...';
   try {
     const cleanUrl = window.location.origin + window.location.pathname;
-    console.log('[MagicLink] sending to:', email, '| continueUrl:', cleanUrl);
+    //console.log('[MagicLink] sending to:', email, '| continueUrl:', cleanUrl);
     await sendSignInLinkToEmail(fbAuth, email, {
       url: cleanUrl,
       handleCodeInApp: true
@@ -3268,7 +3268,7 @@ window.sendMagicLink = async () => {
     localStorage.setItem('magicLinkEmail', email);
     errEl.style.color = 'var(--green)';
     errEl.textContent = '✅ Đã gửi! Kiểm tra hộp thư (kể cả Spam) và click link để đăng nhập.';
-    console.log('[MagicLink] sendSignInLinkToEmail resolved OK');
+    //console.log('[MagicLink] sendSignInLinkToEmail resolved OK');
   } catch(err) {
     btn.disabled = false;
     errEl.style.color = 'var(--red)';
@@ -7889,7 +7889,7 @@ function loadLeagueIntoState(league) {
 // ── Load current league from state (v1 path) + new leagues from lmp ──
 async function loadHybridLeagues() {
   try {
-    console.log('📖 Loading hybrid leagues (state + lmp)...');
+    //console.log('📖 Loading hybrid leagues (state + lmp)...');
     
     // Read current league from state
     const stateSnap = await new Promise(res => onValue(ref(db, CURRENT_LEAGUE_PATH), snap => { res(snap); }, { onlyOnce: true }));
@@ -7938,7 +7938,10 @@ async function loadHybridLeagues() {
         cupSeeds: stateData.cupSeeds || [],
         _storePath: 'state'
       };
-      console.log('✅ Loaded current league from state');
+      //console.log('✅ Loaded current league from state');
+
+      //console.log('hasCup:', leagueConfig.hasCup);
+      //console.log('mainGrid classes:', document.getElementById('mainGrid').className);
     }
     
     // Add new leagues from lmp
@@ -7948,7 +7951,7 @@ async function loadHybridLeagues() {
       }
     });
     if (Object.keys(lmpLeagues).length > 0) {
-      console.log(`✅ Loaded ${Object.keys(lmpLeagues).length} new leagues from lmp`);
+      //console.log(`✅ Loaded ${Object.keys(lmpLeagues).length} new leagues from lmp`);
     }
     
     // Set active league
@@ -8745,8 +8748,8 @@ window.generateCupBracket = async (force = false) => {
     allLeagues[activeLeagueId].cupSeeds = cupSeeds;
   }
   await persist();
-  console.log('[cup] saved knockoutMatches:', JSON.stringify(knockoutMatches));
-  console.log('[cup] allLeagues after persist:', JSON.stringify(allLeagues[activeLeagueId]?.knockoutMatches));
+  //console.log('[cup] saved knockoutMatches:', JSON.stringify(knockoutMatches));
+  //console.log('[cup] allLeagues after persist:', JSON.stringify(allLeagues[activeLeagueId]?.knockoutMatches));
   renderCupBracket();
   showToast(`🏆 Bracket đã được tạo với ${cupSeeds.length} đội!`);
 };
@@ -9373,7 +9376,7 @@ window.deleteMarathonStage = async () => {
   const stageNames = { ...(leagueConfig.stageNames || {}) };
   const stageName = stageNames[String(stageIdx)] || `Stage ${stageIdx + 1}`;
 
-  console.log('[deleteStage] stageIdx=', stageIdx, 'stageCount=', stageCount, '_editMarathonStage=', _editMarathonStage);
+  //console.log('[deleteStage] stageIdx=', stageIdx, 'stageCount=', stageCount, '_editMarathonStage=', _editMarathonStage);
 
   if (!confirm(`Xóa "${stageName}"? Điểm và tên stage này sẽ mất, các stage sau sẽ dịch lên.`)) return;
 
@@ -9458,9 +9461,9 @@ function syncFixtureCardHeight() {
     rightCard.style.height = availH + 'px';
     rightCard.style.maxHeight = availH + 'px';
     rightCard.style.overflowY = 'hidden';   // ← XÓA dòng này
-    // Thêm vào:
+    // Thêm vào: đoạn này gây ra lỗi luôn hiện KnockoutBracket dù league ko có Cup mode
     rightCard.style.overflow = 'hidden';    // card ngoài vẫn clip border-radius
-    rightCard.style.display = 'flex';
+    //rightCard.style.display = 'flex';
     rightCard.style.flexDirection = 'column';
   }
 }

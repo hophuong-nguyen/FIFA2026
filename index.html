@@ -6477,7 +6477,7 @@ function renderBracketSVG() {
   const cols = rounds.length;
   // "3P" không chiếm cột riêng (nó dùng chung cột với "F") nên trừ bớt 1 khi tính totalW
   const colsForWidth = leagueConfig.thirdPlace ? cols - 1 : cols;
-  const matchCounts = rounds.map(r => r === '3P' ? 1 : Object.keys(knockoutMatches).filter(k => k.startsWith(r + '_')).length);
+  const matchCounts = rounds.map(r => r === '3P' ? 1 : Object.keys(knockoutMatches).filter(k => k.startsWith(r + '_') && !k.endsWith('_L2')).length);
   const maxMatches = Math.max(...matchCounts.filter((_, i) => rounds[i] !== '3P'));
   const totalH = maxMatches * (MATCH_H + GAP_Y) - GAP_Y + PAD * 2 + (leagueConfig.thirdPlace ? MATCH_H + GAP_Y + 24 : 0);
   const totalW = colsForWidth * (MATCH_W + GAP_X) - GAP_X + PAD * 2;
@@ -6489,7 +6489,11 @@ function renderBracketSVG() {
     const isThirdPlace = round === '3P';
     const matchKeys = isThirdPlace
       ? ['3P_1']
-      : Object.keys(knockoutMatches).filter(k => k.startsWith(round + '_')).sort();
+      : Object.keys(knockoutMatches).filter(k => {
+          // Lọc bỏ các trận lượt về khỏi vòng lặp chính
+          if (k.endsWith('_L2')) return false; 
+          return k.startsWith(round + '_');
+        }).sort();
     const count = matchKeys.length;
     // "Hạng 3" dùng CÙNG cột x với "Chung kết" (round 'F'), không lấn sang cột riêng
     const finalColIdx = rounds.indexOf('F');
@@ -6501,17 +6505,25 @@ function renderBracketSVG() {
       const match = knockoutMatches[key] || {};
       if (!match) return;
       // Y position: center matches vertically in their slot
+      // Xác định group này có 1 hay 2 lượt trận để tính chiều cao "bao"
+      const isTwoLegMatchup = leagueConfig.knockoutLeg === 'home-away' && !match.bye && round !== 'F' && round !== '3P';
+      const blockH = isTwoLegMatchup ? (MATCH_H * 2 + 6) : MATCH_H;
+
       const slotH = isThirdPlace
-        ? totalH - PAD - MATCH_H // 3P ở dưới cùng
+        ? totalH - PAD - MATCH_H 
         : (totalH - PAD * 2) / count;
-      // "Hạng 3" nằm ngay dưới "Chung kết", cách 1 khoảng nhỏ (không tụt xuống đáy)
+      
       const finalMatchY = matchPositions['F_1'] ? matchPositions['F_1'].y : (totalH / 2 - MATCH_H / 2);        
       const y = isThirdPlace
-        ? finalMatchY + MATCH_H + GAP_Y + 24   // ngay dưới Chung kết, cách 1 khoảng nhỏ
-        : PAD + rowIdx * slotH + (slotH - MATCH_H) / 2;
+        ? finalMatchY + MATCH_H + GAP_Y + 24   
+        : PAD + rowIdx * slotH + (slotH - blockH) / 2; // Căn giữa toàn bộ block (thay vì 1 thẻ)
+        
       const cx = colX + MATCH_W / 2;
-      const cy = y + MATCH_H / 2;
-      matchPositions[key] = { x: colX, y, cx, cy };
+      const cy = y + blockH / 2; // Tọa độ Y để nối dây sẽ nằm ở chính giữa của group
+      matchPositions[key] = { x: colX, y, cx, cy, blockH };
+
+      // Vẽ khung "bao" (wrapper) gom 1 hoặc 2 lượt trận lại thành 1 cụm
+      svgContent += `<rect x="${colX - 6}" y="${y - 6}" width="${MATCH_W + 12}" height="${blockH + 12}" rx="14" fill="none" stroke="var(--border)" stroke-width="1.5" opacity="0.6"/>`;
 
       const homeTeam = match.home ? (teams[match.home] || match.home) : 'TBD';
       const awayTeam = match.away ? (teams[match.away] || match.away) : 'TBD';
@@ -6628,33 +6640,64 @@ function renderBracketSVG() {
               style="cursor:pointer;" onclick="openKnockoutResultModal('${key}',2)">✏️</text>` : ''}
           </g>`;
       }
+    });
+  });
 
-      // Connector lines đến round tiếp
-      if (!isThirdPlace && colIdx < rounds.length - 1 && round !== 'F') {
-        const nextRound = getNextRound(round);
-        if (nextRound) {
-          const nextKey = `${nextRound}_${Math.ceil(match.matchNum / 2)}`;
-          if (matchPositions[nextKey] === undefined) return; // chưa render, skip
-          const nx = matchPositions[nextKey].x;
-          const ny = matchPositions[nextKey].cy;
-          const ex = colX + MATCH_W;
-          const ey = cy;
-          const mx = ex + (nx - ex) / 2;
-          svgContent += `<path d="M${ex},${ey} C${mx},${ey} ${mx},${ny} ${nx},${ny}"
-            fill="none" stroke="var(--border)" stroke-width="1.5" opacity="0.6"/>`;
-        }
+  // VÒNG LẶP 2: Vẽ tất cả các connector sau khi đã có đầy đủ tọa độ matchPositions
+  let pathContent = '';
+  rounds.forEach((round) => {
+    if (round === 'F' || round === '3P') return;
+    const nextRound = getNextRound(round);
+    if (!nextRound) return;
+
+    const matchKeys = Object.keys(knockoutMatches).filter(k => k.startsWith(round + '_') && !k.endsWith('_L2'));
+    matchKeys.forEach(key => {
+      const match = knockoutMatches[key];
+      if (!match) return;
+
+      // 1. Vẽ đường nối vào vòng trong (QF -> SF, SF -> F...)
+      const nextKey = `${nextRound}_${Math.ceil(match.matchNum / 2)}`;
+      if (matchPositions[key] && matchPositions[nextKey]) {
+        // Tọa độ mép ngoài của khung bao (wrapper margin là 6px)
+        const ex = matchPositions[key].x + MATCH_W + 6;
+        const ey = matchPositions[key].cy;
+        const nx = matchPositions[nextKey].x - 6;
+        const ny = matchPositions[nextKey].cy;
+        const mx = ex + (nx - ex) / 2;
+        
+        // Đường kẻ đậm hơn và dùng màu nổi (màu bạc)
+        pathContent += `<path d="M${ex},${ey} C${mx},${ey} ${mx},${ny} ${nx},${ny}" 
+          fill="none" stroke="var(--silver, #8fa3b8)" stroke-width="2.5" opacity="0.85"/>`;
+      }
+
+   // 3. Nối đường thẳng đứng từ đáy Chung kết (F_1) xuống đỉnh Tranh hạng 3 (3P_1)
+   if (leagueConfig.thirdPlace && matchPositions['F_1'] && matchPositions['3P_1']) {
+      const fPos = matchPositions['F_1'];
+      const pPos = matchPositions['3P_1'];
+      
+      // Tọa độ trục dọc thẳng hàng ở tâm của 2 thẻ
+      const centerX = fPos.cx; 
+      
+      // Điểm bắt đầu: Mép dưới khung bao Chung kết (+6px padding của wrapper)
+      const startY = fPos.y + fPos.blockH + 6;
+      
+      // Điểm kết thúc: Mép trên khung bao Tranh hạng 3 (-6px padding)
+      const endY = pPos.y - 6;
+      
+      // Dùng thẻ <line> để vẽ một đường nối dọc nét đứt tinh tế
+      pathContent += `<line x1="${centerX}" y1="${startY}" x2="${centerX}" y2="${endY}" 
+        stroke="var(--silver, #8fa3b8)" stroke-dasharray="4 4" stroke-width="2" opacity="0.5"/>`;
       }
     });
   });
 
+  // Ghép pathContent VÀO TRƯỚC svgContent để đường kẻ nằm dưới các thẻ card
   const svg = `<svg viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg"
     style="width:100%;min-width:${totalW}px;height:${totalH}px;display:block;font-family:Inter,sans-serif;">
+    ${pathContent}
     ${svgContent}
   </svg>`;
-  document.getElementById('cupBracketSVG').innerHTML = svg;
-
-  // Vẽ lại connector sau khi đã có tất cả positions
-  renderBracketConnectors(rounds, matchPositions, MATCH_W, GAP_X, PAD);
+  document.getElementById('cupBracketSVG').innerHTML = svg;  
 }
 
 function renderBracketConnectors(rounds, matchPositions, MATCH_W) {

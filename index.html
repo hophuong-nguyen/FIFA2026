@@ -139,28 +139,248 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   border: 1px solid var(--border);
 }
 
-/* Cột Lịch thi đấu (Cột trái) */
-.card:first-child {
+/* ── Fixture card (cột trái) ── */
+#fixturesCard,
+#marathonFixturesCard {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  height: 80vh;             /* ← explicit height để fixture-list bên trong có thể scroll */
+  overflow: hidden;  
   min-height: 400px;
+  transition: width .3s ease, min-width .3s ease, padding .3s ease;
 }
 
-/* Cột phải (Bảng xếp hạng) */
-.card:last-child {
+/* Fixture collapsed (chỉ khi có bracket) */
+#fixturesCard.fixture-collapsed,
+#marathonFixturesCard.fixture-collapsed {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100%;
+  padding: 12px 8px;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Backdrop khi fixture mở dạng overlay (chỉ khi có bracket) */
+/* (đã bỏ backdrop/overlay — dùng grid 3 cột thật, không che nhau) */
+
+#fixturesCard.fixture-collapsed .fixture-collapse-hide,
+#marathonFixturesCard.fixture-collapsed .fixture-collapse-hide {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* QUAN TRỌNG: khi mở (không collapsed), .fixture-collapse-hide phải là flex
+   container truyền chiều cao xuống .fixtures-wrap để nó scroll được */
+.fixture-collapse-hide {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.fixture-collapse-title {
+  display: none;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .5px;
+  white-space: nowrap;
+  margin: auto;
+  user-select: none;
+}
+
+#fixturesCard.fixture-collapsed .fixture-collapse-title,
+#marathonFixturesCard.fixture-collapsed .fixture-collapse-title {
+  display: flex;
+   align-items: center;
+   gap: 6px;
+   height: auto;
+   margin-top: 4px;
+}
+
+#bracketCard.col-collapsed .col-collapse-title,
+#standingsCard.col-collapsed .col-collapse-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   height: auto;
-  overflow: visible;
+  margin-top: 4px;
 }
 
-@media (max-width: 768px) {
-  .card:first-child {
+/* Bracket card (cột giữa) */
+#bracketCard {
+  display: none;
+  flex-direction: column;
+  min-height: 400px;  
+  overflow: hidden;
+  min-width: 0;
+}
+
+#bracketCard.bracket-visible {
+  display: flex;
+}
+
+#bracketCardInner {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;        /* scroll cả 2 chiều */
+  width: 100%;
+  height: 100%;
+}
+
+/* Trạng thái collapsed cho bracket / standings (giống fixture) */
+#bracketCard.col-collapsed,
+#standingsCard.col-collapsed {
+  width: 100% !important;   /* lấp đầy track grid (track đã được set 48px bởi applyGridLayout) */
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 12px 8px;
+  overflow: hidden;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;  
+}
+
+.col-collapse-hide {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#bracketCard.col-collapsed .col-collapse-hide,
+#standingsCard.col-collapsed .col-collapse-hide {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.fixture-collapse-title {
+  display: none;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .5px;
+  white-space: nowrap;
+  margin: 0 auto;
+  user-select: none;
+}
+
+.col-collapse-title {
+  display: none;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .5px;
+  white-space: nowrap;
+  margin: 0 auto;
+  user-select: none;
+}
+
+#bracketCard.col-collapsed .col-collapse-title,
+#standingsCard.col-collapsed .col-collapse-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: auto;
+  margin-top: 4px;
+}
+
+/* .col-collapse-hide ở trạng thái mở: phải là flex column full-height
+   để nội dung bên trong (vd standingsScrollWrap, bracketCardInner) scroll đúng */
+.col-collapse-hide {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Standings card */
+#standingsCard {
+  height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#standingsCard {
+  min-width: 0;
+}
+
+/* Grid: 3 cột khi có bracket, 2 cột khi không.
+   grid-template-columns được set TRỰC TIẾP bằng JS (xem applyGridLayout())
+   vì tỷ lệ 3 cột phụ thuộc động vào cột nào đang collapsed. */
+#mainGrid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
+  transition: none;
+}
+
+#mainGrid.has-bracket {
+  align-items: stretch;
+  height: calc(100vh - 160px);   /* ép toàn bộ grid container có height cố định */
+}
+
+#mainGrid.has-bracket > .card {
+  min-width: 0;
+  height: calc(100vh - 160px);   /* trừ header + padding container */
+  max-height: calc(100vh - 160px);
+  transition: none;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 960px) {
+  #mainGrid,
+  #mainGrid.has-bracket {
+    grid-template-columns: 1fr !important;
+  }  
+  #fixturesCard.fixture-collapsed,
+  #marathonFixturesCard.fixture-collapsed {
+    width: 100% !important;
+    min-width: unset !important;
+    max-width: unset !important;
     height: auto;
-    max-height: 80vh;
+    min-height: 48px;
+    max-height: 48px;
+    padding: 0 16px;
+    flex-direction: row;
+    align-items: center;
   }
-  .card:last-child {
-    max-height: none;
+  #fixturesCard.fixture-collapsed .fixture-collapse-title,
+  #marathonFixturesCard.fixture-collapsed .fixture-collapse-title {
+    writing-mode: horizontal-tb;
+    transform: none;
+    height: auto;
+  }
+  #bracketCard {
+    height: auto;
+    min-height: 0;
+  }
+  #bracketCardInner {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+  #standingsCard {
+    height: auto;
+    overflow: visible;
+  }
+  #mainGrid.has-bracket > .card {
+    height: auto !important;
   }
 }
 
@@ -2770,65 +2990,84 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   </div>
 </div>
   </div>
-  <div class="grid-2" id="mainGrid">
-    <!-- League mode: fixture list (left) -->
-    <div class="card" id="fixturesCard">
-      <div class="section-header">
-        <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
-        <div style="display:flex;gap:5px;align-items:center;">
-          <button class="btn-flat btn-flat-teal btn-sm" id="btnAuto" onclick="requireAdmin(()=>openAutoModal())">⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span></button>
+    <div class="grid-2" id="mainGrid">    
+      <!-- Cột trái: Lịch thi đấu (league) -->
+      <div class="card" id="fixturesCard" onclick="if(this.classList.contains('fixture-collapsed')) toggleFixtureCollapse()">
+        <!-- Title dọc khi collapsed -->
+        <div class="fixture-collapse-title" onclick="toggleFixtureCollapse()">📅 Lịch thi đấu</div>
+        <!-- Nội dung bình thường -->
+        <div class="fixture-collapse-hide">
+          <div class="section-header">
+            <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
+            <div style="display:flex;gap:5px;align-items:center;">
+              <button class="btn-flat btn-flat-teal btn-sm" id="btnAuto" onclick="requireAdmin(()=>openAutoModal())">⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span></button>
+              <button class="btn-flat btn-sm" id="btnCollapseFixture" onclick="toggleFixtureCollapse()" title="Thu gọn lịch" style="font-size:.72rem;padding:3px 7px;">‹‹</button>
+            </div>
+          </div>
+          <div class="fixtures-wrap" id="fixturesList"></div>
         </div>
       </div>
-      <div class="fixtures-wrap" id="fixturesList"></div>
-    </div>
-    <!-- THÊM VÀO ngay sau </div> đóng của #fixturesCard -->
-    <div class="card" id="marathonFixturesCard" style="display:none;">
-      <div class="card-title"><div class="icon">🎮</div><span id="marathonFixturesTitle">Lịch thi đấu Marathon</span>
-        <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn-flat" id="btnMarathonAddMatch" onclick="requireAdmin(openMarathonAddMatchModal)" style="font-size:.72rem;padding:4px 8px;color:var(--accent);border-color:var(--accent-a30);">➕ Thêm trận</button>
-          <button class="btn-flat" id="btnMarathonAutoFixture" onclick="requireAdmin(openMarathonAutoModal)" style="font-size:.72rem;padding:4px 8px;">⚡ Tự động</button>
+      <!-- Cột trái: Lịch thi đấu (marathon) -->
+      <div class="card" id="marathonFixturesCard" style="display:none;" onclick="if(this.classList.contains('fixture-collapsed')) toggleFixtureCollapse()">
+        <div class="fixture-collapse-title" onclick="toggleFixtureCollapse()">🎮 Marathon</div>
+        <div class="fixture-collapse-hide">
+          <div class="card-title"><div class="icon">🎮</div><span id="marathonFixturesTitle">Lịch thi đấu Marathon</span>
+            <div style="margin-left:auto;display:flex;gap:6px;">
+              <button class="btn-flat" id="btnMarathonAddMatch" onclick="requireAdmin(openMarathonAddMatchModal)" style="font-size:.72rem;padding:4px 8px;color:var(--accent);border-color:var(--accent-a30);">➕ Thêm trận</button>
+              <button class="btn-flat" id="btnMarathonAutoFixture" onclick="requireAdmin(openMarathonAutoModal)" style="font-size:.72rem;padding:4px 8px;">⚡ Tự động</button>
+              <button class="btn-flat btn-sm" onclick="toggleFixtureCollapse()" style="font-size:.72rem;padding:3px 7px;">‹‹</button>
+            </div>
+          </div>
+          <div id="marathonFixturesList" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;margin-top:8px;"></div>
+        </div>
+      </div>      
+      <!-- Cột phải: Bảng xếp hạng -->
+      <div class="card" id="standingsCard" onclick="if(this.classList.contains('col-collapsed')) toggleColumnCollapse('standingsCard')">
+      <div class="col-collapse-title" onclick="toggleColumnCollapse('standingsCard')">🏆 Bảng xếp hạng</div>
+      <div class="col-collapse-hide">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="card-title" id="standingsCardTitle" style="margin-bottom:10px;"><div class="icon">🏆</div>Bảng xếp hạng</div>
+          <button class="btn-flat btn-sm" id="btnCollapseStandings" onclick="toggleColumnCollapse('standingsCard')" title="Thu gọn" style="font-size:.72rem;padding:3px 7px;display:none;">‹‹</button>
+        </div>
+        <div id="leagueStandingsPanel">
+          <div id="standingsScrollWrap" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">
+            <div id="podiumArea"></div>
+            <div class="stats-compact" id="statsCompact"></div>
+            <table class="standings-table" id="standingsTable"></table>
+            <div style="margin-top:32px;"></div>
+            <div class="card-title"><div class="icon">⚽</div>Vua phá lưới</div>
+            <div id="scorerPodiumArea"></div>
+            <table class="standings-table" id="topScorersTable" style="margin-bottom:12px;"></table>
+            <div id="topScorersToggleWrap" style="text-align:center;margin-bottom:24px;"></div>
+          </div>
+        </div>
+        <div id="marathonStandingsPanel" style="display:none;flex:1;min-height:0;flex-direction:column;overflow:hidden;">
+          <div id="marathonStandingsScrollWrap" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">
+            <div id="marathonPodiumArea"></div>
+            <div id="marathonStatsBar" class="stats-compact"></div>
+            <div id="marathonStandingsTable"></div>
+            <div style="margin-top:16px;" id="marathonStageGrid"></div>
+          </div>
         </div>
       </div>
-      <div id="marathonFixturesList" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;margin-top:8px;"></div>
-    </div>
-    <!-- Right column: standings + marathon panel -->
-    <div class="card" id="standingsCard">
-      <div class="card-title" id="standingsCardTitle"><div class="icon">🏆</div>Bảng xếp hạng</div>
-      <!-- League mode standings -->
-      <div id="leagueStandingsPanel">
-        <div id="standingsScrollWrap" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">
-          <div id="podiumArea"></div>
-          <div class="stats-compact" id="statsCompact"></div>
-          <table class="standings-table" id="standingsTable"></table>
-          <div style="margin-top: 32px;"></div>
-          <div class="card-title"><div class="icon">⚽</div>Vua phá lưới</div>
-          <div id="scorerPodiumArea"></div>
-          <table class="standings-table" id="topScorersTable" style="margin-bottom: 12px;"></table>
-          <div id="topScorersToggleWrap" style="text-align:center; margin-bottom: 24px;"></div>
-        </div>
-        <!-- CUP Mode bracket SVG-->
-        <div id="cupBracketPanel" style="display:none;margin-top:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-          <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">🏆 Knockout Bracket</div>
-          <div style="display:flex;gap:6px;" id="cupBracketActions"></div>
-        </div>
-        <!-- Desktop: SVG tree -->
-        <div id="cupBracketSVG" style="overflow-x:auto;"></div>
-        <!-- Mobile: horizontal scroll cards -->
-        <div id="cupBracketCards" style="display:none;overflow-x:auto;"></div>
-      </div>
-      </div>
-      <!-- Marathon mode standings -->
-      <div id="marathonStandingsPanel" style="display:none;">
-        <div id="marathonStandingsScrollWrap" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">
-          <div id="marathonPodiumArea"></div>
-          <div id="marathonStatsBar" class="stats-compact"></div>
-          <div id="marathonStandingsTable"></div>
-          <div style="margin-top:16px;" id="marathonStageGrid"></div>
-        </div>
-      </div>
-    </div>
   </div>
+  <!-- Cột giữa: Knockout Bracket (chỉ hiện khi hasCup) -->
+      <div class="card" id="bracketCard" onclick="if(this.classList.contains('col-collapsed')) toggleColumnCollapse('bracketCard')">
+       <div class="col-collapse-title" onclick="toggleColumnCollapse('bracketCard')">🏆 Knockout Bracket</div>
+      <div class="col-collapse-hide">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div class="card-title" style="margin-bottom:0;"><div class="icon">🏆</div>Knockout Bracket</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <div style="display:flex;gap:6px;align-items:center;" id="cupBracketActions"></div>
+            <button class="btn-flat btn-sm" onclick="toggleColumnCollapse('bracketCard')" title="Thu gọn" style="font-size:.72rem;padding:3px 7px;">‹‹</button>
+          </div>
+        </div>
+        <div id="bracketCardInner">
+          <div id="cupBracketSVG"></div>
+          <div id="cupBracketCards" style="display:none;overflow-x:auto;"></div>
+        </div>
+      </div>
+      </div>
 </div>
 
 <script type="module">
@@ -3097,6 +3336,28 @@ const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct
 const DOWS_VI = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
 const DOWS_SHORT = ['CN','T2','T3','T4','T5','T6','T7'];
 
+// ── Quản lý 3 cột: fixture / bracket / standings ──
+// Mỗi cột có thể collapsed độc lập. Khi collapsed: 48px cố định.
+// Khi expanded: chia theo tỷ lệ trọng số của các cột đang mở.
+// Khi chỉ 2 cột mở, luôn chia đều 50/50 — không dùng trọng số lệch
+const COL_COLLAPSED_PX = 48;
+
+function applyGridLayout() {
+  const grid = document.getElementById('mainGrid');
+  if (!grid || !grid.classList.contains('has-bracket')) return;
+  const cols = ['fixture', 'standings', 'bracket'];
+  const collapsedFlags = cols.map(c => isColCollapsed(c));
+  const expandedCols = cols.filter((c, i) => !collapsedFlags[i]);
+  
+  const colTemplate = cols.map((c, i) => {
+    if (collapsedFlags[i]) return `${COL_COLLAPSED_PX}px`;
+    // Mỗi cột mở chiếm phần bằng nhau (1fr) trong số các cột đang mở
+    return `minmax(0, 1fr)`;
+  }).join(' ');
+
+  grid.style.gridTemplateColumns = colTemplate;
+}
+
 /* ═══════════════════ SCHEDULING ═══════════════════ */
 function generateRoundRobin(ids, format = 'single') {
   if (!ids || ids.length < 2) return [];
@@ -3150,6 +3411,7 @@ let manualDates = {}; // { matchIdx: isoDate } - các trận đã được admin
 let fbReady = false;
 let groups = {};           // { 'A': ['id1','id2',...], 'B': [...] }
 let knockoutMatches = {};  // { 'R16_1': {home,away,score1,score2,...}, ... }
+let knockoutMatchDates = {};  // { 'QF_1_date': '2026-06-01', 'QF_1_L2_date': '...' }
 let cupSeeds = [];         // thứ tự seed sau vòng bảng ['id1','id2',...]
 
 /* ═══════════════════ FILTER ═══════════════════ */
@@ -6065,17 +6327,34 @@ function renderStandings() {
 }
 
 function renderCupBracket() {
-  const panel = document.getElementById('cupBracketPanel');
-  if (!panel) return;
-  
-  // Tự động ẩn toàn bộ panel nếu giải này không bật Cup
-  if (!leagueConfig.hasCup) { 
-    panel.style.display = 'none'; 
-    return; 
+  const bracketCard = document.getElementById('bracketCard');
+  if (!bracketCard) return;
+
+  if (!leagueConfig.hasCup) {
+    bracketCard.classList.remove('bracket-visible');
+    document.getElementById('mainGrid').classList.remove('has-bracket');
+    document.getElementById('mainGrid').style.gridTemplateColumns = '';    
+    return;
   }
-  
-  // Nếu có Cup, hiển thị panel
-  panel.style.display = 'block';
+
+  bracketCard.classList.add('bracket-visible');
+  document.getElementById('mainGrid').classList.add('has-bracket');
+  const collapseStandingsBtn = document.getElementById('btnCollapseStandings');
+  if (collapseStandingsBtn) collapseStandingsBtn.style.display = '';  
+
+  // Auto-collapse fixture khi bracket hiện
+  const hasBracketData = Object.keys(knockoutMatches).length > 0;
+  const fixtureCards = [document.getElementById('fixturesCard'), document.getElementById('marathonFixturesCard')];
+  fixtureCards.forEach(fc => {
+    if (fc && fc.style.display !== 'none') {
+      if (hasBracketData) fc.classList.add('fixture-collapsed');
+    }
+  });
+  // Auto-collapse standings + topscorers khi đã có bracket data
+  const standingsCard = document.getElementById('standingsCard');
+  if (hasBracketData && standingsCard) standingsCard.classList.add('col-collapsed');
+
+  applyGridLayout();
 
   // Actions bar
   const actions = document.getElementById('cupBracketActions');
@@ -6083,38 +6362,81 @@ function renderCupBracket() {
     actions.innerHTML = `
       <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="drawGroups('random')">🎲 Bốc thăm</button>
       <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="drawGroups('seeded')">🌱 Theo seed</button>
-      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;color:var(--accent);border-color:var(--accent-a30);" onclick="generateCupBracket()">⚡ Generate Bracket</button>`;
+      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;color:var(--accent);border-color:var(--accent-a30);" onclick="generateCupBracket()">⚡ Generate</button>`;
   }
 
-  const svgContainer = document.getElementById('cupBracketSVG');
-  const cardsContainer = document.getElementById('cupBracketCards');
-
-  // Xử lý khi chưa có Bracket
-  if (!knockoutMatches || Object.keys(knockoutMatches).length === 0) {
-    if (svgContainer) {
-      svgContainer.style.display = 'block';
-      svgContainer.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem;">Chưa có bracket — bấm Generate Bracket để tạo</div>`;
-    }
-    if (cardsContainer) cardsContainer.style.display = 'none'; // Phải ẩn card đi để tránh HTML rác
+  if (!hasBracketData) {
+    document.getElementById('cupBracketSVG').innerHTML =
+      `<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem;">Chưa có bracket — bấm Generate để tạo</div>`;
     return;
   }
 
-  // Xử lý hiển thị SVG (Desktop) hoặc Card (Mobile)
   const isMobile = window.innerWidth < 768;
   if (isMobile) {
-    if (svgContainer) svgContainer.style.display = 'none';
-    if (cardsContainer) {
-      cardsContainer.style.display = 'block';
-      if (typeof renderBracketCards === 'function') renderBracketCards();
-    }
+    document.getElementById('cupBracketSVG').style.display = 'none';
+    document.getElementById('cupBracketCards').style.display = 'block';
+    renderBracketCards();
   } else {
-    if (cardsContainer) cardsContainer.style.display = 'none';
-    if (svgContainer) {
-      svgContainer.style.display = 'block';
-      if (typeof renderBracketSVG === 'function') renderBracketSVG();
-    }
+    document.getElementById('cupBracketSVG').style.display = 'block';
+    document.getElementById('cupBracketCards').style.display = 'none';
+    renderBracketSVG();
   }
 }
+
+// Trả về element đang đại diện cho mỗi cột logic
+function getColEl(colName) {
+  if (colName === 'fixture') {
+    const fc = document.getElementById('fixturesCard');
+    const mfc = document.getElementById('marathonFixturesCard');
+    return (fc && fc.style.display !== 'none') ? fc : mfc;
+  }
+  if (colName === 'bracket') return document.getElementById('bracketCard');
+  if (colName === 'standings') return document.getElementById('standingsCard');
+  return null;
+}
+function isColCollapsed(colName) {
+  const el = getColEl(colName);
+  if (!el) return true;
+  return el.classList.contains('fixture-collapsed') || el.classList.contains('col-collapsed');
+}
+function setColCollapsed(colName, collapsed) {
+  const el = getColEl(colName);
+  if (!el) return;
+  const cls = colName === 'fixture' ? 'fixture-collapsed' : 'col-collapsed';
+  el.classList.toggle(cls, collapsed);
+}
+
+// Đảm bảo LUÔN có đúng 2 cột mở (desktop). Gọi sau MỌI lần toggle, bất kể đóng hay mở.
+function enforceTwoExpandedRule(justToggledCol) {
+  const cols = ['fixture', 'bracket', 'standings'];
+  let expanded = cols.filter(c => !isColCollapsed(c));
+
+  if (expanded.length > 2) {
+    // Quá nhiều cột mở → đóng 1 cột khác (không phải cột vừa toggle)
+    const toClose = expanded.find(c => c !== justToggledCol) || expanded[0];
+    setColCollapsed(toClose, true);
+  } else if (expanded.length < 2) {
+    // Quá ít cột mở (vừa đóng 1 cột khiến chỉ còn 0 hoặc 1 mở) → mở thêm cột khác
+    const collapsedCols = cols.filter(c => isColCollapsed(c));
+    const toOpen = collapsedCols.find(c => c !== justToggledCol) || collapsedCols[0];
+    if (toOpen) setColCollapsed(toOpen, false);
+  }
+}
+
+window.toggleFixtureCollapse = function() {
+  const wasCollapsed = isColCollapsed('fixture');
+  setColCollapsed('fixture', !wasCollapsed);
+  enforceTwoExpandedRule('fixture');   // gọi luôn, không có if (wasCollapsed)
+  applyGridLayout();
+};
+
+window.toggleColumnCollapse = function(colId) {
+  const colName = colId === 'bracketCard' ? 'bracket' : 'standings';
+  const wasCollapsed = isColCollapsed(colName);
+  setColCollapsed(colName, !wasCollapsed);
+  enforceTwoExpandedRule(colName);     // gọi luôn, không có if (wasCollapsed)
+  applyGridLayout();
+};
 
 // ── SVG Tree Bracket (desktop) ──
 function renderBracketSVG() {
@@ -6122,13 +6444,15 @@ function renderBracketSVG() {
   const rounds = order.filter(r => Object.keys(knockoutMatches).some(k => k.startsWith(r)));
   if (leagueConfig.thirdPlace) rounds.push('3P');
 
-  const MATCH_H = 72, MATCH_W = 160, GAP_X = 48, GAP_Y = 16, PAD = 24;
+  const isTwoLegBracket = leagueConfig.knockoutLeg === 'home-away';
+  const MATCH_H = 72, MATCH_W = 160, GAP_X = 48, GAP_Y = isTwoLegBracket ? 160 : 16, PAD = 24;
   const cols = rounds.length;
-  // Số match mỗi round
+  // "3P" không chiếm cột riêng (nó dùng chung cột với "F") nên trừ bớt 1 khi tính totalW
+  const colsForWidth = leagueConfig.thirdPlace ? cols - 1 : cols;
   const matchCounts = rounds.map(r => r === '3P' ? 1 : Object.keys(knockoutMatches).filter(k => k.startsWith(r + '_')).length);
   const maxMatches = Math.max(...matchCounts.filter((_, i) => rounds[i] !== '3P'));
-  const totalH = maxMatches * (MATCH_H + GAP_Y) - GAP_Y + PAD * 2;
-  const totalW = cols * (MATCH_W + GAP_X) - GAP_X + PAD * 2;
+  const totalH = maxMatches * (MATCH_H + GAP_Y) - GAP_Y + PAD * 2 + (leagueConfig.thirdPlace ? MATCH_H + GAP_Y + 24 : 0);
+  const totalW = colsForWidth * (MATCH_W + GAP_X) - GAP_X + PAD * 2;
 
   let svgContent = '';
   const matchPositions = {}; // key → {x, y, cx, cy}
@@ -6139,7 +6463,11 @@ function renderBracketSVG() {
       ? ['3P_1']
       : Object.keys(knockoutMatches).filter(k => k.startsWith(round + '_')).sort();
     const count = matchKeys.length;
-    const colX = PAD + colIdx * (MATCH_W + GAP_X);
+    // "Hạng 3" dùng CÙNG cột x với "Chung kết" (round 'F'), không lấn sang cột riêng
+    const finalColIdx = rounds.indexOf('F');
+    const colX = isThirdPlace
+      ? PAD + finalColIdx * (MATCH_W + GAP_X)
+      : PAD + colIdx * (MATCH_W + GAP_X);
 
     matchKeys.forEach((key, rowIdx) => {
       const match = knockoutMatches[key] || {};
@@ -6148,8 +6476,10 @@ function renderBracketSVG() {
       const slotH = isThirdPlace
         ? totalH - PAD - MATCH_H // 3P ở dưới cùng
         : (totalH - PAD * 2) / count;
+      // "Hạng 3" nằm ngay dưới "Chung kết", cách 1 khoảng nhỏ (không tụt xuống đáy)
+      const finalMatchY = matchPositions['F_1'] ? matchPositions['F_1'].y : (totalH / 2 - MATCH_H / 2);        
       const y = isThirdPlace
-        ? totalH - PAD - MATCH_H
+        ? finalMatchY + MATCH_H + GAP_Y + 24   // ngay dưới Chung kết, cách 1 khoảng nhỏ
         : PAD + rowIdx * slotH + (slotH - MATCH_H) / 2;
       const cx = colX + MATCH_W / 2;
       const cy = y + MATCH_H / 2;
@@ -6157,6 +6487,7 @@ function renderBracketSVG() {
 
       const homeTeam = match.home ? (teams[match.home] || match.home) : 'TBD';
       const awayTeam = match.away ? (teams[match.away] || match.away) : 'TBD';
+      const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && !match.bye;
       const homeEmoji = match.home ? (teamEmojis[match.home] || '') : '';
       const awayEmoji = match.away ? (teamEmojis[match.away] || '') : '';
       const homeColor = match.home ? (teamColors[match.home] || 'var(--text)') : 'var(--text-muted)';
@@ -6181,6 +6512,13 @@ function renderBracketSVG() {
           <text x="${MATCH_W/2}" y="11" text-anchor="middle"
             font-size="8" fill="var(--text-muted)" font-family="Inter,sans-serif"
             font-weight="600" letter-spacing="0.5">${getRoundLabel(round)} ${!isThirdPlace ? '#'+match.matchNum : ''}</text>
+          <!-- Ngày thi đấu -->
+          ${(() => {
+            const dk = knockoutMatchDates[key + '_date'];
+            return dk ? `<text x="${MATCH_W/2}" y="22" text-anchor="middle"
+              font-size="7.5" fill="var(--accent-a60)" font-family="Inter,sans-serif">
+              ${formatDMY(dk)}</text>` : '';
+          })()}
           <!-- Divider -->
           <line x1="8" y1="${MATCH_H/2}" x2="${MATCH_W-8}" y2="${MATCH_H/2}" stroke="var(--border)" stroke-width="1"/>
           <!-- Home team -->
@@ -6199,28 +6537,69 @@ function renderBracketSVG() {
             font-family="Rajdhani,sans-serif" font-weight="700">${score2}</text>` : ''}
           ${match.bye ? `<text x="${MATCH_W/2}" y="${MATCH_H/2+4}" text-anchor="middle"
             font-size="9" fill="var(--text-muted)" font-family="Inter,sans-serif">BYE</text>` : ''}
-          <!-- Edit button (admin only) -->
+          <!-- Edit button (admin only) — chỉ nút lượt đi ở đây -->
           ${isAdmin && !match.bye && !match.isLeg2 ? `
           <rect x="${MATCH_W-26}" y="${MATCH_H-18}" width="20" height="14" rx="4"
             fill="var(--accent-a12)" stroke="var(--accent-a30)" stroke-width="1"
-            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}')"/>
+            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}',1)"/>
           <text x="${MATCH_W-16}" y="${MATCH_H-8}" text-anchor="middle"
             font-size="9" fill="var(--accent)" font-family="Inter,sans-serif"
-            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}')">✏️</text>
-            ${leagueConfig.knockoutLeg === 'home-away' ? `
-          <rect x="${MATCH_W-50}" y="${MATCH_H-18}" width="22" height="14" rx="4"
-            fill="var(--accent2-a10)" stroke="var(--accent2-a18)" stroke-width="1"
-            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}_L2')"/>
-          <text x="${MATCH_W-39}" y="${MATCH_H-8}" text-anchor="middle"
-            font-size="8" fill="var(--silver)" font-family="Inter,sans-serif"
-            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}_L2')">↩️L2</text>` : ''}
-          ` : ''}
-          <!-- Penalty indicator -->
-          ${match.penalty1 !== undefined && match.penalty1 !== null
+            style="cursor:pointer;" onclick="openKnockoutResultModal('${key}',1)">✏️</text>` : ''}
+          <!-- Penalty/aggregate indicator (single leg) -->
+          ${!isTwoLeg && match.penalty1 != null
             ? `<text x="${MATCH_W/2}" y="${MATCH_H-4}" text-anchor="middle"
                 font-size="8" fill="var(--gold)" font-family="Inter,sans-serif">
                 Pen: ${match.penalty1}–${match.penalty2}</text>` : ''}
         </g>`;
+
+        // Lượt về: render card phụ bên dưới card lượt đi
+      if (leagueConfig.knockoutLeg === 'home-away' && !match.bye && !match.isLeg2 && round !== 'F' && round !== '3P') {
+        const leg2Key = key + '_L2';
+        const leg2    = knockoutMatches[leg2Key];
+        const l2y     = y + MATCH_H + 6;
+        const l2HasResult = leg2 && leg2.score1 != null;
+        // aggregate
+        let aggLine = '';
+        if (l2HasResult && match.score1 != null) {
+          const aggHome = match.score1 + leg2.score2;
+          const aggAway = match.score2 + leg2.score1;
+          const penStr  = leg2.penalty1 != null ? ` (${leg2.penalty1}p-${leg2.penalty2}p)` : '';
+          aggLine = `<text x="${MATCH_W/2}" y="${MATCH_H-3}" text-anchor="middle"
+            font-size="8" fill="var(--gold)" font-family="Inter,sans-serif">
+            Tổng: ${aggHome}–${aggAway}${penStr}</text>`;
+        }
+        svgContent += `
+          <g transform="translate(${colX},${l2y})">
+            <rect width="${MATCH_W}" height="${MATCH_H}" rx="10" ry="10"
+              fill="var(--bg-deep)" stroke="var(--border)" stroke-width="1" opacity="0.7"/>
+            <text x="${MATCH_W/2}" y="11" text-anchor="middle"
+              font-size="8" fill="var(--text-muted)" font-family="Inter,sans-serif"
+              font-weight="600" letter-spacing="0.5">Lượt về #${match.matchNum}</text>
+            <line x1="8" y1="${MATCH_H/2}" x2="${MATCH_W-8}" y2="${MATCH_H/2}" stroke="var(--border)" stroke-width="1"/>
+            <text x="10" y="${MATCH_H/2-10}" font-size="11"
+              fill="${leg2?.winner === match.away ? (teamColors[match.away]||'var(--text)') : 'var(--text-muted)'}"
+              font-family="Inter,sans-serif" font-weight="${leg2?.winner===match.away?'700':'400'}">
+              ${teamEmojis[match.away]||''} ${(teams[match.away]||match.away||'TBD').slice(0,14)}</text>
+            ${l2HasResult ? `<text x="${MATCH_W-10}" y="${MATCH_H/2-10}" text-anchor="end" font-size="13"
+              fill="${leg2.winner===match.away?'var(--accent)':'var(--text-muted)'}"
+              font-family="Rajdhani,sans-serif" font-weight="700">${leg2.score1}</text>` : ''}
+            <text x="10" y="${MATCH_H/2+18}" font-size="11"
+              fill="${leg2?.winner === match.home ? (teamColors[match.home]||'var(--text)') : 'var(--text-muted)'}"
+              font-family="Inter,sans-serif" font-weight="${leg2?.winner===match.home?'700':'400'}">
+              ${teamEmojis[match.home]||''} ${(teams[match.home]||match.home||'TBD').slice(0,14)}</text>
+            ${l2HasResult ? `<text x="${MATCH_W-10}" y="${MATCH_H/2+18}" text-anchor="end" font-size="13"
+              fill="${leg2.winner===match.home?'var(--accent)':'var(--text-muted)'}"
+              font-family="Rajdhani,sans-serif" font-weight="700">${leg2.score2}</text>` : ''}
+            ${aggLine}
+            ${isAdmin ? `
+            <rect x="${MATCH_W-26}" y="${MATCH_H-18}" width="20" height="14" rx="4"
+              fill="var(--accent2-a10)" stroke="var(--accent2-a18)" stroke-width="1"
+              style="cursor:pointer;" onclick="openKnockoutResultModal('${key}',2)"/>
+            <text x="${MATCH_W-16}" y="${MATCH_H-8}" text-anchor="middle"
+              font-size="9" fill="var(--silver)" font-family="Inter,sans-serif"
+              style="cursor:pointer;" onclick="openKnockoutResultModal('${key}',2)">✏️</text>` : ''}
+          </g>`;
+      }
 
       // Connector lines đến round tiếp
       if (!isThirdPlace && colIdx < rounds.length - 1 && round !== 'F') {
@@ -6241,7 +6620,7 @@ function renderBracketSVG() {
   });
 
   const svg = `<svg viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg"
-    style="width:100%;min-width:${totalW}px;font-family:Inter,sans-serif;">
+    style="width:100%;min-width:${totalW}px;height:${totalH}px;display:block;font-family:Inter,sans-serif;">
     ${svgContent}
   </svg>`;
   document.getElementById('cupBracketSVG').innerHTML = svg;
@@ -6296,95 +6675,193 @@ function renderBracketCards() {
 }
 
 // ── Modal nhập kết quả knockout ──
-window.openKnockoutResultModal = (matchKey) => {
-  const match = knockoutMatches[matchKey];
-  if (!match) return;
-  const isLeg2 = !!match.isLeg2;
-  const leg2Key = matchKey + '_L2';
-  const leg2 = knockoutMatches[leg2Key];
-  const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && !match.bye;
+// _koEditKey: key đang mở (luôn là key lượt đi, ví dụ QF_1)
+// _koEditLeg: 1 hoặc 2
+let _koEditKey = null, _koEditLeg = 1;
 
-  const label = `${getRoundLabel(match.round)} #${match.matchNum}${isLeg2 ? ' (Lượt về)' : isTwoLeg ? ' (Lượt đi)' : ''}`;
-  const hId = match.home, aId = match.away;
+window.openKnockoutResultModal = (matchKey, leg = 1) => {
+  // Normalize: nếu truyền vào key lượt về (_L2), tách ra
+  let baseKey = matchKey, editLeg = leg;
+  if (matchKey.endsWith('_L2')) { baseKey = matchKey.slice(0, -3); editLeg = 2; }
+  const match = knockoutMatches[baseKey];
+  if (!match) return;
+
+  _koEditKey = baseKey;
+  _koEditLeg = editLeg;
+
+  const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && !match.bye;
+  const leg2Key  = baseKey + '_L2';
+  const leg2     = knockoutMatches[leg2Key];
+
+  // Nguồn dữ liệu cho form: lượt đi = match, lượt về = leg2
+  const src = (isTwoLeg && editLeg === 2) ? (leg2 || {}) : match;
+
+  // Với lượt về: home/away đổi sân so với lượt đi
+  const hId = isTwoLeg && editLeg === 2 ? match.away : match.home;
+  const aId = isTwoLeg && editLeg === 2 ? match.home : match.away;
   const hName = hId ? (teamEmojis[hId]||'') + ' ' + (teams[hId]||hId) : 'TBD';
   const aName = aId ? (teamEmojis[aId]||'') + ' ' + (teams[aId]||aId) : 'TBD';
   const hColor = hId ? (teamColors[hId]||'var(--text)') : 'var(--text-muted)';
   const aColor = aId ? (teamColors[aId]||'var(--text)') : 'var(--text-muted)';
 
-  // Aggregate display for two-leg (show on leg2 modal)
-  let aggregateHtml = '';
-  if (isTwoLeg && isLeg2 && leg2) {
-    const agg1 = (match.score1 ?? 0) + (leg2.score1 ?? 0);
-    const agg2 = (match.score2 ?? 0) + (leg2.score2 ?? 0);
-    aggregateHtml = `<div style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-bottom:10px;">
-      Lượt đi: <strong style="color:var(--text)">${match.score1 ?? '?'} – ${match.score2 ?? '?'}</strong>
-      &nbsp;|&nbsp; Tổng: <strong style="color:var(--accent)">${agg1} – ${agg2}</strong>
-    </div>`;
-  }
+  const legLabel = isTwoLeg ? (editLeg === 2 ? ' — Lượt về' : ' — Lượt đi') : '';
+  document.getElementById('koResultTitle').textContent =
+    `⚽ ${getRoundLabel(match.round)} #${match.matchNum}${legLabel}`;
 
-  document.getElementById('koResultTitle').textContent = `⚽ ${label}`;
+  // Aggregate info (chỉ hiện ở lượt về nếu lượt đi đã có kết quả)
+  let aggregateHtml = '';
+  if (isTwoLeg && editLeg === 2 && match.score1 != null) {
+    const l2s1 = src.score1 ?? 0, l2s2 = src.score2 ?? 0;
+    const agg_home = match.score1 + l2s2; // home (lượt đi) ghi được: leg1 home + leg2 away
+    const agg_away = match.score2 + l2s1;
+    aggregateHtml = `
+      <div style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-bottom:10px;padding:6px;background:var(--bg-deep);border-radius:7px;">
+        Lượt đi: <strong style="color:var(--text)">${match.score1} – ${match.score2}</strong>
+        &nbsp;·&nbsp; Tổng hiện tại: <strong style="color:var(--accent)">${agg_home} – ${agg_away}</strong>
+      </div>`;
+  }
+  
+  /*
   document.getElementById('koResultBody').innerHTML = `
     ${aggregateHtml}
     <div class="score-cards-grid">
       <div class="score-col">
         <div class="score-col-header" style="color:${hColor};">${hName}</div>
-        <input class="form-input score-big" type="number" min="0" id="ko_s1_${matchKey}"
-          value="${(isLeg2 ? leg2?.score1 : match.score1) ?? ''}" placeholder="0">
-        <div id="ko_scorers1_${matchKey}"></div>
+        <input class="form-input score-big" type="number" min="0" id="ko_s1"
+          value="${src.score1 ?? ''}" placeholder="0">
+        <div id="ko_scorers1"></div>
         <div class="card-input-wrap">
           <span class="card-icon">🟨</span>
-          <input class="form-input" type="number" min="0" id="ko_y1_${matchKey}"
-            value="${(isLeg2 ? leg2?.y1 : match.y1) || ''}" placeholder="0">
+          <input class="form-input" type="number" min="0" id="ko_y1"
+            value="${src.y1 || ''}" placeholder="0">
         </div>
         <div class="card-input-wrap">
           <span class="card-icon">🟥</span>
-          <input class="form-input" type="number" min="0" id="ko_r1_${matchKey}"
-            value="${(isLeg2 ? leg2?.r1 : match.r1) || ''}" placeholder="0">
+          <input class="form-input" type="number" min="0" id="ko_r1"
+            value="${src.r1 || ''}" placeholder="0">
         </div>
       </div>
       <div class="score-divider"> - </div>
       <div class="score-col">
         <div class="score-col-header" style="color:${aColor};">${aName}</div>
-        <input class="form-input score-big" type="number" min="0" id="ko_s2_${matchKey}"
-          value="${(isLeg2 ? leg2?.score2 : match.score2) ?? ''}" placeholder="0">
-        <div id="ko_scorers2_${matchKey}"></div>
+        <input class="form-input score-big" type="number" min="0" id="ko_s2"
+          value="${src.score2 ?? ''}" placeholder="0">
+        <div id="ko_scorers2"></div>
         <div class="card-input-wrap">
           <span class="card-icon">🟨</span>
-          <input class="form-input" type="number" min="0" id="ko_y2_${matchKey}"
-            value="${(isLeg2 ? leg2?.y2 : match.y2) || ''}" placeholder="0">
+          <input class="form-input" type="number" min="0" id="ko_y2"
+            value="${src.y2 || ''}" placeholder="0">
         </div>
         <div class="card-input-wrap">
           <span class="card-icon">🟥</span>
-          <input class="form-input" type="number" min="0" id="ko_r2_${matchKey}"
-            value="${(isLeg2 ? leg2?.r2 : match.r2) || ''}" placeholder="0">
+          <input class="form-input" type="number" min="0" id="ko_r2"
+            value="${src.r2 || ''}" placeholder="0">
         </div>
       </div>
     </div>
     <div id="koPenaltySection" style="display:none;background:var(--bg-deep);border-radius:9px;padding:10px;margin:10px 0;">
       <div style="font-size:.72rem;color:var(--gold);font-weight:700;margin-bottom:8px;text-align:center;">⚡ Penalty Shootout</div>
       <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:center;">
-        <input class="form-input" id="ko_p1_${matchKey}" type="number" min="0"
-          value="${(isLeg2 ? leg2?.penalty1 : match.penalty1) ?? ''}" placeholder="0"
+        <input class="form-input" id="ko_p1" type="number" min="0"
+          value="${src.penalty1 ?? ''}" placeholder="0"
           style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
         <div style="text-align:center;font-size:.8rem;color:var(--text-muted);">pen</div>
-        <input class="form-input" id="ko_p2_${matchKey}" type="number" min="0"
-          value="${(isLeg2 ? leg2?.penalty2 : match.penalty2) ?? ''}" placeholder="0"
+        <input class="form-input" id="ko_p2" type="number" min="0"
+          value="${src.penalty2 ?? ''}" placeholder="0"
           style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
       </div>
     </div>
     <div style="display:flex;gap:6px;justify-content:center;margin-bottom:4px;">
       <button class="btn-flat" style="font-size:.72rem;" onclick="toggleKoPenalty()">⚡ Penalty</button>
     </div>`;
+    
 
-  // Render scorer inputs
-  if (hId) renderScorerInputs(hId, `ko_scorers1_${matchKey}`, (isLeg2 ? leg2?.scorers1 : match.scorers1) || []);
-  if (aId) renderScorerInputs(aId, `ko_scorers2_${matchKey}`, (isLeg2 ? leg2?.scorers2 : match.scorers2) || []);
+  if (hId) renderScorerInputs(hId, 'ko_scorers1', src.scorers1 || []);
+  if (aId) renderScorerInputs(aId, 'ko_scorers2', src.scorers2 || []);
+  */
+  // ... innerHTML injection cũ ...
+  // Populate static fields
+  const h1 = document.getElementById('koTeam1Label');
+  const h2 = document.getElementById('koTeam2Label');
+  h1.textContent = hName; h1.style.color = hColor;
+  h2.textContent = aName; h2.style.color = aColor;
 
-  const hasPen = isLeg2 ? (leg2?.penalty1 != null) : (match.penalty1 != null);
-  if (hasPen) document.getElementById('koPenaltySection').style.display = 'block';
+  document.getElementById('ko_s1').value  = src.score1 ?? '';
+  document.getElementById('ko_s2').value  = src.score2 ?? '';
+  document.getElementById('ko_y1').value  = src.y1 || '';
+  document.getElementById('ko_y2').value  = src.y2 || '';
+  document.getElementById('ko_r1').value  = src.r1 || '';
+  document.getElementById('ko_r2').value  = src.r2 || '';
+  document.getElementById('ko_p1').value  = src.penalty1 ?? '';
+  document.getElementById('ko_p2').value  = src.penalty2 ?? '';
 
-  document.getElementById('koBtnSave').onclick = () => saveKnockoutResult(matchKey);
+  // Scorers
+  if (hId) renderScorerInputs(hId, 'ko_scorers1', src.scorers1 || []);
+  if (aId) renderScorerInputs(aId, 'ko_scorers2', src.scorers2 || []);
+
+  // Date picker
+  const dg = document.getElementById('koResultDateGroup'); dg.innerHTML = '';
+  const dateKey = isTwoLeg && editLeg === 2 ? baseKey + '_L2_date' : baseKey + '_date';
+  const iso = knockoutMatchDates[dateKey] || todayISO();
+  dg.appendChild(makeDpInput('koResultDate', iso, newIso => {
+    knockoutMatchDates[dateKey] = newIso;
+  }));
+
+  // Aggregate info (lượt về)
+  const aggEl = document.getElementById('koAggregateInfo');
+  if (isTwoLeg && editLeg === 2 && match.score1 != null) {
+    const l2s1 = src.score1 ?? 0, l2s2 = src.score2 ?? 0;
+    const aggHome = match.score1 + l2s2;
+    const aggAway = match.score2 + l2s1;
+    aggEl.style.display = '';
+    aggEl.innerHTML = `Lượt đi: <strong style="color:var(--text)">${match.score1}–${match.score2}</strong>
+      &nbsp;·&nbsp; Tổng hiện tại: <strong style="color:var(--accent)">${aggHome}–${aggAway}</strong>`;
+  } else { aggEl.style.display = 'none'; }
+
+  // Penalty section
+  //document.getElementById('koPenaltySection').style.display = src.penalty1 != null ? 'block' : 'none';
+  if (src.penalty1 != null) document.getElementById('koPenaltySection').style.display = 'block';
+
+  // Nút hủy kết quả: ẩn nếu chưa có kết quả
+  /*
+  const resetBtn = document.getElementById('koBtnReset');
+  if (resetBtn) resetBtn.style.display = (src.score1 != null) ? '' : 'none';
+
+  document.getElementById('koBtnSave').onclick = () => saveKnockoutResult();
+  */
+  document.getElementById('koBtnReset').style.display = (src.score1 != null) ? '' : 'none';
   openModal('knockoutResultModal');
+};
+
+window.toggleKoPenalty = () => {
+  const el = document.getElementById('koPenaltySection');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
+
+window.resetKnockoutResult = () => {
+  const match = knockoutMatches[_koEditKey];
+  if (!match) return;
+  const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && !match.bye;
+  if (isTwoLeg && _koEditLeg === 2) {
+    const leg2Key = _koEditKey + '_L2';
+    if (knockoutMatches[leg2Key]) {
+      knockoutMatches[leg2Key].score1 = null; knockoutMatches[leg2Key].score2 = null;
+      knockoutMatches[leg2Key].y1 = 0; knockoutMatches[leg2Key].y2 = 0;
+      knockoutMatches[leg2Key].r1 = 0; knockoutMatches[leg2Key].r2 = 0;
+      knockoutMatches[leg2Key].penalty1 = null; knockoutMatches[leg2Key].penalty2 = null;
+      knockoutMatches[leg2Key].scorers1 = []; knockoutMatches[leg2Key].scorers2 = [];
+      knockoutMatches[leg2Key].winner = null;
+    }
+    match.winner = null;
+  } else {
+    match.score1 = null; match.score2 = null;
+    match.y1 = 0; match.y2 = 0; match.r1 = 0; match.r2 = 0;
+    match.penalty1 = null; match.penalty2 = null;
+    match.scorers1 = []; match.scorers2 = []; match.winner = null;
+  }
+  if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].knockoutMatches = knockoutMatches;
+  persist(); renderCupBracket(); closeModal('knockoutResultModal');
+  showToast('↩️ Đã hủy kết quả');
 };
 
 window.toggleKoPenalty = () => {
@@ -7339,6 +7816,7 @@ function loadLeagueIntoState(league) {
   const cfg = league.config || {};
   groups        = league.groups        || {};
   knockoutMatches = league.knockoutMatches || {};
+  knockoutMatchDates = league.knockoutMatchDates || {};
   cupSeeds      = league.cupSeeds      || [];
   leagueConfig = {
     leagueType: cfg.leagueType || 'league',
@@ -7385,6 +7863,7 @@ function loadLeagueIntoState(league) {
   // Cup state
   groups            = league.groups            || {};
   knockoutMatches   = league.knockoutMatches   || {};
+  knockoutMatchDates = league.knockoutMatchDates || {};
   cupSeeds          = league.cupSeeds          || [];
 
   // Ensure default emoji/color
@@ -7455,6 +7934,7 @@ async function loadHybridLeagues() {
         marathonScores: stateData.marathonScores || {},
         groups: stateData.groups || {},
         knockoutMatches: stateData.knockoutMatches || {},
+        knockoutMatchDates: stateData.knockoutMatchDates || {},
         cupSeeds: stateData.cupSeeds || [],
         _storePath: 'state'
       };
@@ -7527,6 +8007,7 @@ function subscribePlatform() {
         marathonScores: stateData.marathonScores || {},
         groups: stateData.groups || {},
         knockoutMatches: stateData.knockoutMatches || {},
+        knockoutMatchDates: stateData.knockoutMatchDates || {},
         cupSeeds: stateData.cupSeeds || [],
         _storePath: 'state'
       };
@@ -7696,7 +8177,7 @@ async function pushActiveLeague() {
     },
     teamIds, teams, members, memberEmails, teamEmojis, teamColors,
     results, matchDates, scheduleOrder, manualDates, rankMovement: rankMovementState,
-    groups, knockoutMatches, cupSeeds,
+    groups, knockoutMatches, knockoutMatchDates, cupSeeds,
     marathonDates, marathonScores
   };
 
@@ -8154,11 +8635,12 @@ function getNextRound(round) {
 }
 
 // ── Cup: save knockout result ──
-window.saveKnockoutResult = async (matchKey) => {
+window.saveKnockoutResult = async () => {
   if (!isAdmin) { showToast('🔒 Cần Admin','warn'); return; }
-  const match = knockoutMatches[matchKey];
+  const baseKey = _koEditKey;
+  const match   = knockoutMatches[baseKey];
   if (!match) return;
-  
+
   function collectKoScorers(wrapId) {
     return [...document.querySelectorAll(`#${wrapId} input`)]
       .map(inp => ({ name: inp.dataset.player, goals: Number(inp.value) || 0 }))
@@ -8166,72 +8648,85 @@ window.saveKnockoutResult = async (matchKey) => {
   }
 
   const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && !match.bye;
-  const isLeg2 = !!match.isLeg2;
-  const leg2Key = matchKey + '_L2';
+  const leg2Key  = baseKey + '_L2';
+  if (isTwoLeg && !knockoutMatches[leg2Key]) {
+    knockoutMatches[leg2Key] = {
+      round: match.round, matchNum: match.matchNum, leg: 2, isLeg2: true,
+      home: match.away, away: match.home,
+      score1: null, score2: null, winner: null, bye: false
+    };
+  }
 
-  // Target object: leg2 entry nếu là lượt về, else match itself
-  const target = (isTwoLeg && isLeg2 && knockoutMatches[leg2Key]) ? knockoutMatches[leg2Key] : match;
+  // Target: lượt đi → match, lượt về → leg2
+  const target = (isTwoLeg && _koEditLeg === 2) ? knockoutMatches[leg2Key] : match;
 
-  target.score1   = Number(document.getElementById(`ko_s1_${matchKey}`)?.value ?? 0);
-  target.score2   = Number(document.getElementById(`ko_s2_${matchKey}`)?.value ?? 0);
-  target.y1       = Number(document.getElementById(`ko_y1_${matchKey}`)?.value) || 0;
-  target.y2       = Number(document.getElementById(`ko_y2_${matchKey}`)?.value) || 0;
-  target.r1       = Number(document.getElementById(`ko_r1_${matchKey}`)?.value) || 0;
-  target.r2       = Number(document.getElementById(`ko_r2_${matchKey}`)?.value) || 0;
-  target.scorers1 = collectKoScorers(`ko_scorers1_${matchKey}`);
-  target.scorers2 = collectKoScorers(`ko_scorers2_${matchKey}`);
+  target.score1   = Number(document.getElementById('ko_s1')?.value ?? 0);
+  target.score2   = Number(document.getElementById('ko_s2')?.value ?? 0);
+  target.y1       = Number(document.getElementById('ko_y1')?.value) || 0;
+  target.y2       = Number(document.getElementById('ko_y2')?.value) || 0;
+  target.r1       = Number(document.getElementById('ko_r1')?.value) || 0;
+  target.r2       = Number(document.getElementById('ko_r2')?.value) || 0;
+  target.scorers1 = collectKoScorers('ko_scorers1');
+  target.scorers2 = collectKoScorers('ko_scorers2');
+  // Lưu ngày thi đấu
+  const dInp = document.getElementById('koResultDate');
+  if (dInp?.value) {
+    const p = dInp.value.split('/');
+    if (p.length === 3) {
+      const mo = MONTHS_SHORT.indexOf(p[1]) + 1;
+      const isoDate = `${p[2]}-${String(mo).padStart(2,'0')}-${String(p[0]).padStart(2,'0')}`;
+      const dateKey = (isTwoLeg && _koEditLeg === 2) ? baseKey + '_L2_date' : baseKey + '_date';
+      knockoutMatchDates[dateKey] = isoDate;
+    }
+  }
 
-  // Xác định winner
+  // Tính winner
+  match.winner = null;
   if (isTwoLeg) {
-    // Cần cả 2 lượt mới tính được winner
-    const leg1 = match, leg2 = knockoutMatches[leg2Key];
-    if (leg1.score1 != null && leg1.score2 != null && leg2 && leg2.score1 != null && leg2.score2 != null) {
-      const agg1 = leg1.score1 + leg2.score1; // tổng bàn đội home (lượt đi)
-      const agg2 = leg1.score2 + leg2.score2;
-      if (agg1 > agg2) { match.winner = match.home; leg2.winner = match.home; }
-      else if (agg2 > agg1) { match.winner = match.away; leg2.winner = match.away; }
+    const leg2 = knockoutMatches[leg2Key];
+    // Chỉ tính winner khi cả 2 lượt đã có kết quả
+    if (match.score1 != null && match.score2 != null &&
+        leg2.score1  != null && leg2.score2  != null) {
+      // aggregate: home (lượt đi) = leg1.score1 + leg2.score2 (vì leg2 đổi sân)
+      const aggHome = match.score1 + leg2.score2;
+      const aggAway = match.score2 + leg2.score1;
+      let winner = null;
+      if (aggHome > aggAway) winner = match.home;
+      else if (aggAway > aggHome) winner = match.away;
       else {
-        // Bàn thắng sân khách: đội away lượt đi = home lượt về; đội away lượt đi ghi leg1.score2 ở sân khách, leg2.score1 ở sân nhà
-        const awayGoals = leg1.score2 + leg2.score1; // bàn của đội away (lượt đi) tính sân khách
-        const homeGoals = leg1.score1 + leg2.score2;
-        // away goals away = leg1.score2 (sân đối), home goals away = leg2.score2 (sân đối)
-        const awayAwayGoals = leg1.score2; // đội away ghi ở sân khách (lượt đi)
-        const homeAwayGoals = leg2.score2; // đội home ghi ở sân khách (lượt về)
-        let winner = null;
-        if (awayAwayGoals > homeAwayGoals) winner = match.away;
-        else if (homeAwayGoals > awayAwayGoals) winner = match.home;
-        else {
-          // Vẫn hòa → penalty (nhập ở modal lượt về)
-          const p1 = document.getElementById(`ko_p1_${matchKey}`)?.value;
-          const p2 = document.getElementById(`ko_p2_${matchKey}`)?.value;
-          if (p1 != null && p2 != null && p1 !== '' && p2 !== '') {
-            target.penalty1 = Number(p1); target.penalty2 = Number(p2);
-            winner = Number(p1) > Number(p2) ? match.home : match.away;
-          }
+        // Hòa aggregate → penalty (nhập ở lượt về)
+        const p1 = Number(document.getElementById('ko_p1')?.value);
+        const p2 = Number(document.getElementById('ko_p2')?.value);
+        const pEl1 = document.getElementById('ko_p1');
+        const pEl2 = document.getElementById('ko_p2');
+        if (pEl1?.value !== '' && pEl2?.value !== '') {
+          target.penalty1 = p1; target.penalty2 = p2;
+          winner = p1 > p2 ? match.home : match.away;
         }
-        match.winner = winner; if (leg2) leg2.winner = winner;
       }
+      match.winner = winner;
+      leg2.winner  = winner;
     }
   } else {
-    // Single leg
     const s1 = target.score1, s2 = target.score2;
     if (s1 > s2) match.winner = match.home;
     else if (s2 > s1) match.winner = match.away;
     else {
-      const p1 = document.getElementById(`ko_p1_${matchKey}`)?.value;
-      const p2 = document.getElementById(`ko_p2_${matchKey}`)?.value;
-      if (p1 !== '' && p2 !== '' && p1 != null) {
-        match.penalty1 = Number(p1); match.penalty2 = Number(p2);
-        match.winner = Number(p1) > Number(p2) ? match.home : match.away;
+      const p1 = Number(document.getElementById('ko_p1')?.value);
+      const p2 = Number(document.getElementById('ko_p2')?.value);
+      if (document.getElementById('ko_p1')?.value !== '') {
+        match.penalty1 = p1; match.penalty2 = p2;
+        match.winner   = p1 > p2 ? match.home : match.away;
       }
     }
   }
 
   if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].knockoutMatches = knockoutMatches;
-  if (match.winner) progressKnockout(matchKey);
+  if (match.winner) progressKnockout(baseKey);
   await persist();
   renderCupBracket();
-  showToast(`✅ Đã lưu kết quả ${matchKey}`);
+  closeModal('knockoutResultModal');
+  showToast(`✅ Đã lưu kết quả ${baseKey}${isTwoLeg ? ' lượt ' + _koEditLeg : ''}`);
 };
 
 // ── Cup: generate hoặc reset bracket ──
@@ -9475,15 +9970,65 @@ document.getElementById('btnAbout').addEventListener('click', () => {
   </div>
 </div>
 <div class="modal-overlay" id="knockoutResultModal">
-  <div class="modal-box" style="max-width:400px;">
+  <div class="modal-box" style="max-width:500px;">
     <div class="modal-header">
-      <div class="modal-title" id="koResultTitle">⚽ Kết quả</div>
+      <div class="modal-title" id="koResultTitle">⚽ Cập nhật kết quả</div>
       <button class="modal-close" onclick="closeModal('knockoutResultModal')">✕</button>
     </div>
-    <div id="koResultBody"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+    <div class="form-group">
+      <label class="form-label">Ngày thi đấu</label>
+      <div id="koResultDateGroup"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tỷ số &amp; Thẻ phạt</label>
+      <div class="score-cards-grid">
+        <div class="score-col">
+          <div class="score-col-header" id="koTeam1Label">Đội 1</div>
+          <input class="form-input score-big" type="number" min="0" id="ko_s1" placeholder="0">
+          <div id="ko_scorers1"></div>
+          <div class="card-input-wrap">
+            <span class="card-icon">🟨</span>
+            <input class="form-input" type="number" min="0" id="ko_y1" placeholder="0">
+          </div>
+          <div class="card-input-wrap">
+            <span class="card-icon">🟥</span>
+            <input class="form-input" type="number" min="0" id="ko_r1" placeholder="0">
+          </div>
+        </div>
+        <div class="score-divider"> - </div>
+        <div class="score-col">
+          <div class="score-col-header" id="koTeam2Label">Đội 2</div>
+          <input class="form-input score-big" type="number" min="0" id="ko_s2" placeholder="0">
+          <div id="ko_scorers2"></div>
+          <div class="card-input-wrap">
+            <span class="card-icon">🟨</span>
+            <input class="form-input" type="number" min="0" id="ko_y2" placeholder="0">
+          </div>
+          <div class="card-input-wrap">
+            <span class="card-icon">🟥</span>
+            <input class="form-input" type="number" min="0" id="ko_r2" placeholder="0">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="koPenaltySection" style="display:none;background:var(--bg-deep);border-radius:9px;padding:10px;margin-bottom:10px;">
+      <div style="font-size:.72rem;color:var(--gold);font-weight:700;margin-bottom:8px;text-align:center;">⚡ Penalty Shootout</div>
+      <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:center;">
+        <input class="form-input" id="ko_p1" type="number" min="0" placeholder="0"
+          style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
+        <div style="text-align:center;font-size:.8rem;color:var(--text-muted);">pen</div>
+        <input class="form-input" id="ko_p2" type="number" min="0" placeholder="0"
+          style="text-align:center;font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;">
+      </div>
+    </div>
+    <div id="koAggregateInfo" style="display:none;text-align:center;font-size:.72rem;color:var(--text-muted);margin-bottom:10px;padding:6px;background:var(--bg-deep);border-radius:7px;"></div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;">
+      <button class="btn-flat" style="font-size:.72rem;" onclick="toggleKoPenalty()">⚡ Penalty</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="btn-flat btn-flat-danger" id="koBtnReset" onclick="resetKnockoutResult()" style="display:none;">↩️ Hủy kết quả</button>
       <button class="btn-flat" onclick="closeModal('knockoutResultModal')">Hủy</button>
-      <button class="btn-flat" id="koBtnSave" style="border-color:var(--accent-a30);color:var(--accent);">💾 Lưu</button>
+      <button class="btn-flat" id="koBtnSave" onclick="saveKnockoutResult()" style="border-color:var(--accent-a30);color:var(--accent);">💾 Lưu kết quả</button>
     </div>
   </div>
 </div>

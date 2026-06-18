@@ -484,30 +484,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   min-height: 40px;
   border-radius: 8px;
   transition: background .15s;
+  width: 100%;
+  border-collapse: collapse;  
 }
 .group-team-list.drag-over-zone {
   background: var(--accent2-a10);
   outline: 2px dashed var(--accent);
 }
-.group-team-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: var(--surface-a04);
-  margin-bottom: 4px;
+
+tr.group-team-row {
   cursor: grab;
-  font-size: .82rem;
 }
+
 .group-team-row.dragging { opacity: .4; }
-.group-team-row .rank-badge {
-  font-size: .68rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  width: 18px;
-  text-align: center;
-}
+
 .group-unassigned-block {
   background: var(--surface-a04);
   border: 1px dashed var(--border);
@@ -3092,23 +3082,30 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div class="card-title" id="standingsCardTitle" style="margin-bottom:10px;"><div class="icon">🏆</div>Bảng xếp hạng</div>
           <button class="btn-flat btn-sm" id="btnCollapseStandings" onclick="toggleColumnCollapse('standingsCard')" title="Thu gọn" style="font-size:.72rem;padding:3px 7px;display:none;">‹‹</button>
-        </div>
-        <!-- Panel chia bảng (chỉ hiện khi leagueConfig.tournamentMode === 'cup') -->
-        <div id="groupingPanel" style="display:none;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
-            <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">🗂️ Chia bảng</div>
-            <div style="display:flex;gap:6px;">
-              <button class="btn-flat" style="font-size:.7rem;padding:3px 8px;" onclick="requireAdmin(()=>addNewGroup())">➕ Thêm bảng</button>
-              <button class="btn-flat" style="font-size:.7rem;padding:3px 8px;" onclick="requireAdmin(()=>autoGenerateGroupFixtures())">⚡ Auto lịch</button>
-            </div>
-          </div>
-          <div id="groupingBoard"></div>
         </div>        
         <div id="leagueStandingsPanel">
           <div id="standingsScrollWrap" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">
             <div id="podiumArea"></div>
             <div class="stats-compact" id="statsCompact"></div>
-            <table class="standings-table" id="standingsTable"></table>
+            <!-- Panel chia bảng (chỉ hiện khi Cup/Tournament mode) — cuộn cùng nội dung BXH -->
+            <div id="groupingPanel" style="display:none;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+                <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">🗂️ Chia bảng</div>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn-flat" style="font-size:.7rem;padding:3px 8px;" onclick="requireAdmin(()=>addNewGroup())">➕ Thêm bảng</button>
+                  <button class="btn-flat" style="font-size:.7rem;padding:3px 8px;" onclick="requireAdmin(()=>openAutoScheduleForGroups())">⚡ Auto lịch</button>
+                </div>
+              </div>
+              <div id="groupingBoard"></div>
+            </div>            
+            <div id="overallStandingsToggle" style="display:none;margin:14px 0 8px;">
+              <button class="btn-flat" style="font-size:.72rem;padding:5px 12px;width:100%;" onclick="toggleOverallStandings()">
+                <span id="overallStandingsToggleIcon">▾</span> <span id="overallStandingsToggleLabel">Xem bảng xếp hạng tổng</span>
+              </button>
+            </div>
+            <div id="overallStandingsWrap">
+              <table class="standings-table" id="standingsTable"></table>
+            </div>
             <div style="margin-top:32px;"></div>
             <div class="card-title"><div class="icon">⚽</div>Vua phá lưới</div>
             <div id="scorerPodiumArea"></div>
@@ -3553,12 +3550,14 @@ function renderGroupingBoard() {
             onchange="renameGroup('${gName}', this.value)">
           <button class="btn-flat" style="font-size:.65rem;padding:2px 6px;" onclick="requireAdmin(()=>deleteGroup('${gName}'))">🗑️</button>
         </div>
-        <div class="group-team-list" data-group="${gName}"
+        <table class="standings-table group-team-list" data-group="${gName}"
           ondragover="onGroupZoneDragOver(event)" ondragleave="onGroupZoneDragLeave(event)"
           ondrop="onGroupZoneDrop(event, '${gName}')">
-          ${standings.length === 0 ? '<div style="text-align:center;color:var(--text-muted);font-size:.74rem;padding:8px;">Kéo đội vào đây</div>' : ''}
-          ${standings.map(([id, s], idx) => renderGroupTeamRow(id, idx + 1, s)).join('')}
-        </div>
+          ${renderGroupTableHeader()}
+          ${standings.length === 0
+            ? `<tr><td colspan="11" style="text-align:center;color:var(--text-muted);font-size:.74rem;padding:14px;">Kéo đội vào đây</td></tr>`
+            : standings.map(([id, s], idx) => renderGroupTeamRow(id, idx + 1, s)).join('')}
+        </table>
       </div>`;
   });
 
@@ -3568,31 +3567,86 @@ function renderGroupingBoard() {
       <div class="group-block-header">
         <div style="font-size:.85rem;font-weight:700;color:var(--text-muted);">⏳ Chưa phân bảng</div>
       </div>
-      <div class="group-team-list" data-group="__unassigned__"
+      <table class="standings-table group-team-list" data-group="__unassigned__"
         ondragover="onGroupZoneDragOver(event)" ondragleave="onGroupZoneDragLeave(event)"
         ondrop="onGroupZoneDrop(event, '__unassigned__')">
-        ${unassigned.length === 0 ? '<div style="text-align:center;color:var(--text-muted);font-size:.74rem;padding:8px;">Tất cả đội đã được phân bảng</div>' : ''}
-        ${unassigned.map(id => renderGroupTeamRow(id, null, null)).join('')}
-      </div>
+        ${renderGroupTableHeader(true)}
+        ${unassigned.length === 0
+          ? `<tr><td colspan="11" style="text-align:center;color:var(--text-muted);font-size:.74rem;padding:14px;">Tất cả đội đã được phân bảng</td></tr>`
+          : unassigned.map(id => renderGroupTeamRow(id, null, null)).join('')}
+      </table>
     </div>`;
 
   board.innerHTML = html;
 }
 
+function renderGroupTableHeader(simple = false) {
+  if (simple) {
+    // Bảng "chưa phân bảng" không có thống kê (đội chưa đấu nội bộ group)
+    return `<tr><th>#</th><th style="text-align:left;padding-left:10px;">Đội</th><th colspan="9"></th></tr>`;
+  }
+  return `
+    <tr>
+      <th>XH</th>
+      <th style="text-align:left;padding-left:10px;">Đội</th>
+      <th>Trận</th>
+      <th>Điểm</th>
+      <th>T</th>
+      <th>H</th>
+      <th>B</th>
+      <th>BT</th>
+      <th>HS</th>
+      <th>🟨</th>
+      <th>🟥</th>
+    </tr>`;
+}
+
 function renderGroupTeamRow(teamId, rank, stats) {
   const name = teams[teamId] || teamId;
   const emoji = teamEmojis[teamId] || '';
-  const statsHtml = stats
-    ? `<span style="margin-left:auto;font-size:.72rem;color:var(--text-muted);">${stats.p}đ &nbsp; ${stats.gf}-${stats.ga}</span>`
-    : '';
+  const color = teamColors[teamId] || 'var(--text)';
+  if (!stats) {
+    // Đội chưa phân bảng — chỉ hiện tên, không có thống kê
+    return `
+      <tr class="group-team-row" draggable="true" data-team="${teamId}"
+        ondragstart="onGroupTeamDragStart(event, '${teamId}')"
+        ondragend="onGroupTeamDragEnd(event)">
+        <td><span class="rank-badge rank-other">–</span></td>
+        <td class="team-name-cell">
+          <div class="team-avatar" style="background:${color}">${emoji}</div>
+          <div class="table-tname" style="font-weight:600">${name}</div>
+        </td>
+        <td colspan="9"></td>
+      </tr>`;
+  }
+
+  const gd = stats.gf - stats.ga;
+  let gdCls = gd > 0 ? 'c-win' : gd < 0 ? 'c-lose' : 'c-draw';
+  const gdSign = gd > 0 ? '+' : '';
+  let rbCls = 'rank-other';
+  if (rank === 1) rbCls = 'rank-1';
+  else if (rank === 2) rbCls = 'rank-2';
+  else if (rank === 3) rbCls = 'rank-3';
+
   return `
-    <div class="group-team-row" draggable="true" data-team="${teamId}"
+    <tr class="group-team-row" draggable="true" data-team="${teamId}"
       ondragstart="onGroupTeamDragStart(event, '${teamId}')"
       ondragend="onGroupTeamDragEnd(event)">
-      ${rank ? `<span class="rank-badge">${rank}</span>` : ''}
-      <span>${emoji} ${name}</span>
-      ${statsHtml}
-    </div>`;
+      <td><span class="rank-badge ${rbCls}">${rank}</span></td>
+      <td class="team-name-cell">
+        <div class="team-avatar" style="background:${color}">${emoji}</div>
+        <div class="table-tname" style="font-weight:600">${name}</div>
+      </td>
+      <td>${stats.played}</td>
+      <td><span class="points-badge">${stats.p}</span></td>
+      <td class="c-win">${stats.w}</td>
+      <td class="c-draw">${stats.d}</td>
+      <td class="c-lose">${stats.l}</td>
+      <td>${stats.gf}</td>
+      <td class="${gdCls}" style="font-weight:700">${gdSign}${gd}</td>
+      <td class="yellow-card">${stats.y}</td>
+      <td class="red-card">${stats.r}</td>
+    </tr>`;
 }
 
 let _groupDragTeamId = null;
@@ -3632,6 +3686,15 @@ window.moveTeamToGroup = async function(teamId, targetGroup) {
   }
   if (oldGroup === targetGroup) return; // không đổi gì
 
+  // Snapshot TRƯỚC khi đổi groups, để promptRescheduleAfterGroupChange() so sánh
+  // và rebuildSchedule() dùng remap đúng dữ liệu gốc.
+  window._pendingRescheduleSnapshot = {
+    sch: [...BASE_SCHEDULE],
+    res: { ...results },
+    dates: { ...matchDates },
+    manual: { ...manualDates }
+  };
+
   // Gỡ khỏi group cũ
   if (oldGroup) {
     groups[oldGroup] = groups[oldGroup].filter(id => id !== teamId);
@@ -3643,11 +3706,18 @@ window.moveTeamToGroup = async function(teamId, targetGroup) {
   }
 
   if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
-  await persist();
+  // CHƯA persist(), CHƯA đổi BASE_SCHEDULE/results gì cả ở đây.
+  // Chỉ render board (chỉ ảnh hưởng UI hiển thị group, không động đến schedule/results).
+  await persist(); // lưu NGAY việc đổi group, độc lập với việc có reschedule hay không
   renderGroupingBoard();
 
-  // Hỏi reschedule
-  promptRescheduleAfterGroupChange();
+  // Chỉ hỏi reschedule khi đội ĐÃ ở 1 bảng thật (oldGroup) và CHUYỂN SANG bảng khác.
+  // Kéo từ "chưa phân bảng" vào 1 bảng → không có dữ liệu cũ để mất → không cần hỏi.
+  if (oldGroup && oldGroup !== '__unassigned__' && targetGroup !== '__unassigned__') {
+    promptRescheduleAfterGroupChange();
+  } else {
+    window._pendingRescheduleSnapshot = null; // không dùng đến, dọn sạch
+  }
 };
 
 window.addNewGroup = async function() {
@@ -3685,26 +3755,57 @@ window.renameGroup = async function(oldName, newNameRaw) {
 };
 
 function promptRescheduleAfterGroupChange() {
-  // "Eligible to auto-reschedule" = trận chưa có kết quả VÀ chưa bị sửa tay
-  const eligible = BASE_SCHEDULE.filter((_, idx) => {
-    const hasResult = results[String(idx)] && results[String(idx)].score1 != null;
-    const isManual = manualDates[String(idx)] != null;
-    return !hasResult && !isManual;
+   const newSchedulePreview = buildBaseSchedule();
+   const oldSnapshot = window._pendingRescheduleSnapshot;
+   if (!oldSnapshot) return;
+   const unchanged = newSchedulePreview.length === oldSnapshot.sch.length &&
+     newSchedulePreview.every(([a, b], i) => oldSnapshot.sch[i]?.[0] === a && oldSnapshot.sch[i]?.[1] === b);
+   if (unchanged) { window._pendingRescheduleSnapshot = null; return; }
+
+  // Tính trước các trận sẽ MẤT: cặp tồn tại trong schedule cũ nhưng không còn trong schedule mới
+  const newPairKeys = new Set(newSchedulePreview.map(([a, b]) => `${a}|${b}`));
+  const lostMatches = [];
+  oldSnapshot.sch.forEach(([a, b], oi) => {
+    const key = `${a}|${b}`;
+    if (newPairKeys.has(key)) return; // vẫn còn tồn tại, không mất
+    const hasResult = oldSnapshot.res[String(oi)] && oldSnapshot.res[String(oi)].score1 != null;
+    const nameA = teams[a] || a, nameB = teams[b] || b;
+    lostMatches.push({ a, b, nameA, nameB, hasResult });
   });
-  if (eligible.length === 0 && BASE_SCHEDULE.length === buildBaseSchedule().length) return;
 
-  requireConfirmCode('📅 Cập nhật lại lịch thi đấu?',
-    'Bạn vừa thay đổi cơ cấu bảng. Tự động xếp lại lịch cho các trận chưa đấu (giữ nguyên các trận đã có kết quả hoặc đã chỉnh tay)?',
-    () => autoGenerateGroupFixtures());
-}
+  let warningHtml = '';
+  if (lostMatches.length > 0) {
+    const itemsHtml = lostMatches.map(m => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:.78rem;">
+        <span>${m.nameA} vs ${m.nameB}</span>
+        <span style="color:${m.hasResult ? 'var(--red)' : 'var(--text-muted)'};font-weight:${m.hasResult ? '700' : '400'};">
+          ${m.hasResult ? '⚠️ Có kết quả' : 'Chưa đấu'}
+        </span>
+      </div>`).join('');
+    warningHtml = `
+      <div style="margin-top:10px;padding:10px;background:var(--red-a08);border:1px solid rgba(235,69,96,.3);border-radius:8px;max-height:180px;overflow-y:auto;">
+        <div style="font-weight:700;color:var(--red);margin-bottom:6px;font-size:.8rem;">
+          ⚠️ ${lostMatches.length} trận sẽ bị xóa (đội không còn cùng bảng):
+        </div>
+        ${itemsHtml}
+      </div>`;
+  }
 
-window.autoGenerateGroupFixtures = async function() {
-  if (!isAdmin) { showToast('🔒 Cần Admin', 'warn'); return; }
-  rebuildSchedule(true); // true = keepResults, đã có logic giữ trận cũ sẵn trong hàm này
-  await persist();
-  renderAll();
-  showToast('⚡ Đã cập nhật lại lịch thi đấu theo bảng mới!');
-};
+   requireConfirmCode(
+     '🔄 Cập nhật lịch thi đấu theo bảng mới?',
+    `Cơ cấu bảng vừa thay đổi. Các trận nội bộ bảng đã có kết quả hoặc đã xếp ngày thủ công sẽ được giữ nguyên.
+     ${warningHtml}
+     <div style="margin-top:10px;opacity:.75;color:var(--text-muted);font-size:.78rem;">Nếu hủy, thay đổi bảng vẫn được lưu nhưng lịch thi đấu/kết quả giữ nguyên như cũ.</div>`,
+     () => {
+       rebuildSchedule(true, oldSnapshot);
+       window._pendingRescheduleSnapshot = null;
+       persist();
+      const lostMsg = lostMatches.length > 0 ? ` (đã xóa ${lostMatches.length} trận không còn hợp lệ)` : '';
+      showToast(`🔄 Đã cập nhật cặp đấu theo bảng mới${lostMsg}. Vui lòng xếp lại ngày cho các trận mới.`, 'info');
+       openAutoModal();
+     }
+   );
+ }
 
 /* ═══════════════════ FILTER ═══════════════════ */
 let filterTeamId = null;
@@ -3747,6 +3848,11 @@ function rebuildSchedule(keepResults = false) {
     if (oldRes[String(oi)] !== undefined)                      newRes[String(ni)]    = oldRes[String(oi)];
     if (oldDates[String(oi)] && oldDates[String(oi)] < '9999') newDates[String(ni)]  = oldDates[String(oi)];
     if (oldManualDates[String(oi)])                            newManual[String(ni)] = oldManualDates[String(oi)];
+    // Lớp bảo vệ: nếu trận này ĐÃ có kết quả nhưng chưa từng manual, tự động coi là manual
+    // để chắc chắn không bị reschedule tự động trong tương lai, đúng yêu cầu "giữ cố định cho đến khi reset kết quả".
+    if (oldRes[String(oi)] !== undefined && !newManual[String(ni)] && newDates[String(ni)]) {
+      newManual[String(ni)] = newDates[String(ni)];
+    }
   });
 
   manualDates = newManual;
@@ -4319,7 +4425,29 @@ function groupBack2Back(pending, usedSlotsPerDay = {}) {
 
 function getSelectedLogic() { const el = document.querySelector('input[name="scheduleLogic"]:checked'); return el ? el.value : 'independent'; }
 window.onLogicChange = () => { const val = getSelectedLogic(); document.getElementById('logic-opt-A').style.borderColor = val === 'independent' ? 'var(--accent-a30)' : 'var(--border)'; document.getElementById('logic-opt-B').style.borderColor = val === 'back2back' ? 'rgba(49,69,235,.55)' : 'var(--border)'; const iso = window._autoGetISO ? window._autoGetISO() : ''; if (iso) refreshAutoPreview(iso); };
+
 window.openAutoModal = function() {
+  requireConfirmCode(
+    '⚡ Xếp lịch tự động?',
+    'Hành động này có thể ảnh hưởng đến nhiều trận đấu trong lịch thi đấu. Vui lòng nhập mã xác nhận để tiếp tục.',
+    () => _doOpenAutoModal()
+  );
+};
+
+function _doOpenAutoModal() {
+  // Nếu đang ở Cup mode, đảm bảo BASE_SCHEDULE luôn khớp đúng cấu trúc groups hiện tại
+  // trước khi cho user xếp ngày — tránh xếp ngày cho cặp đấu đã không còn hợp lệ.
+  if (leagueConfig.leagueType === 'cup') {
+    const freshSchedule = buildBaseSchedule();
+    const isStale = freshSchedule.length !== BASE_SCHEDULE.length ||
+      !freshSchedule.every(([a, b], i) => BASE_SCHEDULE[i]?.[0] === a && BASE_SCHEDULE[i]?.[1] === b);
+    if (isStale) {
+      const snapshot = { sch: [...BASE_SCHEDULE], res: { ...results }, dates: { ...matchDates }, manual: { ...manualDates } };
+      rebuildSchedule(true, snapshot);
+      persist();
+    }
+  }
+  
   const suggested = nearestWorkday(todayISO());
   const dg = document.getElementById('autoDateGroup');
   dg.innerHTML = '';
@@ -4487,6 +4615,20 @@ function getCheckedManualIdxs() {
     '#manualMatchListItems input[type="checkbox"]:checked'
   )].map(cb => Number(cb.dataset.idx));
 }
+
+// Hàm riêng cho nút "Auto lịch" trong groupingPanel: đảm bảo BASE_SCHEDULE khớp đúng
+// groups hiện tại trước khi mở modal xếp ngày.
+window.openAutoScheduleForGroups = function() {
+  const snapshot = {
+    sch: [...BASE_SCHEDULE],
+    res: { ...results },
+    dates: { ...matchDates },
+    manual: { ...manualDates }
+  };
+  rebuildSchedule(true, snapshot);
+  persist();
+  openAutoModal();
+};
 
 window.confirmAutoSchedule = function() {
   let startISO = window._autoGetISO ? window._autoGetISO() : '';
@@ -5679,6 +5821,16 @@ function calcSeasonTopScorers() {
 }
 
 function calcStandings() { return Object.entries(calcStandingsRaw()).sort((x, y) => y[1].p - x[1].p || ((y[1].gf - y[1].ga) - (x[1].gf - x[1].ga)) || y[1].gf - x[1].gf); }
+
+window.toggleOverallStandings = function() {
+  const wrap = document.getElementById('overallStandingsWrap');
+  const icon = document.getElementById('overallStandingsToggleIcon');
+  const label = document.getElementById('overallStandingsToggleLabel');
+  const isHidden = wrap.style.display === 'none';
+  wrap.style.display = isHidden ? '' : 'none';
+  icon.textContent = isHidden ? '▾' : '▸';
+  label.textContent = isHidden ? 'Ẩn bảng xếp hạng tổng' : 'Xem bảng xếp hạng tổng';
+};
 
 function calcTopScorers() {
   const map = {};
@@ -7513,8 +7665,14 @@ results[String(_editMatchIdx)] = {
       }
     }
   }
+
+  // Đánh dấu trận này là "manual" ngay khi có kết quả, để các luồng auto-reschedule
+  // (Auto Schedule, đổi group ở Cup mode) không bao giờ động vào ngày của nó nữa,
+  // cho đến khi admin chủ động resetResultModal().
+  manualDates[String(_editMatchIdx)] = matchDates[String(_editMatchIdx)];
+  
   const _savedIdx = _editMatchIdx;
-armRankMovement('result-save');
+  armRankMovement('result-save');
   
   /* ÉP TÍNH TOÁN THỨ HẠNG MỚI NGAY LẬP TỨC ĐỂ ĐẨY LÊN FIREBASE */
   computeRankMovement(calcStandings());
@@ -8930,9 +9088,26 @@ function renderAll() {
   }
 
   const groupingPanel = document.getElementById('groupingPanel');
+  const overallToggle = document.getElementById('overallStandingsToggle');
+  const overallWrap = document.getElementById('overallStandingsWrap');
   if (groupingPanel) {
     groupingPanel.style.display = leagueConfig.leagueType === 'cup' ? 'block' : 'none';
     if (leagueConfig.leagueType === 'cup') renderGroupingBoard();
+    const isCup = leagueConfig.leagueType === 'cup';
+    groupingPanel.style.display = isCup ? 'block' : 'none';
+    if (isCup) renderGroupingBoard();
+    if (overallToggle) overallToggle.style.display = isCup ? 'block' : 'none';
+    if (overallWrap && isCup && overallWrap.dataset.initialized !== 'true') {
+      // Lần đầu vào Cup mode: collapse mặc định
+      overallWrap.style.display = 'none';
+      document.getElementById('overallStandingsToggleIcon').textContent = '▸';
+      document.getElementById('overallStandingsToggleLabel').textContent = 'Xem bảng xếp hạng tổng';
+      overallWrap.dataset.initialized = 'true';
+    }
+    if (!isCup) {
+      overallWrap.style.display = '';
+      overallWrap.dataset.initialized = 'false'; // reset để lần sau vào lại Cup mode lại collapse
+    }    
   }
 
   // LUÔN GỌI renderCupBracket để hàm này tự quyết định việc hiện/ẩn Panel thay vì chặn từ ngoài

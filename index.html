@@ -451,6 +451,68 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 .matchday-block{margin-bottom:12px;}
 .matchday-header{display:flex;align-items:center;gap:10px;margin-bottom:7px;padding:0 2px;}
+
+.group-block {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+.group-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.group-name-input {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  width: 90px;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.group-name-input:focus {
+  background: var(--surface-a04);
+  outline: 1px solid var(--accent-a30);
+}
+.group-team-list {
+  min-height: 40px;
+  border-radius: 8px;
+  transition: background .15s;
+}
+.group-team-list.drag-over-zone {
+  background: var(--accent2-a10);
+  outline: 2px dashed var(--accent);
+}
+.group-team-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--surface-a04);
+  margin-bottom: 4px;
+  cursor: grab;
+  font-size: .82rem;
+}
+.group-team-row.dragging { opacity: .4; }
+.group-team-row .rank-badge {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 18px;
+  text-align: center;
+}
+.group-unassigned-block {
+  background: var(--surface-a04);
+  border: 1px dashed var(--border);
+}
+
 .cal-tile{flex-shrink:0;width:62px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg-card2);box-shadow:0 2px 8px rgba(0,0,0,.3);}
 .cal-tile.today{border-color:var(--accent);box-shadow:0 0 10px var(--accent2-a35);}
 .cal-tile.past{opacity:.55;}
@@ -1213,6 +1275,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 }
 .ldi-type-badge.type-league { background: rgba(49,69,235,.2); color: #7b96ff; }
 .ldi-type-badge.type-marathon { background: rgba(197,248,81,.15); color: var(--accent); }
+.ldi-type-badge.type-cup { background: rgba(255,193,7,.15); color: var(--gold); }
 .league-dropdown-add {
   display: flex;
   align-items: center;
@@ -2531,7 +2594,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
         <div class="form-group"><label class="form-label">Mùa giải / Năm</label><input class="form-input" id="cfg-season" placeholder="2026"></div>
         <div class="form-group"><label class="form-label">Loại hình</label>
           <select class="form-select" id="cfg-leagueType" onchange="onCfgLeagueTypeChange()">
-            <option value="league">⚽ Football League</option>
+            <option value="league">⚽ League</option>
+            <option value="cup">🏆 Cup / Tournament</option>            
             <option value="marathon">🎮 Marathon / Arcade</option>
           </select>
         </div>
@@ -3001,7 +3065,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
             <div class="card-title"><div class="icon">📅</div>Lịch thi đấu</div>
             <div style="display:flex;gap:5px;align-items:center;">
               <button class="btn-flat btn-flat-teal btn-sm" id="btnAuto" onclick="requireAdmin(()=>openAutoModal())">⚡ Auto <span class="admin-lock" id="lockAuto">🔒</span></button>
-              <button class="btn-flat btn-sm" id="btnCollapseFixture" onclick="toggleFixtureCollapse()" title="Thu gọn lịch" style="font-size:.72rem;padding:3px 7px;">‹‹</button>
+              <button class="btn-flat btn-sm" id="btnCollapseFixture" onclick="toggleFixtureCollapse()" title="Thu gọn lịch" style="font-size:.72rem;padding:3px 7px;display:none;">‹‹</button>
             </div>
           </div>
           <div class="fixtures-wrap" id="fixturesList"></div>
@@ -3014,8 +3078,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
           <div class="card-title"><div class="icon">🎮</div><span id="marathonFixturesTitle">Lịch thi đấu Marathon</span>
             <div style="margin-left:auto;display:flex;gap:6px;">
               <button class="btn-flat" id="btnMarathonAddMatch" onclick="requireAdmin(openMarathonAddMatchModal)" style="font-size:.72rem;padding:4px 8px;color:var(--accent);border-color:var(--accent-a30);">➕ Thêm trận</button>
-              <button class="btn-flat" id="btnMarathonAutoFixture" onclick="requireAdmin(openMarathonAutoModal)" style="font-size:.72rem;padding:4px 8px;">⚡ Tự động</button>
-              <button class="btn-flat btn-sm" onclick="toggleFixtureCollapse()" style="font-size:.72rem;padding:3px 7px;">‹‹</button>
+            <button class="btn-flat" id="btnMarathonAutoFixture" onclick="requireAdmin(openMarathonAutoModal)" style="font-size:.72rem;padding:4px 8px;">⚡ Tự động</button>
+            <button class="btn-flat btn-sm" id="btnCollapseMarathonFixture" onclick="toggleFixtureCollapse()" style="font-size:.72rem;padding:3px 7px;display:none;">‹‹</button>
             </div>
           </div>
           <div id="marathonFixturesList" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;margin-top:8px;"></div>
@@ -3029,6 +3093,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
           <div class="card-title" id="standingsCardTitle" style="margin-bottom:10px;"><div class="icon">🏆</div>Bảng xếp hạng</div>
           <button class="btn-flat btn-sm" id="btnCollapseStandings" onclick="toggleColumnCollapse('standingsCard')" title="Thu gọn" style="font-size:.72rem;padding:3px 7px;display:none;">‹‹</button>
         </div>
+        <!-- Panel chia bảng (chỉ hiện khi leagueConfig.tournamentMode === 'cup') -->
+        <div id="groupingPanel" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+            <div style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">🗂️ Chia bảng</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-flat" style="font-size:.7rem;padding:3px 8px;" onclick="requireAdmin(()=>addNewGroup())">➕ Thêm bảng</button>
+              <button class="btn-flat" style="font-size:.7rem;padding:3px 8px;" onclick="requireAdmin(()=>autoGenerateGroupFixtures())">⚡ Auto lịch</button>
+            </div>
+          </div>
+          <div id="groupingBoard"></div>
+        </div>        
         <div id="leagueStandingsPanel">
           <div id="standingsScrollWrap" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">
             <div id="podiumArea"></div>
@@ -3359,6 +3434,18 @@ function applyGridLayout() {
 }
 
 /* ═══════════════════ SCHEDULING ═══════════════════ */
+// Sinh BASE_SCHEDULE đúng theo loại giải: 'league' dùng toàn bộ teamIds,
+// 'cup' dùng từng group riêng (đấu nội bộ group, không đấu xuyên group)
+function buildBaseSchedule() {
+  if (leagueConfig.leagueType === 'cup') {
+    const schedule = generateRoundRobinByGroups(groups, leagueConfig.format);
+    // Nếu chưa chia bảng (groups rỗng) hoặc bảng quá ít đội, BASE_SCHEDULE rỗng là hợp lệ,
+    // nhưng renderFixtures() cần biết để hiện placeholder "Chưa có lịch" thay vì lỗi DOM
+    return schedule;
+  }
+  return generateRoundRobin(teamIds, leagueConfig.format);
+}
+
 function generateRoundRobin(ids, format = 'single') {
   if (!ids || ids.length < 2) return [];
   const list = [...ids];
@@ -3379,6 +3466,16 @@ function generateRoundRobin(ids, format = 'single') {
     return [...schedule, ...ret];
   }
   return schedule;
+}
+
+function generateRoundRobinByGroups(groupsObj, format = 'single') {
+  let allPairs = [];
+  Object.keys(groupsObj).sort().forEach(gName => {
+    const ids = groupsObj[gName];
+    if (!ids || ids.length < 2) return;
+    allPairs.push(...generateRoundRobin(ids, format));
+  });
+  return allPairs;
 }
 
 /* ═══════════════════ STATE ═══════════════════ */
@@ -3402,7 +3499,7 @@ let leagueConfig = {
     winPts: 3, 
     rawPts: 1, 
     desc: '' };
-let BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+let BASE_SCHEDULE = buildBaseSchedule();
 let TOTAL = BASE_SCHEDULE.length;
 let matchDates = {};
 let marathonDates = {};
@@ -3413,6 +3510,201 @@ let groups = {};           // { 'A': ['id1','id2',...], 'B': [...] }
 let knockoutMatches = {};  // { 'R16_1': {home,away,score1,score2,...}, ... }
 let knockoutMatchDates = {};  // { 'QF_1_date': '2026-06-01', 'QF_1_L2_date': '...' }
 let cupSeeds = [];         // thứ tự seed sau vòng bảng ['id1','id2',...]
+
+/* ═══════════════════ GROUPING ═══════════════════ */
+// groups: { 'A': ['teamId1','teamId2',...], 'B': [...], ... }
+// Đội chưa phân bảng nằm trong "group ảo" tên '__unassigned__' (không lưu vào groups,
+// tính bằng phép trừ: teamIds - tất cả đội đã có trong groups)
+function getUnassignedTeams() {
+  const assigned = new Set(Object.values(groups).flat());
+  return teamIds.filter(id => !assigned.has(id));
+}
+
+function getGroupNames() {
+  return Object.keys(groups).sort();
+}
+
+function getNextGroupName() {
+  const existing = getGroupNames();
+  for (let i = 0; i < 26; i++) {
+    const letter = String.fromCharCode(65 + i); // A, B, C...
+    if (!existing.includes(letter)) return letter;
+  }
+  return 'G' + (existing.length + 1);
+}
+
+function renderGroupingBoard() {
+  const board = document.getElementById('groupingBoard');
+  if (!board) return;
+
+  const groupNames = getGroupNames();
+  const unassigned = getUnassignedTeams();
+
+  let html = '';
+
+  // Mỗi bảng đã chia
+  groupNames.forEach(gName => {
+    const ids = groups[gName] || [];
+    const standings = calcStandingsForTeams(ids); // [[id, stats], ...] đã sort
+    html += `
+      <div class="group-block" data-group="${gName}">
+        <div class="group-block-header">
+          <input class="group-name-input" value="${gName}" maxlength="3"
+            onchange="renameGroup('${gName}', this.value)">
+          <button class="btn-flat" style="font-size:.65rem;padding:2px 6px;" onclick="requireAdmin(()=>deleteGroup('${gName}'))">🗑️</button>
+        </div>
+        <div class="group-team-list" data-group="${gName}"
+          ondragover="onGroupZoneDragOver(event)" ondragleave="onGroupZoneDragLeave(event)"
+          ondrop="onGroupZoneDrop(event, '${gName}')">
+          ${standings.length === 0 ? '<div style="text-align:center;color:var(--text-muted);font-size:.74rem;padding:8px;">Kéo đội vào đây</div>' : ''}
+          ${standings.map(([id, s], idx) => renderGroupTeamRow(id, idx + 1, s)).join('')}
+        </div>
+      </div>`;
+  });
+
+  // Bảng "chờ" (unassigned) — luôn hiện ở cuối
+  html += `
+    <div class="group-block group-unassigned-block" data-group="__unassigned__">
+      <div class="group-block-header">
+        <div style="font-size:.85rem;font-weight:700;color:var(--text-muted);">⏳ Chưa phân bảng</div>
+      </div>
+      <div class="group-team-list" data-group="__unassigned__"
+        ondragover="onGroupZoneDragOver(event)" ondragleave="onGroupZoneDragLeave(event)"
+        ondrop="onGroupZoneDrop(event, '__unassigned__')">
+        ${unassigned.length === 0 ? '<div style="text-align:center;color:var(--text-muted);font-size:.74rem;padding:8px;">Tất cả đội đã được phân bảng</div>' : ''}
+        ${unassigned.map(id => renderGroupTeamRow(id, null, null)).join('')}
+      </div>
+    </div>`;
+
+  board.innerHTML = html;
+}
+
+function renderGroupTeamRow(teamId, rank, stats) {
+  const name = teams[teamId] || teamId;
+  const emoji = teamEmojis[teamId] || '';
+  const statsHtml = stats
+    ? `<span style="margin-left:auto;font-size:.72rem;color:var(--text-muted);">${stats.p}đ &nbsp; ${stats.gf}-${stats.ga}</span>`
+    : '';
+  return `
+    <div class="group-team-row" draggable="true" data-team="${teamId}"
+      ondragstart="onGroupTeamDragStart(event, '${teamId}')"
+      ondragend="onGroupTeamDragEnd(event)">
+      ${rank ? `<span class="rank-badge">${rank}</span>` : ''}
+      <span>${emoji} ${name}</span>
+      ${statsHtml}
+    </div>`;
+}
+
+let _groupDragTeamId = null;
+
+window.onGroupTeamDragStart = function(e, teamId) {
+  _groupDragTeamId = teamId;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+
+window.onGroupTeamDragEnd = function(e) {
+  e.target.classList.remove('dragging');
+  _groupDragTeamId = null;
+}
+
+window.onGroupZoneDragOver = function(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over-zone');
+}
+
+window.onGroupZoneDragLeave = function(e) {
+  e.currentTarget.classList.remove('drag-over-zone');
+}
+
+window.onGroupZoneDrop = function(e, targetGroup) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over-zone');
+  if (!_groupDragTeamId) return;
+  requirePlayer(() => moveTeamToGroup(_groupDragTeamId, targetGroup));
+};
+
+window.moveTeamToGroup = async function(teamId, targetGroup) {
+  // Xác định group cũ của đội (nếu có)
+  let oldGroup = null;
+  for (const g of Object.keys(groups)) {
+    if (groups[g].includes(teamId)) { oldGroup = g; break; }
+  }
+  if (oldGroup === targetGroup) return; // không đổi gì
+
+  // Gỡ khỏi group cũ
+  if (oldGroup) {
+    groups[oldGroup] = groups[oldGroup].filter(id => id !== teamId);
+  }
+  // Thêm vào group mới (trừ khi là unassigned, không cần lưu)
+  if (targetGroup !== '__unassigned__') {
+    if (!groups[targetGroup]) groups[targetGroup] = [];
+    groups[targetGroup].push(teamId);
+  }
+
+  if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
+  await persist();
+  renderGroupingBoard();
+
+  // Hỏi reschedule
+  promptRescheduleAfterGroupChange();
+};
+
+window.addNewGroup = async function() {
+  const name = getNextGroupName();
+  groups[name] = [];
+  leagueConfig.groupCount = Object.keys(groups).length;
+  if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
+  await persist();
+  renderGroupingBoard();
+};
+
+window.deleteGroup = async function(gName) {
+  if (!groups[gName]) return;
+  requireConfirmCode(`🗑️ Xoá bảng ${gName}?`,
+    'Các đội trong bảng sẽ chuyển về "Chưa phân bảng". Tiếp tục?',
+    async () => {
+      delete groups[gName];
+      leagueConfig.groupCount = Object.keys(groups).length;
+      if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
+      await persist();
+      renderGroupingBoard();
+      promptRescheduleAfterGroupChange();
+    });
+};
+
+window.renameGroup = async function(oldName, newNameRaw) {
+  const newName = (newNameRaw || '').trim().toUpperCase();
+  if (!newName || newName === oldName) { renderGroupingBoard(); return; }
+  if (groups[newName]) { showToast('⚠️ Tên bảng đã tồn tại', 'warn'); renderGroupingBoard(); return; }
+  groups[newName] = groups[oldName];
+  delete groups[oldName];
+  if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
+  await persist();
+  renderGroupingBoard();
+};
+
+function promptRescheduleAfterGroupChange() {
+  // "Eligible to auto-reschedule" = trận chưa có kết quả VÀ chưa bị sửa tay
+  const eligible = BASE_SCHEDULE.filter((_, idx) => {
+    const hasResult = results[String(idx)] && results[String(idx)].score1 != null;
+    const isManual = manualDates[String(idx)] != null;
+    return !hasResult && !isManual;
+  });
+  if (eligible.length === 0 && BASE_SCHEDULE.length === buildBaseSchedule().length) return;
+
+  requireConfirmCode('📅 Cập nhật lại lịch thi đấu?',
+    'Bạn vừa thay đổi cơ cấu bảng. Tự động xếp lại lịch cho các trận chưa đấu (giữ nguyên các trận đã có kết quả hoặc đã chỉnh tay)?',
+    () => autoGenerateGroupFixtures());
+}
+
+window.autoGenerateGroupFixtures = async function() {
+  if (!isAdmin) { showToast('🔒 Cần Admin', 'warn'); return; }
+  rebuildSchedule(true); // true = keepResults, đã có logic giữ trận cũ sẵn trong hàm này
+  await persist();
+  renderAll();
+  showToast('⚡ Đã cập nhật lại lịch thi đấu theo bảng mới!');
+};
 
 /* ═══════════════════ FILTER ═══════════════════ */
 let filterTeamId = null;
@@ -3427,7 +3719,7 @@ window.setFilterTeam = function(id) {
 function rebuildSchedule(keepResults = false) {
   const oldSch = [...BASE_SCHEDULE], oldRes = { ...results }, oldDates = { ...matchDates };
   const oldManualDates = { ...manualDates };
-  BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+  BASE_SCHEDULE = buildBaseSchedule();
   TOTAL = BASE_SCHEDULE.length;
   if (!keepResults) {
     manualDates = {};
@@ -3553,7 +3845,7 @@ function normalizeState(data) {
     if (!teamColors[id]) teamColors[id] = DEFAULT_COLORS[i % DEFAULT_COLORS.length];
   });
   
-  try { BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format); TOTAL = BASE_SCHEDULE.length; } 
+  try { BASE_SCHEDULE = buildBaseSchedule(); TOTAL = BASE_SCHEDULE.length; } 
   catch(e) { console.error(e); BASE_SCHEDULE = []; TOTAL = 0; }
   
   matchDates = normalizeMatchDates(data.matchDates); 
@@ -3627,7 +3919,7 @@ function subscribeFirebase() {
       } else if (!fbReady) {
         // Chỉ khởi tạo mặc định lần đầu tiên (chưa có data trên Firebase)
         // KHÔNG push nếu fbReady đã true → tránh ghi đè khi Firebase reconnect
-        BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+        BASE_SCHEDULE = buildBaseSchedule();
         TOTAL = BASE_SCHEDULE.length;
         matchDates = buildSeasonDates();
         scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
@@ -3636,7 +3928,7 @@ function subscribeFirebase() {
       // Nếu data === null VÀ fbReady === true → Firebase đang reconnect, bỏ qua
     } catch(e) {
       console.error(e);
-      BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+      BASE_SCHEDULE = buildBaseSchedule();
       TOTAL = BASE_SCHEDULE.length;
       matchDates = buildSeasonDates();
       scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
@@ -3661,7 +3953,7 @@ function subscribeFirebase() {
       if (!fbReady) {
         fbReady = true;
         document.getElementById('loadingOverlay').classList.add('hidden');
-        BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+        BASE_SCHEDULE = buildBaseSchedule();
         TOTAL = BASE_SCHEDULE.length;
         matchDates = buildSeasonDates();
         scheduleOrder = BASE_SCHEDULE.map((_, i) => i);
@@ -3686,7 +3978,9 @@ function updateHeaderTitle() {
   const emoji = leagueConfig.emoji || (type === 'marathon' ? '🎮' : '⚽');
   if (h1) h1.textContent = (leagueConfig.leagueName || 'FIFA LEAGUE MANAGER').toUpperCase();
   if (p) {
-    const typeLabel = type === 'marathon' ? '🎮 Marathon Mode' : '⚽ Football League';
+    const typeLabel = type === 'marathon' ? '🎮 Marathon Mode'
+      : type === 'cup' ? '🏆 Cup / Tournament'
+      : '⚽ Football League';    
     p.textContent = `${typeLabel} · Season ${leagueConfig.season || '2026'} · Real-time Sync`;
   }
   // Update logo emoji
@@ -4940,7 +5234,7 @@ function renderFixtures() {
   }
 
   // 3. HIỂN THỊ NÚT FILTER TRÊN HEADER
-  let sh = document.querySelector('.section-header');
+  let sh = document.getElementById('fixturesCard')?.querySelector('.section-header');
   let filterBtn = document.getElementById('activeFilterBtn');
   if (filterTeamId) {
     if (!filterBtn) {
@@ -4948,7 +5242,11 @@ function renderFixtures() {
       filterBtn.id = 'activeFilterBtn';
       filterBtn.className = 'btn-flat btn-sm filter-chip';
       const btnAuto = document.getElementById('btnAuto');
-      sh.insertBefore(filterBtn, btnAuto);
+      if (sh && btnAuto && btnAuto.parentNode === sh) {
+        sh.insertBefore(filterBtn, btnAuto);
+      } else if (sh) {
+        sh.appendChild(filterBtn); // fallback an toàn nếu cấu trúc khác dự kiến
+      }      
     }
     filterBtn.style.border = `1px solid ${teamColors[filterTeamId]}`;
     filterBtn.style.color = teamColors[filterTeamId];
@@ -6334,6 +6632,13 @@ function renderCupBracket() {
     bracketCard.classList.remove('bracket-visible');
     document.getElementById('mainGrid').classList.remove('has-bracket');
     document.getElementById('mainGrid').style.gridTemplateColumns = '';    
+
+    const collapseStandingsBtn = document.getElementById('btnCollapseStandings');
+    if (collapseStandingsBtn) collapseStandingsBtn.style.display = 'none';
+    const collapseFixtureBtn = document.getElementById('btnCollapseFixture');
+    if (collapseFixtureBtn) collapseFixtureBtn.style.display = 'none';    
+    const collapseMarathonFixtureBtn = document.getElementById('btnCollapseMarathonFixture');
+    if (collapseMarathonFixtureBtn) collapseMarathonFixtureBtn.style.display = 'none';
    
    // Xóa class thu gọn của cả Fixture Card (dùng fixture-collapsed) và Standings Card (dùng col-collapsed)
    const fixtures = document.getElementById('fixturesCard');
@@ -6359,6 +6664,10 @@ function renderCupBracket() {
   document.getElementById('mainGrid').classList.add('has-bracket');
   const collapseStandingsBtn = document.getElementById('btnCollapseStandings');
   if (collapseStandingsBtn) collapseStandingsBtn.style.display = '';  
+  const collapseFixtureBtn = document.getElementById('btnCollapseFixture');
+  if (collapseFixtureBtn) collapseFixtureBtn.style.display = '';
+  const collapseMarathonFixtureBtn = document.getElementById('btnCollapseMarathonFixture');
+  if (collapseMarathonFixtureBtn) collapseMarathonFixtureBtn.style.display = '';  
 
   const hasBracketData = Object.keys(knockoutMatches).length > 0;
   const fixtureCards = [document.getElementById('fixturesCard'), document.getElementById('marathonFixturesCard')];
@@ -6388,9 +6697,9 @@ function renderCupBracket() {
   const actions = document.getElementById('cupBracketActions');
   if (actions && isAdmin) {
     actions.innerHTML = `
-      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="drawGroups('random')">🎲 Bốc thăm</button>
-      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="drawGroups('seeded')">🌱 Theo seed</button>
-      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;color:var(--accent);border-color:var(--accent-a30);" onclick="generateCupBracket()">⚡ Generate</button>`;
+      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="generateCupBracket('random')" title="Ghép cặp ngẫu nhiên hoàn toàn">🎲 Random</button>
+      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;" onclick="generateCupBracket('seedpot')" title="Top 1 gặp đội yếu nhất, Top 2 gặp áp chót...">🌱 Seed Pot</button>
+      <button class="btn-flat" style="font-size:.72rem;padding:4px 10px;color:var(--accent);border-color:var(--accent-a30);" onclick="generateCupBracket('balanced')" title="Nửa trên đấu nửa dưới — cân bằng trình độ">⚖️ Balanced</button>`;
   }
 
   if (!hasBracketData) {
@@ -6452,6 +6761,7 @@ function enforceTwoExpandedRule(justToggledCol) {
 }
 
 window.toggleFixtureCollapse = function() {
+  if (!document.getElementById('mainGrid')?.classList.contains('has-bracket')) return;
   const wasCollapsed = isColCollapsed('fixture');
   setColCollapsed('fixture', !wasCollapsed);
   enforceTwoExpandedRule('fixture');   // gọi luôn, không có if (wasCollapsed)
@@ -6459,6 +6769,7 @@ window.toggleFixtureCollapse = function() {
 };
 
 window.toggleColumnCollapse = function(colId) {
+  if (!document.getElementById('mainGrid')?.classList.contains('has-bracket')) return;
   const colName = colId === 'bracketCard' ? 'bracket' : 'standings';
   const wasCollapsed = isColCollapsed(colName);
   setColCollapsed(colName, !wasCollapsed);
@@ -7684,9 +7995,22 @@ function renderLeagueConfigTab() {
 
 // THÊM MỚI — toggle section trong settings tab
 window.onCfgLeagueTypeChange = () => {
-  const isMarathon = document.getElementById('cfg-leagueType')?.value === 'marathon';
+  const type = document.getElementById('cfg-leagueType')?.value || 'league';
+  const isMarathon = type === 'marathon';
+  const isCup = type === 'cup';
+
   document.getElementById('cfgSectionLeague').style.display = isMarathon ? 'none' : 'block';
   document.getElementById('cfgSectionMarathon').style.display = isMarathon ? 'block' : 'none';
+
+  // hasCup toggle chỉ có ý nghĩa khi League mode (mở rộng knockout sau vòng tròn).
+  // Ở Cup mode, bracket luôn bật ngầm định (không cần toggle riêng).
+  const hasCupRow = document.getElementById('cfg-hasCup')?.closest('.form-group, .toggle-row, label')
+    || document.getElementById('cfg-hasCup')?.parentElement;
+  if (hasCupRow) hasCupRow.style.display = isCup ? 'none' : (isMarathon ? 'none' : '');
+
+  // Nếu chọn Cup mode, tự đánh dấu hasCup = true ngầm (logic bracket dùng chung điều kiện cũ)
+  const hasCupCheckbox = document.getElementById('cfg-hasCup');
+  if (hasCupCheckbox && isCup) hasCupCheckbox.checked = true;
 };
 
 window.onCfgHasCupChange = () => {
@@ -7717,21 +8041,21 @@ window.saveLeagueConfig = () => {
       winPts: Number(document.getElementById('cfg-winPts')?.value) ?? 3,
       drawPts: Number(document.getElementById('cfg-drawPts')?.value) ?? 1,
       marathonGame: document.getElementById('cfg-marathonGame')?.value.trim() || '',
-      stageCount: Number(document.getElementById('cfg-stageCount')?.value) || 10,
-      hasCup:          document.getElementById('cfg-hasCup')?.checked || false,
+      stageCount: Number(document.getElementById('cfg-stageCount')?.value) || 10,      
+      hasCup:          newType === 'cup' ? true : (document.getElementById('cfg-hasCup')?.checked || false),
       groupCount:      Number(document.getElementById('cfg-groupCount')?.value) || 0,
       qualifyPerGroup: Number(document.getElementById('cfg-qualifyPerGroup')?.value) || 2,
       knockoutLeg:     document.getElementById('cfg-knockoutLeg')?.value || 'single',
       thirdPlace:      document.getElementById('cfg-thirdPlace')?.checked !== false,
       rankingMethod: document.getElementById('cfg-rankingMethod')?.value || 'totalScore'
     };
-    if (formatChanged && newType === 'league') rebuildSchedule(true);
+    if (formatChanged && (newType === 'league' || newType === 'cup')) rebuildSchedule(true);
     updateHeaderTitle(); persist(); closeModal('teamModal');
     renderAll();
     showToast('✅ Đã lưu cài đặt giải đấu!');
   };
 
-  if ((formatChanged || mpdChanged) && newType === 'league') {
+  if ((formatChanged || mpdChanged) && (newType === 'league' || newType === 'cup')) {
     const newTotal = generateRoundRobin(teamIds, newFormat).length;
     const changeDesc = [
       formatChanged ? `Thể thức: <strong style="color:var(--accent)">${leagueConfig.format === 'single' ? 'Lượt đi' : 'Lượt đi+về'} → ${newFormat === 'single' ? 'Lượt đi' : 'Lượt đi+về'}</strong>` : '',
@@ -7946,7 +8270,14 @@ function loadLeagueIntoState(league) {
   });
 
   if (leagueConfig.leagueType === 'league') {
-    try { BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format); TOTAL = BASE_SCHEDULE.length; }
+    try { BASE_SCHEDULE = buildBaseSchedule(); TOTAL = BASE_SCHEDULE.length; }
+    catch(e) { BASE_SCHEDULE = []; TOTAL = 0; }
+    const def = buildSeasonDates();
+    matchDates = normalizeMatchDates(matchDates);
+    scheduleOrder = normalizeScheduleOrder(scheduleOrder);
+  }
+  else if (leagueConfig.leagueType === 'cup') {
+    try { BASE_SCHEDULE = buildBaseSchedule(); TOTAL = BASE_SCHEDULE.length; }
     catch(e) { BASE_SCHEDULE = []; TOTAL = 0; }
     const def = buildSeasonDates();
     matchDates = normalizeMatchDates(matchDates);
@@ -8149,7 +8480,7 @@ function initFallback() {
   if (Object.keys(allLeagues).length === 0) {
     activeLeagueId = 'league_default';
     allLeagues[activeLeagueId] = buildLeagueObject({ config: { ...leagueConfig, leagueName: 'FIFA League 2026', emoji: '⚽' } });
-    BASE_SCHEDULE = generateRoundRobin(teamIds, leagueConfig.format);
+    BASE_SCHEDULE = buildBaseSchedule();
     TOTAL = BASE_SCHEDULE.length;
     matchDates = buildSeasonDates();
     scheduleOrder = BASE_SCHEDULE.map((_,i) => i);
@@ -8300,6 +8631,31 @@ async function switchLeague(leagueId) {
   }
 }
 
+function resetColumnLayoutState() {
+  const mainGrid = document.getElementById('mainGrid');
+  const fc  = document.getElementById('fixturesCard');
+  const mfc = document.getElementById('marathonFixturesCard');
+  const bc  = document.getElementById('bracketCard');
+  const sc  = document.getElementById('standingsCard');
+
+  // Gỡ mọi class collapse/visible
+  [fc, mfc].forEach(el => el?.classList.remove('fixture-collapsed'));
+  [bc, sc].forEach(el => el?.classList.remove('col-collapsed'));
+  bc?.classList.remove('bracket-visible');
+  mainGrid?.classList.remove('has-bracket');
+
+  // Xóa MỌI inline style do JS gán trước đó (applyGridLayout, syncFixtureCardHeight, ...)
+  if (mainGrid) mainGrid.style.gridTemplateColumns = '';
+  [fc, mfc, bc, sc].forEach(el => {
+    if (!el) return;
+    el.style.display = '';
+    el.style.height = '';
+    el.style.width = '';
+    el.style.minWidth = '';
+    el.style.maxWidth = '';
+  });
+}
+
 // ── League Selector UI ──
 function renderLeagueSelector() {
   const list = document.getElementById('leagueDropdownList');
@@ -8314,8 +8670,12 @@ function renderLeagueSelector() {
   list.innerHTML = Object.entries(allLeagues).map(([id, league]) => {
     const cfg = league.config || {};
     const isActive = id === activeLeagueId;
-    const typeClass = cfg.leagueType === 'marathon' ? 'type-marathon' : 'type-league';
-    const typeLabel = cfg.leagueType === 'marathon' ? '🎮 Marathon' : '⚽ League';
+    const typeClass = cfg.leagueType === 'marathon' ? 'type-marathon'
+      : cfg.leagueType === 'cup' ? 'type-cup'
+      : 'type-league';
+    const typeLabel = cfg.leagueType === 'marathon' ? '🎮 Marathon'
+      : cfg.leagueType === 'cup' ? '🏆 Cup'
+      : '⚽ League';
     const teamCount = league.teamIds?.length || Object.keys(league.teams || {}).length || 0;
     return `<div class="league-dropdown-item ${isActive ? 'active' : ''}" onclick="handleLeaguePick('${id}')">
       <span class="ldi-emoji">${cfg.emoji || '⚽'}</span>
@@ -8521,7 +8881,7 @@ window.saveCreateLeague = async () => {
     newLeague.config.hasCup = true;
     newLeague.config.groupCount = Number(document.getElementById('newGroupCount')?.value) || 0;
     newLeague.config.qualifyPerGroup = Number(document.getElementById('newQualifyPerGroup')?.value) || 2;
-    newLeague.config.leagueType = 'league'; // vẫn dùng league engine
+    //newLeague.config.leagueType = 'league'; // vẫn dùng league engine
     newLeague.knockoutMatches = {};
     newLeague.groups = {};
     newLeague.cupSeeds = [];
@@ -8568,7 +8928,13 @@ function renderAll() {
     
     if (typeof render === 'function') render();
   }
-  
+
+  const groupingPanel = document.getElementById('groupingPanel');
+  if (groupingPanel) {
+    groupingPanel.style.display = leagueConfig.leagueType === 'cup' ? 'block' : 'none';
+    if (leagueConfig.leagueType === 'cup') renderGroupingBoard();
+  }
+
   // LUÔN GỌI renderCupBracket để hàm này tự quyết định việc hiện/ẩn Panel thay vì chặn từ ngoài
   renderCupBracket();
 }
@@ -8589,38 +8955,69 @@ function calcCupSeeds() {
   for (let rank = 0; rank < qualifyPerGroup; rank++) {
     groupKeys.forEach(gk => {
       const standing = calcStandingsForTeams(groups[gk] || []);
-      if (standing[rank]) seeds.push(standing[rank].id);
+      if (standing[rank]) seeds.push(standing[rank][0]);
     });
   }
   return seeds;
 }
 
-// ── Cup: generate bracket từ seeds ──
-function generateKnockoutBracket(seeds) {
-  if (!seeds || seeds.length < 2) return {};
-  const slotCount = Math.pow(2, Math.ceil(Math.log2(seeds.length)));
-  // Pad byes vào cuối — seed cao nhất (index nhỏ) sẽ được bye
-  const slotted = [...seeds, ...Array(slotCount - seeds.length).fill('__bye__')];
+// Xây cặp đấu vòng 1 theo 1 trong 3 triết lý: random | seedpot | balanced
+// seeds: mảng teamId đã sắp theo rank (1 = mạnh nhất)
+// Trả về { byeSeeds: [...], pairs: [[home,away], ...] }
+function buildKnockoutPairing(seeds, method) {
+  const N = seeds.length;
+  const slotCount = Math.pow(2, Math.ceil(Math.log2(N)));
+  const byeCount = slotCount - N;
+  const byeSeeds = seeds.slice(0, byeCount);   // top seeds luôn nhận bye trước, bất kể triết lý
+  const remaining = seeds.slice(byeCount);
+  const half = remaining.length / 2;
 
-  const roundName = getRoundName(slotCount);
-  const matches = {};
-
-  for (let i = 0; i < slotCount / 2; i++) {
-    const home = slotted[i];
-    const away = slotted[slotCount - 1 - i];
-    const matchKey = `${roundName}_${i + 1}`;
-    const isBye = home === '__bye__' || away === '__bye__';
-    // Giữ đội thật ở home/away, chỉ replace '__bye__' bằng null để hiển thị
-    const winner = home === '__bye__' ? away : away === '__bye__' ? home : null;
-    matches[matchKey] = {
-      round: roundName, matchNum: i + 1,
-      home: home === '__bye__' ? null : home,
-      away: away === '__bye__' ? null : away,
-      score1: null, score2: null,
-      winner, bye: isBye
-    };
+  let pairs = [];
+  if (method === 'random') {
+    const shuffled = [...remaining].sort(() => Math.random() - 0.5);
+    for (let i = 0; i < shuffled.length; i += 2) pairs.push([shuffled[i], shuffled[i + 1]]);
+  } else if (method === 'seedpot') {
+    pairs = Array.from({ length: half }, (_, i) => [remaining[i], remaining[remaining.length - 1 - i]]);
+  } else { // 'balanced'
+    pairs = Array.from({ length: half }, (_, i) => [remaining[i], remaining[i + half]]);
   }
+  return { byeSeeds, pairs };
+}
 
+// ── Cup: generate bracket từ seeds ──
+function generateKnockoutBracket(seeds, method = 'seedpot') {
+  const matches = {};
+  if (!seeds || seeds.length < 2) return {};
+
+  const slotCount = Math.pow(2, Math.ceil(Math.log2(seeds.length)));
+  const roundMap = { 2: 'F', 4: 'SF', 8: 'QF', 16: 'R16', 32: 'R32' };
+  const roundName = roundMap[slotCount] || 'R' + slotCount;
+
+  const { byeSeeds, pairs } = buildKnockoutPairing(seeds, method);
+
+  // Trận có bye: byeSeeds[i] tự thắng, ghép theo thứ tự xuất hiện (không quan trọng đối thủ vì bye)
+  let matchNum = 1;
+  byeSeeds.forEach(s => {
+    const matchKey = roundName + '_' + matchNum;
+    matches[matchKey] = {
+      round: roundName, matchNum,
+      home: s, away: null,
+      score1: null, score2: null,
+      winner: s, bye: true
+    };
+    matchNum++;
+  });
+  pairs.forEach(([home, away]) => {
+    const matchKey = roundName + '_' + matchNum;
+    matches[matchKey] = {
+      round: roundName, matchNum,
+      home, away,
+      score1: null, score2: null,
+      winner: null, bye: false
+    };
+    matchNum++;
+  });  
+  
   // Empty slots cho các round tiếp
   const roundOrder = ['R32','R16','QF','SF','F'];
   let currentSlots = slotCount / 2;
@@ -8804,48 +9201,30 @@ window.saveKnockoutResult = async () => {
 };
 
 // ── Cup: generate hoặc reset bracket ──
-window.generateCupBracket = async (force = false) => {
+window.generateCupBracket = async function(method = 'seedpot', force = false) {
   if (!isAdmin) { showToast('🔒 Cần Admin','warn'); return; }
+
   if (!force && Object.keys(knockoutMatches).length > 0) {
     requireConfirmCode('🏆 Tạo lại bracket?',
       'Bracket hiện tại sẽ bị xóa. Tiếp tục?',
-      () => generateCupBracket(true));
+      () => generateCupBracket(method, true));
     return;
   }
-  cupSeeds = calcCupSeeds();
-  knockoutMatches = generateKnockoutBracket(cupSeeds);
+
+  const seeds = calcCupSeeds();  
+  if (seeds.length < 2) { showToast('⚠️ Cần tối thiểu 2 đội', 'warn'); return; }
+  knockoutMatches = generateKnockoutBracket(seeds, method);
+  //cupSeeds = calcCupSeeds();
+  cupSeeds = seeds;
   if (allLeagues[activeLeagueId]) {
     allLeagues[activeLeagueId].knockoutMatches = knockoutMatches;
     allLeagues[activeLeagueId].cupSeeds = cupSeeds;
   }
   await persist();
-  //console.log('[cup] saved knockoutMatches:', JSON.stringify(knockoutMatches));
-  //console.log('[cup] allLeagues after persist:', JSON.stringify(allLeagues[activeLeagueId]?.knockoutMatches));
   renderCupBracket();
-  showToast(`🏆 Bracket đã được tạo với ${cupSeeds.length} đội!`);
-};
-
-// ── Cup: chia bảng ──
-window.drawGroups = async (method = 'random') => {
-  if (!isAdmin) return;
-  const groupCount = leagueConfig.groupCount || 2;
-  const ids = [...teamIds];
-  if (method === 'random') {
-    ids.sort(() => Math.random() - 0.5);
-  } else {
-    // 'seeded': sắp xếp theo BXH hiện tại
-    const ranked = calcStandings().map(r => r[0]);
-    ids.sort((a, b) => ranked.indexOf(a) - ranked.indexOf(b));
-  }  
-  const groupKeys = Array.from({length: groupCount}, (_, i) => String.fromCharCode(65 + i));
-  groups = {};
-  groupKeys.forEach(k => groups[k] = []);
-  ids.forEach((id, i) => groups[groupKeys[i % groupCount]].push(id));
-  if (allLeagues[activeLeagueId]) allLeagues[activeLeagueId].groups = groups;
-  await persist();
-  renderAll();
-  if (leagueConfig.hasCup) renderCupBracket();
-  showToast(`✅ Đã chia ${groupCount} bảng!`);
+  //showToast(`🏆 Bracket đã được tạo với ${cupSeeds.length} đội!`);
+  const methodLabel = { random: 'Bốc thăm', seedpot: 'Seed Pot', balanced: 'Balanced' }[method] || method;
+  showToast(`✅ Đã tạo bracket (${methodLabel})!`);
 };
 
 // ── Standings cho nhóm đội cụ thể (tái dụng calcStandings) ──

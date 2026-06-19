@@ -785,6 +785,42 @@ tr.group-team-row {
 }
 
 /* Podium */
+.scorer-podium-static {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 8px 0;
+}
+.sps-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90px;
+  text-align: center;
+}
+.sps-medal { font-size: 1.3rem; margin-bottom: 4px; }
+.sps-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+.sps-name {
+  font-size: .76rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 88px; margin-bottom: 2px;
+}
+.sps-goals { font-size: .82rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+.sps-bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid;
+  border-bottom: none;
+}
+.sps-empty { visibility: hidden; }
+
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px;padding:8px 4px 0;}
 .podium-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;max-width:180px;min-width:0;}
 .podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative;flex-shrink:0;}
@@ -5906,493 +5942,6 @@ if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D
 let topScorersAnimState = null;
 let topScorersExpanded = false;
 
-function drawHair(ctx, x, y, name) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
-  const hairColors = ['#451a03', '#1e293b', '#78350f', '#0f172a', '#b45309'];
-  const hairColor = hairColors[hash % hairColors.length];
-  const hairStyle = hash % 3; // 0: spiky, 1: cap, 2: cool bangs
-  
-  ctx.fillStyle = hairColor;
-  if (hairStyle === 0) {
-    ctx.beginPath();
-    ctx.arc(x, y, 11, Math.PI, 0);
-    ctx.lineTo(x + 11, y - 5);
-    ctx.lineTo(x + 7, y - 13);
-    ctx.lineTo(x + 4, y - 9);
-    ctx.lineTo(x, y - 15);
-    ctx.lineTo(x - 4, y - 9);
-    ctx.lineTo(x - 7, y - 13);
-    ctx.lineTo(x - 11, y - 5);
-    ctx.closePath();
-    ctx.fill();
-  } else if (hairStyle === 1) {
-    ctx.beginPath();
-    ctx.arc(x, y, 11.5, Math.PI - 0.2, 0.2);
-    ctx.lineTo(x + 10, y + 2);
-    ctx.lineTo(x + 6, y - 2);
-    ctx.lineTo(x - 6, y - 2);
-    ctx.lineTo(x - 10, y + 2);
-    ctx.closePath();
-    ctx.fill();
-  } else {
-    ctx.beginPath();
-    ctx.arc(x, y, 11, Math.PI, 0);
-    ctx.quadraticCurveTo(x + 5, y - 12, x + 11, y + 2);
-    ctx.quadraticCurveTo(x + 4, y - 5, x - 11, y - 2);
-    ctx.closePath();
-    ctx.fill();
-  }
-}
-
-function drawFaceDetails(ctx, x, y, isJumping, name) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
-
-  if (isJumping) {
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-    
-    // Left eye ^
-    ctx.beginPath();
-    ctx.moveTo(x - 5, y - 1);
-    ctx.lineTo(x - 3, y - 3);
-    ctx.lineTo(x - 1, y - 1);
-    ctx.stroke();
-    
-    // Right eye ^
-    ctx.beginPath();
-    ctx.moveTo(x + 1, y - 1);
-    ctx.lineTo(x + 3, y - 3);
-    ctx.lineTo(x + 5, y - 1);
-    ctx.stroke();
-    
-    // Open cheering mouth
-    ctx.beginPath();
-    ctx.arc(x, y + 3, 3.2, 0, Math.PI);
-    ctx.fillStyle = '#e11d48';
-    ctx.fill();
-  } else {
-    // Normal eyes
-    ctx.fillStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.arc(x - 3.5, y - 2, 1.2, 0, Math.PI * 2);
-    ctx.arc(x + 3.5, y - 2, 1.2, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Focused determined eyebrows (competitive pro style)
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1.2;
-    ctx.lineCap = 'round';
-    
-    // Left eyebrow: \
-    ctx.beginPath();
-    ctx.moveTo(x - 5.5, y - 5.5);
-    ctx.lineTo(x - 1.5, y - 4);
-    ctx.stroke();
-    
-    // Right eyebrow: /
-    ctx.beginPath();
-    ctx.moveTo(x + 5.5, y - 5.5);
-    ctx.lineTo(x + 1.5, y - 4);
-    ctx.stroke();
-    
-    // Smirk smile
-    ctx.beginPath();
-    ctx.arc(x, y + 1, 4.5, 0.1 * Math.PI, 0.9 * Math.PI);
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-  }
-  
-  // Pro athletic headband (drawn for players with even name hashes)
-  if (hash % 2 === 0) {
-    ctx.fillStyle = '#ffffff'; // Sporty white headband
-    ctx.beginPath();
-    ctx.roundRect(x - 9.5, y - 8.5, 19, 3.2, 1);
-    ctx.fill();
-    // Thin headband outline
-    ctx.strokeStyle = 'rgba(30, 41, 59, 0.12)';
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-  }
-}
-
-function drawPlayer(ctx, player, time) {
-  const x = player.x;
-  const feetY = player.y + player.yOffset;
-  const isJumping = player.isJumping;
-  const isPunching = player.isPunching;
-  const name = player.entry.name;
-  const teamId = player.entry.teamId;
-  const primaryColor = teamColors[teamId] || '#ffffff';
-  
-  // 1. Legs, knee socks, and boots (Soccer Pro Uniform)
-  ctx.lineWidth = 3.5;
-  ctx.lineCap = 'round';
-  
-  // Left leg skin above sock
-  ctx.strokeStyle = '#ffcbb4';
-  ctx.beginPath();
-  ctx.moveTo(x - 5, feetY - 15);
-  ctx.lineTo(x - 5, feetY - 12);
-  ctx.stroke();
-  
-  // Left high sock
-  ctx.strokeStyle = primaryColor;
-  ctx.beginPath();
-  ctx.moveTo(x - 5, feetY - 12);
-  ctx.lineTo(x - 5, feetY - 3.5);
-  ctx.stroke();
-  
-  // Left sock stripe
-  ctx.strokeStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(x - 5, feetY - 11);
-  ctx.lineTo(x - 5, feetY - 9.5);
-  ctx.stroke();
-  
-  // Right leg skin above sock
-  ctx.strokeStyle = '#ffcbb4';
-  ctx.beginPath();
-  ctx.moveTo(x + 5, feetY - 15);
-  ctx.lineTo(x + 5, feetY - 12);
-  ctx.stroke();
-  
-  // Right high sock
-  ctx.strokeStyle = primaryColor;
-  ctx.beginPath();
-  ctx.moveTo(x + 5, feetY - 12);
-  ctx.lineTo(x + 5, feetY - 3.5);
-  ctx.stroke();
-  
-  // Right sock stripe
-  ctx.strokeStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(x + 5, feetY - 11);
-  ctx.lineTo(x + 5, feetY - 9.5);
-  ctx.stroke();
-  
-  // Sleek soccer cleats with neon accent studs
-  ctx.fillStyle = '#1e293b'; // Boot main body
-  ctx.beginPath();
-  ctx.roundRect(x - 8, feetY - 3.5, 5.5, 3.5, 1);
-  ctx.roundRect(x + 2.5, feetY - 3.5, 5.5, 3.5, 1);
-  ctx.fill();
-  
-  ctx.fillStyle = '#c5f851'; // Neon yellow cleats/studs
-  ctx.fillRect(x - 7.5, feetY - 0.6, 4.5, 0.8);
-  ctx.fillRect(x + 3, feetY - 0.6, 4.5, 0.8);
-  
-  // 2. Dual-Opening Athletic Shorts
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.roundRect(x - 9, feetY - 18, 8, 6, 1);
-  ctx.roundRect(x + 1, feetY - 18, 8, 6, 1);
-  ctx.fill();
-  ctx.fillRect(x - 4, feetY - 18, 8, 2); // Connect top waist
-  
-  // 3. Torso (Sport jersey with defined shoulders)
-  ctx.fillStyle = primaryColor;
-  ctx.beginPath();
-  ctx.moveTo(x - 8, feetY - 34);
-  ctx.lineTo(x + 8, feetY - 34);
-  ctx.lineTo(x + 9.5, feetY - 18);
-  ctx.lineTo(x - 9.5, feetY - 18);
-  ctx.closePath();
-  ctx.fill();
-  
-  // V-Neck collar contrast
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(x - 3, feetY - 34);
-  ctx.lineTo(x + 3, feetY - 34);
-  ctx.lineTo(x, feetY - 29);
-  ctx.closePath();
-  ctx.fill();
-  
-  // Short sleeves
-  ctx.fillStyle = primaryColor;
-  ctx.beginPath();
-  ctx.roundRect(x - 12.5, feetY - 33.5, 4.5, 8, 1);
-  ctx.roundRect(x + 8, feetY - 33.5, 4.5, 8, 1);
-  ctx.fill();
-  
-  // 4. Arms (Skin forearms coming out of sleeves)
-  ctx.strokeStyle = '#ffcbb4';
-  ctx.lineWidth = 3.5;
-  ctx.lineCap = 'round';
-  
-  const shoulderLeftY = feetY - 27;
-  const shoulderRightY = feetY - 27;
-  const waveOffset = player.waveOffset;
-  
-  if (player.rank === 1) {
-    // Left arm holds trophy
-    const trophyHandX = x - 15;
-    const trophyHandY = feetY - 34;
-    ctx.beginPath();
-    ctx.moveTo(x - 10.5, shoulderLeftY);
-    ctx.lineTo(trophyHandX, trophyHandY);
-    ctx.stroke();
-    
-    ctx.font = '15px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🏆', trophyHandX - 2, trophyHandY - 6);
-    
-    // Right arm waves or punches
-    ctx.beginPath();
-    ctx.moveTo(x + 10.5, shoulderRightY);
-    if (isPunching) {
-      const handX = x + 12;
-      const handY = feetY - 46 + Math.sin(time * 8) * 4;
-      ctx.lineTo(handX, handY);
-      ctx.stroke();
-      
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(handX, handY - 3, 1.2, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      const angle = -0.3 + Math.sin(time * 1.5 + waveOffset) * 0.5;
-      const handX = x + 9 + Math.cos(angle) * 11;
-      const handY = shoulderRightY + Math.sin(angle) * 11;
-      ctx.lineTo(handX, handY);
-      ctx.stroke();
-    }
-  } else {
-    // Left arm waves
-    ctx.beginPath();
-    ctx.moveTo(x - 10.5, shoulderLeftY);
-    const angleLeft = Math.PI + 0.3 + Math.sin(time * 1.2 + waveOffset) * 0.4;
-    const handLeftX = x - 9 + Math.cos(angleLeft) * 11;
-    const handLeftY = shoulderLeftY + Math.sin(angleLeft) * 11;
-    ctx.lineTo(handLeftX, handLeftY);
-    ctx.stroke();
-    
-    // Right arm waves or punches
-    ctx.beginPath();
-    ctx.moveTo(x + 10.5, shoulderRightY);
-    if (isJumping && isPunching) {
-      const handX = x + 12;
-      const handY = feetY - 46 + Math.sin(time * 8) * 4;
-      ctx.lineTo(handX, handY);
-      ctx.stroke();
-    } else {
-      const angleRight = -0.3 + Math.sin(time * 1.4 + waveOffset + 1) * 0.4;
-      const handRightX = x + 9 + Math.cos(angleRight) * 11;
-      const handRightY = shoulderRightY + Math.sin(angleRight) * 11;
-      ctx.lineTo(handRightX, handRightY);
-      ctx.stroke();
-    }
-  }
-  
-  // 5. Head
-  const headY = feetY - 44;
-  ctx.fillStyle = '#ffcbb4';
-  ctx.beginPath();
-  ctx.arc(x, headY, 10, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // 6. Hair
-  drawHair(ctx, x, headY, name);
-  
-  // 7. Face Details
-  drawFaceDetails(ctx, x, headY, isJumping, name);
-  
-  // 8. floating crown
-  if (player.rank === 1) {
-    ctx.font = '15px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('👑', x, headY - 18 + Math.sin(time * 2) * 2.5);
-  }
-}
-
-function drawScorersCanvas(state, width, height) {
-  const ctx = state.ctx;
-  ctx.clearRect(0, 0, width, height);
-  
-  const now = Date.now();
-  state.time += 0.04;
-  
-  // Glowing field ground line
-  ctx.beginPath();
-  ctx.moveTo(10, 180);
-  ctx.lineTo(width - 10, 180);
-  ctx.strokeStyle = 'rgba(197, 248, 81, 0.25)';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-  
-  // Get text colors matching active theme
-  const textColor = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#ffffff';
-  
-  // Columns X
-  const colX = [width * 0.24, width * 0.5, width * 0.76];
-  
-  // 3 Podiums: 2nd (left), 1st (middle), 3rd (right)
-  const podiumConfigs = [
-    { rank: 2, height: 48, topY: 132, width: 80, x: colX[0], gradColors: ['#cbd5e1', '#475569'], strokeColor: 'rgba(255,255,255,0.15)' },
-    { rank: 1, height: 75, topY: 105, width: 90, x: colX[1], gradColors: ['#f5a623', '#92400e'], strokeColor: 'rgba(245,166,35,0.5)' },
-    { rank: 3, height: 32, topY: 148, width: 80, x: colX[2], gradColors: ['#f97316', '#7c2d12'], strokeColor: 'rgba(255,255,255,0.15)' }
-  ];
-  
-  podiumConfigs.forEach(cfg => {
-    const px = cfg.x - cfg.width / 2;
-    const py = cfg.topY;
-    const pw = cfg.width;
-    const ph = cfg.height;
-
-    // Flat fill — màu theo hạng giống CSS top 3 đội
-    const fillColor = cfg.rank === 1
-      ? 'rgba(197,248,81,.15)'
-      : cfg.rank === 2
-        ? 'rgba(49,69,235,.15)'
-        : 'rgba(37,42,73,.30)';
-    const borderColor = cfg.rank === 1
-      ? 'rgba(197,248,81,.35)'
-      : cfg.rank === 2
-        ? 'rgba(49,69,235,.35)'
-        : 'rgba(143,163,184,.20)';
-
-    ctx.beginPath();
-    ctx.roundRect(px, py, pw, ph, [7, 7, 0, 0]);
-    ctx.fillStyle = fillColor;
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = borderColor;
-    ctx.stroke();
-
-    // Rank number
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'bold 20px Rajdhani, sans-serif';
-    const numColor = cfg.rank === 1 ? '#c5f851' : cfg.rank === 2 ? '#3145eb' : '#8fa3b8';
-    ctx.fillStyle = numColor;
-    ctx.fillText(cfg.rank.toString(), cfg.x, py + ph / 2);
-  });
-  
-  // Draw players standing on podiums
-  podiumConfigs.forEach(cfg => {
-    const player = state.players.find(p => p.rank === cfg.rank);
-    if (!player) return;
-    
-    player.x = cfg.x;
-    player.y = cfg.topY;
-    
-    // Initialize animation properties if missing
-    if (player.yOffset === undefined) {
-      player.yOffset = 0;
-      player.isJumping = false;
-      player.isPunching = false;
-      player.jumpTimer = 0;
-      player.waveOffset = Math.random() * Math.PI * 2;
-      player.nextActionTime = now + 1000 + Math.random() * 5000;
-    }
-    
-    // Check if celebration action needs to trigger
-    if (now > player.nextActionTime) {
-      player.isJumping = true;
-      player.isPunching = Math.random() > 0.3;
-      player.jumpTimer = 0;
-      player.nextActionTime = now + 4000 + Math.random() * 6000;
-    }
-    
-    // Update jumping physics offset
-    if (player.isJumping) {
-      player.jumpTimer += 0.07;
-      if (player.jumpTimer >= Math.PI) {
-        player.isJumping = false;
-        player.isPunching = false;
-        player.yOffset = 0;
-      } else {
-        player.yOffset = -Math.sin(player.jumpTimer) * 20;
-        
-        // Spawn jump celebration sparks
-        if (Math.sin(player.jumpTimer) > 0.7 && Math.random() > 0.55) {
-          state.particles.push({
-            x: player.x + (Math.random() - 0.5) * 32,
-            y: player.y + player.yOffset - 35,
-            vx: (Math.random() - 0.5) * 1.4,
-            vy: -0.6 - Math.random() * 1.2,
-            size: 2.2 + Math.random() * 2.5,
-            color: cfg.rank === 1 ? '#f5a623' : (cfg.rank === 2 ? '#94a3b8' : '#ea580c'),
-            alpha: 1.0
-          });
-        }
-      }
-    }
-    
-    // Draw player vector figure
-    drawPlayer(ctx, player, state.time);
-    
-    // Draw name and score text below podiums
-    const fullName = player.entry.name;
-    const nameFont = 'bold 12px Inter, sans-serif';
-    ctx.font = nameFont;
-    const colWidth = width * 0.28; // chiều rộng mỗi cột ~28% canvas
-    const textW = ctx.measureText(fullName).width;
-
-    ctx.save();
-    // Clip vùng tên theo cột để không tràn sang cột khác
-    ctx.beginPath();
-    ctx.rect(player.x - colWidth / 2, 188, colWidth, 18);
-    ctx.clip();
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-
-    let nameX = player.x;
-    if (textW > colWidth - 8) {
-      // Marquee ping-pong: scroll qua lại trong vùng cột
-      const overflow = textW - (colWidth - 8);
-      const period = 3000 + overflow * 18; // ms, tên càng dài scroll càng chậm
-      const t = (Date.now() % (period * 2));
-      const progress = t < period ? t / period : 2 - t / period; // 0→1→0
-      nameX = (player.x - colWidth / 2 + 4) + textW / 2 - overflow * progress;
-    }
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    ctx.font = nameFont;
-    ctx.fillText(fullName, nameX + 1, 203);
-    ctx.fillStyle = textColor;
-    ctx.fillText(fullName, nameX, 202);
-
-    ctx.restore();
-    
-    // Goals text shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    ctx.font = '700 12px Rajdhani, sans-serif';
-    ctx.fillText(player.entry.goals + ' ⚽', player.x + 1, 219);
-    
-    // Goals text fill
-    ctx.fillStyle = '#c5f851';
-    ctx.fillText(player.entry.goals + ' ⚽', player.x, 218);
-  });
-  
-  // Render and update celebration particles
-  ctx.save();
-  state.particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.alpha -= 0.02;
-    if (p.alpha <= 0) return;
-    
-    ctx.globalAlpha = p.alpha;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.restore();
-  
-  // Clean dead particles
-  state.particles = state.particles.filter(p => p.alpha > 0);
-}
-
 function renderTopScorers() {
   const scorers = calcTopScorers();
   const pa = document.getElementById('scorerPodiumArea');
@@ -6400,10 +5949,6 @@ function renderTopScorers() {
   if (!pa || !tb) return;
   
   if (scorers.length === 0) {
-    if (topScorersAnimState && topScorersAnimState.frameId) {
-      cancelAnimationFrame(topScorersAnimState.frameId);
-    }
-    topScorersAnimState = null;
     pa.innerHTML = '';
     tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Chưa có cầu thủ nào ghi bàn</td></tr>';
     const toggleWrap = document.getElementById('topScorersToggleWrap');
@@ -6411,78 +5956,10 @@ function renderTopScorers() {
     return;
   }
   
-  // Create top 3 list mapping to gold (1), silver (2), bronze (3)
   const top3 = scorers.slice(0, 3);
-  
-  // Cleanup if parent element changed or doesn't exist
-  if (topScorersAnimState && topScorersAnimState.canvas.parentNode !== pa) {
-    if (topScorersAnimState.frameId) {
-      cancelAnimationFrame(topScorersAnimState.frameId);
-    }
-    topScorersAnimState = null;
-  }
-  
-  // Setup canvas if first time or reset
-  if (!topScorersAnimState) {
-    pa.innerHTML = '';
-    const canvas = document.createElement('canvas');
-    canvas.style.width = '100%';
-    canvas.style.height = '240px';
-    canvas.style.display = 'block';
-    canvas.style.background = 'transparent';
-    pa.appendChild(canvas);
-    
-    const ctx = canvas.getContext('2d');
-    topScorersAnimState = {
-      canvas: canvas,
-      ctx: ctx,
-      frameId: null,
-      time: 0,
-      players: [],
-      particles: [],
-      lastTime: Date.now()
-    };
-    
-    const animLoop = () => {
-      if (!topScorersAnimState) return;
-      if (document.hidden) {
-        // Pause loop computation when tab is inactive, just schedule next check
-        topScorersAnimState.frameId = requestAnimationFrame(animLoop);
-        return;
-      }
-      
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      const targetWidth = rect.width || 480;
-      const targetHeight = 240;
-      
-      if (canvas.width !== targetWidth * dpr || canvas.height !== targetHeight * dpr) {
-        canvas.width = targetWidth * dpr;
-        canvas.height = targetHeight * dpr;
-        ctx.scale(dpr, dpr);
-      }
-      
-      drawScorersCanvas(topScorersAnimState, targetWidth, targetHeight);
-      topScorersAnimState.frameId = requestAnimationFrame(animLoop);
-    };
-    topScorersAnimState.frameId = requestAnimationFrame(animLoop);
-  }
-  
-  // Update state players dynamically to prevent animation jumping
-  const newPlayers = [];
-  if (top3[0]) {
-    const existing = topScorersAnimState.players.find(p => p.rank === 1 && p.entry.name === top3[0].name);
-    newPlayers.push(existing || { rank: 1, entry: top3[0] });
-  }
-  if (top3[1]) {
-    const existing = topScorersAnimState.players.find(p => p.rank === 2 && p.entry.name === top3[1].name);
-    newPlayers.push(existing || { rank: 2, entry: top3[1] });
-  }
-  if (top3[2]) {
-    const existing = topScorersAnimState.players.find(p => p.rank === 3 && p.entry.name === top3[2].name);
-    newPlayers.push(existing || { rank: 3, entry: top3[2] });
-  }
-  topScorersAnimState.players = newPlayers;
+
+  // Podium tĩnh, dùng emoji + CSS — không canvas, không animation loop liên tục
+  renderStaticScorerPodium(pa, top3);  
   
   // Truncate list if collapsed (topScorersExpanded is false)
   const displayScorers = topScorersExpanded ? scorers : scorers.slice(0, 5);
@@ -6543,6 +6020,28 @@ function renderTopScorers() {
       toggleWrap.innerHTML = '';
     }
   }
+}
+
+function renderStaticScorerPodium(container, top3) {
+  if (!top3.length) { container.innerHTML = ''; return; }
+  const order = [top3[1], top3[0], top3[2]]; // 2nd-1st-3rd, giống bố cục podium cũ
+  const medals = ['🥈', '🥇', '🥉'];
+  const heights = ['56px', '78px', '44px'];
+  container.innerHTML = `
+    <div class="scorer-podium-static">
+      ${order.map((p, i) => {
+        if (!p) return '<div class="sps-slot sps-empty"></div>';
+        const color = teamColors[p.teamId] || 'var(--accent)';
+        return `
+          <div class="sps-slot">
+            <div class="sps-medal">${medals[i]}</div>
+            <div class="sps-avatar" style="background:${color}">${teamEmojis[p.teamId] || '⚽'}</div>
+            <div class="sps-name">${p.name}</div>
+            <div class="sps-goals">${p.goals} ⚽</div>
+            <div class="sps-bar" style="height:${heights[i]};background:${color}22;border-color:${color}55;"></div>
+          </div>`;
+      }).join('')}
+    </div>`;
 }
 
 function renderStats() {

@@ -302,22 +302,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   margin-top: 4px;
 }
 
-.ko-node-highlight{
-  animation: koNodePulse 2.2s ease;
-}
-
-@keyframes koNodePulse{
-  0%{
-    filter: drop-shadow(0 0 0 rgba(255,215,0,0));
-  }
-  30%{
-    filter: drop-shadow(0 0 14px rgba(255,215,0,.95));
-  }
-  100%{
-    filter: drop-shadow(0 0 0 rgba(255,215,0,0));
-  }
-}
-
 /* .col-collapse-hide ở trạng thái mở: phải là flex column full-height
    để nội dung bên trong (vd standingsScrollWrap, bracketCardInner) scroll đúng */
 .col-collapse-hide {
@@ -2565,34 +2549,6 @@ tr.group-team-row {
 
 /* Bracket match card clickable cursor */
 .bracket-match-clickable { cursor: pointer; }
-
-.bracket-match-clickable.ko-node-highlight rect{
-  stroke: var(--gold) !important;
-  stroke-width: 2.2 !important;
-  filter: drop-shadow(0 0 10px rgba(255,215,0,.9));
-}
-
-.bracket-match-clickable.ko-node-highlight rect{
-  stroke: var(--gold) !important;
-  stroke-width: 2.5 !important;
-  filter: drop-shadow(0 0 12px rgba(255,215,0,.95));
-
-  animation: koGlow 2.2s ease;
-}
-
-@keyframes koGlow{
-  0%{
-    filter: drop-shadow(0 0 0 rgba(255,215,0,0));
-  }
-
-  25%{
-    filter: drop-shadow(0 0 14px rgba(255,215,0,.95));
-  }
-
-  100%{
-    filter: drop-shadow(0 0 0 rgba(255,215,0,0));
-  }
-}
 </style>
 </head>
 <body>
@@ -5608,117 +5564,50 @@ function renderFixtures() {
 
 /* ── Hiển thị các trận Knockout (bracket) trong Fixture List ──
    CHỈ ĐỂ HIỂN THỊ + liên kết với bracket card, KHÔNG đụng tới
-   BASE_SCHEDULE/results/matchDates/scheduleOrder của League.
-   Đồng bộ cấu trúc với appendMatchRows: chia theo matchday-block,
-   row 8-cột đầy đủ (tỉ số, scorer, thẻ phạt), kéo-thả đổi ngày
-   (ghi vào knockoutMatchDates riêng). Nhập kết quả vẫn dùng modal
-   knockout (openKnockoutResultModal). */
+   BASE_SCHEDULE/results/matchDates/scheduleOrder/reschedule logic.
+   Nhập kết quả/ngày vẫn dùng modal knockout (openKnockoutResultModal). */
 function renderKnockoutFixtureRows(wrap) {
   if (!knockoutMatches || Object.keys(knockoutMatches).length === 0) return;
 
   const order = ['R32','R16','QF','SF','F','3P'];
-  const entries = []; // { key, leg, m, legBaseMatch, dateKey }
-
-  Object.keys(knockoutMatches)
+  const keys = Object.keys(knockoutMatches)
     .filter(k => !k.endsWith('_L2'))
     .sort((a, b) => {
       const ra = order.indexOf(a.split('_')[0]);
       const rb = order.indexOf(b.split('_')[0]);
       if (ra !== rb) return ra - rb;
-      return (knockoutMatches[a]?.matchNum || 0) - (knockoutMatches[b]?.matchNum || 0);
-    })
-    .forEach(key => {
-      const m = knockoutMatches[key];
-      if (!m || m.bye) return;
-      entries.push({ key, leg: 1, m, legBaseMatch: null, dateKey: `${key}_date` });
-
-      const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && m.round !== 'F' && m.round !== '3P';
-      if (isTwoLeg) {
-        const leg2 = knockoutMatches[key + '_L2'];
-        if (leg2) entries.push({ key, leg: 2, m: leg2, legBaseMatch: m, dateKey: `${key}_L2_date` });
-      }
+      const na = knockoutMatches[a]?.matchNum || 0;
+      const nb = knockoutMatches[b]?.matchNum || 0;
+      return na - nb;
     });
-
-  if (entries.length === 0) return;
-
-  const today = todayISO();
-  const NO_DATE = '__no_date__';
-
-  // Nhóm theo ngày (giống matchdays Map của league)
-  const koDays = new Map();
-  entries.forEach(en => {
-    const d = knockoutMatchDates[en.dateKey] || NO_DATE;
-    if (!koDays.has(d)) koDays.set(d, []);
-    koDays.get(d).push(en);
-  });
-
-  const dated = [...koDays.keys()].filter(d => d !== NO_DATE).sort();
-  const undated = koDays.get(NO_DATE) || [];
+  if (keys.length === 0) return;
 
   const section = document.createElement('div');
+  section.className = 'matchday-block';
   section.id = 'knockoutFixtureSection';
-  section.innerHTML = `<div class="matchday-header" style="padding:10px 4px 2px;opacity:.82;">
+  section.innerHTML = `<div class="matchday-header">
       <div class="cal-tile" style="opacity:.7;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🏆</div>
       <div class="matchday-meta">
         <div class="matchday-label">Vòng loại trực tiếp</div>
-        <div class="matchday-count">${entries.length} trận</div>
+        <div class="matchday-count">${keys.length} trận</div>
       </div>
     </div>`;
 
-  dated.forEach(date => {
-    const block = makeDateBlock(date, [], today);
-    block.classList.add('ko-matchday-block');
-    if (date === today) block.classList.add('is-today');
-    appendKnockoutMatchRows(block, koDays.get(date), date, today);
-    section.appendChild(block);
-  });
+  keys.forEach(key => {
+    const m = knockoutMatches[key];
+    if (!m || m.bye) return;
+    const row = buildKnockoutFixtureRow(key, m, 1);
+    section.appendChild(row);
 
-  // Block "Chưa có ngày" cho các trận chưa set lịch (vẫn kéo-thả được vào đây)
-    if (undated.length || dated.length === 0) {
-    const block = document.createElement('div');
-    block.className = 'matchday-block ko-matchday-block ko-no-date-block';
-    block.innerHTML = `<div class="matchday-header">
-        <div class="cal-tile" style="opacity:.4;display:flex;align-items:center;justify-content:center;">❔</div>
-        <div class="matchday-meta">
-          <div class="matchday-label">Chưa xếp ngày</div>
-          <div class="matchday-count">${undated.length} trận</div>
-        </div>
-      </div>`;
-    appendKnockoutMatchRows(block, undated, NO_DATE, today);
-    section.appendChild(block);
-  }
-
-  /* ── Reserve Day giống League Fixture ── */
-  if (dated.length > 0) {
-    const lastKoDate = dated[dated.length - 1];
-    const reserveDate = nextWorkday(lastKoDate);
-
-    if (!dated.includes(reserveDate)) {
-      const reserveBlock = makeDateBlock(reserveDate, null, today);
-      reserveBlock.classList.add('ko-matchday-block');
-
-      const reserveZone = makeKoEmptyZone(reserveDate);
-      reserveZone.style.opacity = '.52';
-      reserveZone.textContent = '＋ Kéo trận vào';
-
-      reserveBlock.appendChild(reserveZone);
-      section.appendChild(reserveBlock);
+    // Lượt về (nếu có)
+    const isTwoLeg = leagueConfig.knockoutLeg === 'home-away' && m.round !== 'F' && m.round !== '3P';
+    if (isTwoLeg) {
+      const leg2 = knockoutMatches[key + '_L2'];
+      if (leg2) section.appendChild(buildKnockoutFixtureRow(key, leg2, 2, m));
     }
-  }
+  });
 
   wrap.appendChild(section);
-}
-
-/* ── Render các row knockout trong 1 block ngày + drop-zone riêng ── */
-function appendKnockoutMatchRows(block, entries, dateKey, today) {
-  block.appendChild(makeKoDropZone(dateKey));
-  if (entries.length === 0) { block.appendChild(makeKoEmptyZone(dateKey)); return; }
-
-  entries.forEach(en => {
-    const row = buildKnockoutFixtureRow(en.key, en.m, en.leg, en.legBaseMatch);
-    block.appendChild(row);
-    block.appendChild(makeKoDropZone(dateKey, en.key, en.leg));
-  });
 }
 
 function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
@@ -5727,18 +5616,14 @@ function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
   const awayId = leg === 2 ? legBaseMatch.home : m.away;
   const score1 = m.score1 ?? null, score2 = m.score2 ?? null;
   const hasResult = score1 !== null && score2 !== null;
-  const isLocked = hasResult;
-
   let homeState = '', awayState = '', homeScoreState = '', awayScoreState = '';
   if (hasResult) {
     if (score1 > score2) { homeState = 'is-winner'; awayState = 'is-loser'; homeScoreState = 'is-winner'; awayScoreState = 'is-loser'; }
     else if (score1 < score2) { homeState = 'is-loser'; awayState = 'is-winner'; homeScoreState = 'is-loser'; awayScoreState = 'is-winner'; }
     else { homeState = awayState = 'is-draw'; homeScoreState = awayScoreState = 'is-draw'; }
   }
-
-  const homeBadgeCards = hasResult ? renderScoreCardBadge(m.y1, m.r1, 'home') : '';
-  const awayBadgeCards = hasResult ? renderScoreCardBadge(m.y2, m.r2, 'away') : '';
-
+  const dateKey = leg === 2 ? `${key}_L2_date` : `${key}_date`;
+  const dateStr = knockoutMatchDates[dateKey] ? formatDMY(knockoutMatchDates[dateKey]) : '';
   const roundLabel = `${getRoundLabel(m.round)} #${m.matchNum}${leg === 2 ? ' · Lượt về' : (leagueConfig.knockoutLeg === 'home-away' && m.round !== 'F' && m.round !== '3P' ? ' · Lượt đi' : '')}`;
 
   const editBtn = isAdmin
@@ -5746,32 +5631,14 @@ function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
     : `<button class="btn-icon" style="opacity:.38;cursor:not-allowed;background:rgba(232,0,77,.07);border-color:rgba(232,0,77,.18);color:var(--red);" onclick="requireAdmin(()=>openKnockoutResultModal('${key}',${leg}))">🔒</button>`;
 
   const row = document.createElement('div');
-  row.className = ['fixture-row', hasResult ? 'completed' : '', isLocked ? 'drag-locked' : ''].filter(Boolean).join(' ');
+  row.className = ['fixture-row', hasResult ? 'completed' : ''].filter(Boolean).join(' ');
   row.dataset.koKey = key;
   row.dataset.koLeg = leg;
-  row.draggable = !isLocked;
-
-  // Mỗi đội hiển thị tên + scorer (giống league)
-  const homeScorersHTML = hasResult && (m.scorers1 || []).length
-    ? `<div class="fixture-scorers home" style="grid-column:2;grid-row:2;">${(m.scorers1 || []).map(s => `<span class="scorer-item">⚽ ${s.name}${s.goals > 1 ? ` ×${s.goals}` : ''}</span>`).join('')}</div>`
-    : `<div style="grid-column:2;grid-row:2;"></div>`;
-  const awayScorersHTML = hasResult && (m.scorers2 || []).length
-    ? `<div class="fixture-scorers away" style="grid-column:6;grid-row:2;">${(m.scorers2 || []).map(s => `<span class="scorer-item">⚽ ${s.name}${s.goals > 1 ? ` ×${s.goals}` : ''}</span>`).join('')}</div>`
-    : `<div style="grid-column:6;grid-row:2;"></div>`;
+  row.style.cursor = 'default';
 
   row.innerHTML = `
-  <div style="grid-column:1;grid-row:1/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+  <div style="grid-column:1;grid-row:1/3;display:flex;align-items:center;justify-content:center;">
     <div class="fixture-num" style="font-size:.6rem;line-height:1.1;text-align:center;padding:2px;">🏆</div>
-    <div style="
-        font-size:.55rem;
-        opacity:.82;
-        text-align:center;
-        line-height:1.15;
-        max-width:78px;
-        word-break:break-word;
-    ">
-      ${roundLabel}
-    </div>
   </div>
   <div class="fixture-team home ${homeState}" style="grid-column:2;grid-row:1;align-self:end;">
     <span class="tname">${homeId ? (teams[homeId] || homeId) : 'TBD'}</span>
@@ -5779,14 +5646,12 @@ function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
   </div>
   <div style="grid-column:3;grid-row:1/3;display:flex;align-items:center;justify-content:center;">
     <div class="fixture-score-wrap">
-      ${homeBadgeCards}
       <div class="fixture-score-box ${hasResult ? homeScoreState : 'pending'}">${hasResult ? score1 : '−'}</div>
     </div>
   </div>
   <div class="fixture-vs" style="grid-column:4;grid-row:1/3;">vs.</div>
   <div style="grid-column:5;grid-row:1/3;display:flex;align-items:center;justify-content:center;">
     <div class="fixture-score-wrap">
-      ${awayBadgeCards}
       <div class="fixture-score-box ${hasResult ? awayScoreState : 'pending'}">${hasResult ? score2 : '−'}</div>
     </div>
   </div>
@@ -5795,128 +5660,14 @@ function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
     <span class="tname">${awayId ? (teams[awayId] || awayId) : 'TBD'}</span>
   </div>
   <div style="grid-column:7;grid-row:1/3;display:flex;align-items:center;justify-content:center;">
-    <div style="grid-column:7;grid-row:1/3;"></div>
+    <div class="fixture-num" style="font-size:.58rem;opacity:.7;white-space:nowrap;">${roundLabel}${dateStr ? ' · ' + dateStr : ''}</div>
   </div>
   <div style="grid-column:8;grid-row:1/3;display:flex;align-items:center;justify-content:center;">
     ${editBtn}
-  </div>
-  ${homeScorersHTML}
-  ${awayScorersHTML}
-  `;
+  </div>`;
 
   row.querySelectorAll('.btn-icon').forEach(btn => btn.addEventListener('mousedown', e => e.stopPropagation()));
-
-  /* ── Kéo-thả đổi ngày (chỉ trận chưa có kết quả) ── */
-  if (!isLocked) {
-    row.addEventListener('dragstart', e => onKoFixtureDragStart(e, key, leg));
-    row.addEventListener('dragend', onKoFixtureDragEnd);
-    row.addEventListener('dragover', onKoRowDragOver);
-    row.addEventListener('dragleave', onKoRowDragLeave);
-    row.addEventListener('drop', function(e) { onKoRowDrop.call(this, e, key, leg); });
-    initKoTouchDrag(row, key, leg);
-  }
-
-  row.addEventListener('click', function(e){
-
-    if (e.target.closest('.btn-icon')) return;
-
-    const bracketCard = document.getElementById('bracketCard');
-
-    if (bracketCard?.classList.contains('col-collapsed')) {
-      setColCollapsed('bracket', false);
-      enforceTwoExpandedRule('bracket');
-      applyGridLayout();
-    }
-
-    const selector =
-      `.bracket-match-clickable[data-ko-key="${key}"][data-ko-leg="${leg}"]`;
-
-    const node = document.querySelector(selector);
-
-    if (!node) return;
-
-    node.classList.add('ko-node-highlight');
-    setTimeout(()=>{
-      node.classList.remove('ko-node-highlight');
-    },2200);
-
-    node.classList.add('ko-node-highlight');
-
-    setTimeout(()=>{
-      node.classList.remove('ko-node-highlight');
-    },2200);
-  });
-
   return row;
-}
-
-/* ── Drag & drop riêng cho knockout (không đụng tới dragData/scheduleOrder của league) ── */
-let koDragData = null;
-
-function onKoFixtureDragStart(e, key, leg) {
-  koDragData = { key, leg };
-  e.dataTransfer.effectAllowed = 'move';
-  setTimeout(() => document.querySelectorAll(`.fixture-row[data-ko-key="${key}"][data-ko-leg="${leg}"]`).forEach(el => el.classList.add('dragging')), 0);
-}
-function onKoFixtureDragEnd() {
-  document.querySelectorAll('#knockoutFixtureSection .fixture-row').forEach(el => el.classList.remove('dragging', 'drag-over-row'));
-  document.querySelectorAll('#knockoutFixtureSection .matchday-drop-zone,#knockoutFixtureSection .empty-day').forEach(el => el.classList.remove('drag-over-zone'));
-  koDragData = null;
-}
-function onKoRowDragOver(e) { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over-row'); }
-function onKoRowDragLeave() { this.classList.remove('drag-over-row'); }
-function onKoRowDrop(e, targetKey, targetLeg) {
-  e.preventDefault(); e.stopPropagation();
-  this.classList.remove('drag-over-row');
-  if (!koDragData || (koDragData.key === targetKey && koDragData.leg === targetLeg)) return;
-  const srcDateKey = koDragData.leg === 2 ? `${koDragData.key}_L2_date` : `${koDragData.key}_date`;
-  const targetDateKey = targetLeg === 2 ? `${targetKey}_L2_date` : `${targetKey}_date`;
-  const targetDate = knockoutMatchDates[targetDateKey];
-  if (targetDate) knockoutMatchDates[srcDateKey] = targetDate;
-  else delete knockoutMatchDates[srcDateKey];
-  requirePlayer(() => persistKnockoutDates());
-}
-function makeKoDropZone(dateKey, afterKey, afterLeg) {
-  const z = document.createElement('div');
-  z.className = 'matchday-drop-zone';
-  z.dataset.koDate = dateKey;
-  z.addEventListener('dragover', onKoZoneDragOver);
-  z.addEventListener('dragleave', onKoZoneDragLeave);
-  z.addEventListener('drop', function(e) { onKoZoneDrop.call(this, e, dateKey); });
-  return z;
-}
-function makeKoEmptyZone(dateKey) {
-  const emp = document.createElement('div');
-  emp.className = 'empty-day';
-  emp.textContent = 'Kéo trận vào đây';
-  emp.addEventListener('dragover', onKoZoneDragOver);
-  emp.addEventListener('dragleave', onKoZoneDragLeave);
-  emp.addEventListener('drop', function(e) { onKoZoneDrop.call(this, e, dateKey); });
-  return emp;
-}
-function onKoZoneDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; this.classList.add('drag-over-zone'); }
-function onKoZoneDragLeave() { this.classList.remove('drag-over-zone'); }
-function onKoZoneDrop(e, dateKey) {
-  e.preventDefault(); e.stopPropagation();
-  this.classList.remove('drag-over-zone');
-  if (!koDragData) return;
-  const today = todayISO();
-  if (dateKey !== '__no_date__' && dateKey < today) {
-    showToast('⚠️ Không thể xếp trận vào ngày đã qua!', 'warn');
-    return;
-  }
-  const srcDateKey = koDragData.leg === 2 ? `${koDragData.key}_L2_date` : `${koDragData.key}_date`;
-  if (dateKey === '__no_date__') delete knockoutMatchDates[srcDateKey];
-  else knockoutMatchDates[srcDateKey] = dateKey;
-  requirePlayer(() => persistKnockoutDates());
-}
-function initKoTouchDrag(rowEl, key, leg) {
-  if (typeof initTouchDrag !== 'function') return;
-  // Tái dùng cơ chế cảm ứng chung bằng cách giả lập origIdx dạng string riêng
-  // (chỉ kích hoạt nếu initTouchDrag hỗ trợ; nếu không, kéo-thả desktop vẫn hoạt động)
-}
-function persistKnockoutDates() {
-  persist();
 }
 
 /* ── Highlight 1 trận knockout trong fixture list khi click từ bracket ── */
@@ -6765,7 +6516,7 @@ function renderCupBracket() {
     document.getElementById('cupBracketCards').style.display = 'none';
     renderBracketSVG();
   }
-  
+
   // Đồng bộ fixture list: hiển thị các trận knockout cùng với lịch vòng bảng
   // (chỉ khi đang ở League mode, fixturesCard đang là card đại diện - không phải Marathon)
   const fc = document.getElementById('fixturesCard');
@@ -6909,45 +6660,21 @@ function renderBracketSVG() {
 
       // Match card
       svgContent += `
-        ${(() => {
-          const dk = knockoutMatchDates[key + '_date'];
-
-          return dk ? `
-            <g transform="translate(${colX + MATCH_W/2},${y - 10})">
-
-              <rect
-                x="-24"
-                y="-8"
-                width="48"
-                height="14"
-                rx="7"
-                fill="var(--bg-card)"
-                stroke="var(--accent-a40)"
-                stroke-width="1"
-              />
-
-              <text
-                y="2.5"
-                text-anchor="middle"
-                font-size="8"
-                fill="var(--accent)"
-                font-weight="700"
-                font-family="Inter,sans-serif">
-                ${formatDMY(dk)}
-              </text>
-
-            </g>
-          ` : '';
-        })()}
-        <g transform="translate(${colX},${y})" class="bracket-match-clickable" data-ko-key="${key}" data-ko-leg="1" onclick="if(event.target.closest('.ko-edit-hit'))return; focusKnockoutFixtureRow('${key}',1)">
+        <g transform="translate(${colX},${y})" class="bracket-match-clickable" onclick="if(event.target.closest('.ko-edit-hit'))return; focusKnockoutFixtureRow('${key}',1)">
           <!-- Card background -->
           <rect width="${MATCH_W}" height="${MATCH_H}" rx="10" ry="10"
             fill="var(--bg-deep)" stroke="var(--border)" stroke-width="1"/>
           <!-- Round label -->
           <text x="${MATCH_W/2}" y="11" text-anchor="middle"
             font-size="8" fill="var(--text-muted)" font-family="Inter,sans-serif"
-            font-weight="600" letter-spacing="0.5">${getRoundLabel(round)}${!isThirdPlace ? ' #' + match.matchNum : ''}${isTwoLeg ? ' (lượt đi)' : ''}</text>
-          
+            font-weight="600" letter-spacing="0.5">${getRoundLabel(round)} ${!isThirdPlace ? '#'+match.matchNum : ''}</text>
+          <!-- Ngày thi đấu -->
+          ${(() => {
+            const dk = knockoutMatchDates[key + '_date'];
+            return dk ? `<text x="${MATCH_W/2}" y="22" text-anchor="middle"
+              font-size="7.5" fill="var(--accent-a60)" font-family="Inter,sans-serif">
+              ${formatDMY(dk)}</text>` : '';
+          })()}
           <!-- Divider -->
           <line x1="8" y1="${MATCH_H/2}" x2="${MATCH_W-8}" y2="${MATCH_H/2}" stroke="var(--border)" stroke-width="1"/>
           <!-- Home team -->
@@ -6967,7 +6694,13 @@ function renderBracketSVG() {
           ${match.bye ? `<text x="${MATCH_W/2}" y="${MATCH_H/2+4}" text-anchor="middle"
             font-size="9" fill="var(--text-muted)" font-family="Inter,sans-serif">BYE</text>` : ''}
           <!-- Edit button (admin only) — chỉ nút lượt đi ở đây -->
-          ${isAdmin && !match.bye && !match.isLeg2 ? `` : ''}
+          ${isAdmin && !match.bye && !match.isLeg2 ? `
+          <rect class="ko-edit-hit" x="${MATCH_W-26}" y="${MATCH_H-18}" width="20" height="14" rx="4"
+            fill="var(--accent-a12)" stroke="var(--accent-a30)" stroke-width="1"
+            style="cursor:pointer;" onclick="event.stopPropagation();openKnockoutResultModal('${key}',1)"/>
+          <text class="ko-edit-hit" x="${MATCH_W-16}" y="${MATCH_H-8}" text-anchor="middle"
+            font-size="9" fill="var(--accent)" font-family="Inter,sans-serif"
+            style="cursor:pointer;" onclick="event.stopPropagation();openKnockoutResultModal('${key}',1)">✏️</text>` : ''}
           <!-- Penalty/aggregate indicator (single leg) -->
           ${!isTwoLeg && match.penalty1 != null
             ? `<text x="${MATCH_W/2}" y="${MATCH_H-4}" text-anchor="middle"
@@ -6992,12 +6725,12 @@ function renderBracketSVG() {
             Tổng: ${aggHome}–${aggAway}${penStr}</text>`;
         }
         svgContent += `
-          <g transform="translate(${colX},${l2y})" class="bracket-match-clickable" data-ko-key="${key}" data-ko-leg="2"class="bracket-match-clickable" onclick="if(event.target.closest('.ko-edit-hit'))return; focusKnockoutFixtureRow('${key}',2)">
+          <g transform="translate(${colX},${l2y})" class="bracket-match-clickable" onclick="if(event.target.closest('.ko-edit-hit'))return; focusKnockoutFixtureRow('${key}',2)">
             <rect width="${MATCH_W}" height="${MATCH_H}" rx="10" ry="10"
               fill="var(--bg-deep)" stroke="var(--border)" stroke-width="1" opacity="0.7"/>
             <text x="${MATCH_W/2}" y="11" text-anchor="middle"
               font-size="8" fill="var(--text-muted)" font-family="Inter,sans-serif"
-              font-weight="600" letter-spacing="0.5">${getRoundLabel(round)} #${match.matchNum} (lượt về)</text>
+              font-weight="600" letter-spacing="0.5">Lượt về #${match.matchNum}</text>
             <line x1="8" y1="${MATCH_H/2}" x2="${MATCH_W-8}" y2="${MATCH_H/2}" stroke="var(--border)" stroke-width="1"/>
             <text x="10" y="${MATCH_H/2-10}" font-size="11"
               fill="${leg2?.winner === match.away ? (teamColors[match.away]||'var(--text)') : 'var(--text-muted)'}"
@@ -7014,7 +6747,13 @@ function renderBracketSVG() {
               fill="${leg2.winner===match.home?'var(--accent)':'var(--text-muted)'}"
               font-family="Rajdhani,sans-serif" font-weight="700">${leg2.score2}</text>` : ''}
             ${aggLine}
-            ${isAdmin ? `` : ''}
+            ${isAdmin ? `
+            <rect class="ko-edit-hit" x="${MATCH_W-26}" y="${MATCH_H-18}" width="20" height="14" rx="4"
+              fill="var(--accent2-a10)" stroke="var(--accent2-a18)" stroke-width="1"
+              style="cursor:pointer;" onclick="event.stopPropagation();openKnockoutResultModal('${key}',2)"/>
+            <text class="ko-edit-hit" x="${MATCH_W-16}" y="${MATCH_H-8}" text-anchor="middle"
+              font-size="9" fill="var(--silver)" font-family="Inter,sans-serif"
+              style="cursor:pointer;" onclick="event.stopPropagation();openKnockoutResultModal('${key}',2)">✏️</text>` : ''}
           </g>`;
       }
     });
@@ -7069,29 +6808,11 @@ function renderBracketSVG() {
   });
 
   // Ghép pathContent VÀO TRƯỚC svgContent để đường kẻ nằm dưới các thẻ card
-  const svg = `
-  <div style=" 
-    min-width:${totalW}px;
-    min-height:${totalH}px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:18px;
-    box-sizing:border-box;
-  ">
-  <svg viewBox="0 0 ${totalW} ${totalH}"
-    xmlns="http://www.w3.org/2000/svg"
-    style="
-      width:${totalW}px;
-      height:${totalH}px;
-      display:block;
-      font-family:Inter,sans-serif;
-      overflow:visible;
-    ">
+  const svg = `<svg viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg"
+    style="width:100%;min-width:${totalW}px;height:${totalH}px;display:block;font-family:Inter,sans-serif;">
     ${pathContent}
     ${svgContent}
-  </svg>
-  </div>`;
+  </svg>`;
   document.getElementById('cupBracketSVG').innerHTML = svg;  
 }
 
@@ -7113,32 +6834,16 @@ function renderBracketCards() {
 
   const html = rounds.map(round => {
     const matchKeys = round === '3P' ? ['3P_1']
-      : Object.keys(knockoutMatches).filter(k =>
-          k.startsWith(round + '_') &&
-          !k.endsWith('_L2')
-        ).sort();
+      : Object.keys(knockoutMatches).filter(k => k.startsWith(round + '_')).sort();
     return `<div style="min-width:180px;flex-shrink:0;">
       <div style="font-size:.68rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;text-align:center;margin-bottom:8px;letter-spacing:.5px;">${getRoundLabel(round)}</div>
-      ${knockoutMatchDates[key + '_date']
-        ? `<div style="
-              text-align:center;
-              font-size:.68rem;
-              color:var(--accent);
-              font-weight:700;
-              margin-bottom:4px;
-              text-shadow:0 0 4px rgba(255,255,255,.25);
-            ">
-              ${formatDMY(knockoutMatchDates[key + '_date'])}
-            </div>`
-        : ''
-        }
       ${matchKeys.map(key => {
         const m = knockoutMatches[key];
         if (!m) return '';
         const h = m.home ? (teamEmojis[m.home]||'') + ' ' + (teams[m.home]||m.home) : 'TBD';
         const a = m.away ? (teamEmojis[m.away]||'') + ' ' + (teams[m.away]||m.away) : 'TBD';
         const hasResult = m.score1 !== null && m.score2 !== null;
-        return `<div class="bracket-match-clickable" data-ko-key="${key}" data-ko-leg="1" data-ko-key="${key}" data-ko-leg="2" style="position:relative;background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin-bottom:6px;${m.winner?'border-color:var(--accent-a30)':''}"
+        return `<div class="bracket-match-clickable" style="position:relative;background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin-bottom:6px;${m.winner?'border-color:var(--accent-a30)':''}"
           onclick="if(event.target.closest('.ko-edit-hit'))return; focusKnockoutFixtureRow('${key}',1)">
           <div style="font-size:.8rem;font-weight:${m.winner===m.home?'700':'400'};color:${m.winner===m.home?'var(--accent)':'var(--text)'};">${h} ${hasResult?`<span style="float:right;font-family:Rajdhani,sans-serif;font-weight:700;">${m.score1}</span>`:''}
           </div>
@@ -7147,7 +6852,7 @@ function renderBracketCards() {
           </div>
           ${m.penalty1!=null?`<div style="font-size:.68rem;color:var(--gold);text-align:center;margin-top:3px;">Pen: ${m.penalty1}–${m.penalty2}</div>`:''}
           ${m.bye?`<div style="font-size:.68rem;color:var(--text-muted);text-align:center;">BYE</div>`:''}
-          ${isAdmin && !m.bye ? `` : ''}
+          ${isAdmin && !m.bye ? `<button class="ko-edit-hit btn-icon" style="position:absolute;top:6px;right:6px;width:20px;height:20px;font-size:.68rem;" title="Nhập kết quả" onclick="event.stopPropagation();openKnockoutResultModal('${key}')">✏️</button>` : ''}
         </div>`;
       }).join('')}
     </div>`;
@@ -9074,11 +8779,7 @@ function calcCupSeeds() {
 
   // Có chia bảng — lấy top qualifyPerGroup mỗi bảng, xen kẽ 1A,1B,2A,2B...
   const qualifyPerGroup = leagueConfig.qualifyPerGroup || 2;
-  const groupKeys = Object.keys(groups).sort((a,b)=>{
-    const na=parseInt(a.replace(/\D/g,''))||0;
-    const nb=parseInt(b.replace(/\D/g,''))||0;
-    return na-nb;
-  });
+  const groupKeys = Object.keys(groups).sort();
   const seeds = [];
   for (let rank = 0; rank < qualifyPerGroup; rank++) {
     groupKeys.forEach(gk => {
@@ -9087,49 +8788,6 @@ function calcCupSeeds() {
     });
   }
   return seeds;
-}
-
-function getTeamGroup(teamId){
-  for(const gk of Object.keys(groups)){
-    if((groups[gk]||[]).includes(teamId)) return gk;
-  }
-  return null;
-}
-
-function avoidSameGroupPairs(pairs){
-  for(let i=0;i<pairs.length;i++){
-
-    let [a,b] = pairs[i];
-
-    if(getTeamGroup(a)!==getTeamGroup(b))
-      continue;
-
-    let swapped=false;
-
-    for(let j=i+1;j<pairs.length && !swapped;j++){
-
-      let [c,d] = pairs[j];
-
-      if(
-        getTeamGroup(a)!==getTeamGroup(d) &&
-        getTeamGroup(c)!==getTeamGroup(b)
-      ){
-        pairs[i]=[a,d];
-        pairs[j]=[c,b];
-        swapped=true;
-      }
-      else if(
-        getTeamGroup(a)!==getTeamGroup(c) &&
-        getTeamGroup(d)!==getTeamGroup(b)
-      ){
-        pairs[i]=[a,c];
-        pairs[j]=[d,b];
-        swapped=true;
-      }
-    }
-  }
-
-  return pairs;
 }
 
 // Xây cặp đấu vòng 1 theo 1 trong 3 triết lý: random | seedpot | balanced
@@ -9152,10 +8810,6 @@ function buildKnockoutPairing(seeds, method) {
   } else { // 'balanced'
     pairs = Array.from({ length: half }, (_, i) => [remaining[i], remaining[i + half]]);
   }
-  if ((leagueConfig.groupCount || 0) > 1) {
-    pairs = avoidSameGroupPairs(pairs);
-  }
-
   return { byeSeeds, pairs };
 }
 
@@ -9389,56 +9043,8 @@ window.generateCupBracket = async function(method = 'seedpot', force = false) {
   const seeds = calcCupSeeds();  
   if (seeds.length < 2) { showToast('⚠️ Cần tối thiểu 2 đội', 'warn'); return; }
   knockoutMatches = generateKnockoutBracket(seeds, method);
+  //cupSeeds = calcCupSeeds();
   cupSeeds = seeds;
-
-  // Auto schedule knockout fixtures
-  knockoutMatchDates = {};
-
-  let nextDate = nextWorkday(
-    getLastScheduledDate ? (getLastScheduledDate() || todayISO()) : todayISO()
-  );
-
-  const roundDates = {};
-    let cursor = nextWorkday(
-      getLastScheduledDate ? (getLastScheduledDate() || todayISO()) : todayISO()
-    );
-
-  Object.keys(knockoutMatches)
-    .filter(k => !k.endsWith('_L2'))
-    .sort((a,b)=>{
-      const order=['R32','R16','QF','SF','F','3P'];
-      const ra=order.indexOf(a.split('_')[0]);
-      const rb=order.indexOf(b.split('_')[0]);
-      if(ra!==rb) return ra-rb;
-      return knockoutMatches[a].matchNum-knockoutMatches[b].matchNum;
-    }) 
-
-    .forEach(key=>{
-
-      const m = knockoutMatches[key];
-      if (m.bye) return;
-
-      if (!roundDates[m.round]) {
-        roundDates[m.round] = cursor;
-
-        cursor =
-          leagueConfig.knockoutLeg === 'home-away'
-          ? nextWorkday(nextWorkday(cursor))
-          : nextWorkday(cursor);
-      }
-
-      knockoutMatchDates[`${key}_date`] = roundDates[m.round];
-
-      if (
-        leagueConfig.knockoutLeg === 'home-away' &&
-        m.round !== 'F' &&
-        m.round !== '3P'
-      ) {
-        knockoutMatchDates[`${key}_L2_date`] =
-          nextWorkday(roundDates[m.round]);
-      }
-    });
-
   if (allLeagues[activeLeagueId]) {
     allLeagues[activeLeagueId].knockoutMatches = knockoutMatches;
     allLeagues[activeLeagueId].cupSeeds = cupSeeds;

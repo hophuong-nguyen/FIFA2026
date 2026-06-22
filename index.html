@@ -5820,31 +5820,46 @@ function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
 
     if (e.target.closest('.btn-icon')) return;
 
-    const bracketCard = document.getElementById('bracketCard');
-
-    if (bracketCard?.classList.contains('col-collapsed')) {
-      setColCollapsed('bracket', false);
-      enforceTwoExpandedRule('bracket');
-      applyGridLayout();
-    }
-
     const selector =
       `.bracket-match-clickable[data-ko-key="${key}"][data-ko-leg="${leg}"]`;
 
-    const node = document.querySelector(selector);
+    function highlightBracketNode() {
+      console.log('KO selector=', selector);
+      const all = document.querySelectorAll('.bracket-match-clickable');
+      console.log('KO nodes=', all.length);
+      const node = document.querySelector(selector);
+      console.log('KO found=', node);
+      if (!node) return;
+      const rect = node.querySelector('rect');
+      console.log('KO rect=', rect);
+      if (rect) {
+        rect.classList.add('ko-node-highlight');
+        setTimeout(() => {
+          rect.classList.remove('ko-node-highlight');
+        }, 2200);
+      }
+    }
 
-    if (!node) return;
+    const bracketCard = document.getElementById('bracketCard');
 
-    node.classList.add('ko-node-highlight');
-    setTimeout(()=>{
-      node.classList.remove('ko-node-highlight');
-    },2200);
+    if (bracketCard?.classList.contains('col-collapsed')) {
 
-    node.classList.add('ko-node-highlight');
+      // đóng standings trước
+      setColCollapsed('standings', true);
 
-    setTimeout(()=>{
-      node.classList.remove('ko-node-highlight');
-    },2200);
+      // mở bracket
+      setColCollapsed('bracket', false);
+      applyGridLayout();
+      
+      requestAnimationFrame(() => {
+        setTimeout(highlightBracketNode, 120);
+      });
+
+    } else {
+
+      highlightBracketNode();
+
+    }
   });
 
   return row;

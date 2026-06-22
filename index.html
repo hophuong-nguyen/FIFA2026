@@ -5820,18 +5820,21 @@ function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
 
     if (e.target.closest('.btn-icon')) return;
 
-    const selector =
-      `.bracket-match-clickable[data-ko-key="${key}"][data-ko-leg="${leg}"]`;
+    // Highlight chính row đang click
+    row.classList.add('ko-row-highlight');
 
-    function highlightBracketNode() {
-      console.log('KO selector=', selector);
-      const all = document.querySelectorAll('.bracket-match-clickable');
-      console.log('KO nodes=', all.length);
-      const node = document.querySelector(selector);
-      console.log('KO found=', node);
+    setTimeout(()=>{
+      row.classList.remove('ko-row-highlight');
+    },2200);
+
+    const selector = `.bracket-match-clickable[data-ko-key="${key}"][data-ko-leg="${leg}"]`;
+
+    function highlightBracketNode() {      
+      const all = document.querySelectorAll('.bracket-match-clickable');      
+      const node = document.querySelector(selector);      
       if (!node) return;
       const rect = node.querySelector('rect');
-      console.log('KO rect=', rect);
+      
       if (rect) {
         rect.classList.add('ko-node-highlight');
         setTimeout(() => {
@@ -5850,7 +5853,7 @@ function buildKnockoutFixtureRow(key, m, leg, legBaseMatch) {
       // mở bracket
       setColCollapsed('bracket', false);
       applyGridLayout();
-      
+
       requestAnimationFrame(() => {
         setTimeout(highlightBracketNode, 120);
       });
